@@ -19,3 +19,14 @@ describe('distribution catalogue strings', () => {
     });
   }
 });
+
+describe('text campaign catalogue strings', () => {
+  for (const [locale, messages] of [['en', en], ['pt', pt]] as const) {
+    it(`keeps the {{primeiro_nome}} example literal (${locale})`, () => {
+      const t = createTranslator({ locale, messages, namespace: 'Broadcasts.text' as never }) as unknown as (
+        key: string,
+      ) => string;
+      expect(t('messagePlaceholder')).toContain('{{primeiro_nome}}');
+    });
+  }
+});

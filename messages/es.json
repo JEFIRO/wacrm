@@ -964,7 +964,10 @@
       "toastResumeStartedCapped": "Enviando a {count} destinatarios en segundo plano. Otros {remaining} necesitarán otra ejecución.",
       "toastResumeFailed": "No se pudo reanudar: {error}",
       "unknownError": "Error desconocido",
-      "unknownContact": "Desconocido"
+      "unknownContact": "Desconocido",
+      "textMessage": "Mensaje: {text}",
+      "queueTitle": "En cola: {count, plural, one {# mensaje restante} other {# mensajes restantes}}",
+      "queueHint": "Un mensaje a la vez, con {min}–{max} s de intervalo. El próximo hacia las {next}. Puedes cerrar esta pantalla."
     },
     "new": {
       "title": "Nueva difusión",
@@ -1108,6 +1111,38 @@
       "apiRequestFailed": "Falló la solicitud a la API de difusión",
       "noPhoneOnContact": "El contacto no tiene número de teléfono",
       "unknownError": "Error desconocido"
+    },
+    "text": {
+      "title": "Nuevo envío de texto",
+      "subtitle": "Texto libre para números por código QR, enviado poco a poco desde una cola.",
+      "stepMessage": "Mensaje",
+      "stepAudience": "Público",
+      "stepConfirm": "Confirmar",
+      "name": "Nombre del envío",
+      "message": "Mensaje",
+      "messagePlaceholder": "¡Hola '{{primeiro_nome}}'! Tenemos una novedad para ti…",
+      "variables": "Variables:",
+      "unknownVariables": "Variables desconocidas: {list}. Usa solo las de la lista.",
+      "preview": "Vista previa (contacto de ejemplo):",
+      "interval": "Pausa entre mensajes",
+      "intervalMin": "Mínimo en segundos",
+      "intervalMax": "Máximo en segundos",
+      "to": "a",
+      "seconds": "segundos",
+      "intervalHint": "Cada mensaje sale en un momento aleatorio dentro de este rango, para parecer un envío humano y reducir el riesgo de bloqueo.",
+      "intervalInvalid": "El mínimo debe ser al menos 5 s y el máximo mayor o igual al mínimo (hasta 3600 s).",
+      "cancel": "Cancelar",
+      "next": "Siguiente",
+      "back": "Volver",
+      "recipients": "Destinatarios",
+      "duration": "Duración estimada",
+      "aboutMinutes": "unos {minutes} min",
+      "banWarning": "Los números por código QR no son la API oficial: los envíos masivos a quien no espera tu mensaje pueden bloquear el número. Envía solo a contactos que conocen tu empresa.",
+      "start": "Iniciar envío",
+      "preparing": "Preparando… {progress}%",
+      "queued": "Envío en cola. Los mensajes salen poco a poco: puedes cerrar esta pantalla.",
+      "queueFailed": "No se pudo crear el envío.",
+      "underMinute": "menos de 1 min"
     }
   },
   "Automations": {
@@ -2029,7 +2064,9 @@
         "removeConfirm": "¿Desconectar este número y quitar la conexión? Las conversaciones quedan en el historial.",
         "removed": "Número quitado.",
         "removeFailed": "No se pudo quitar el número.",
-        "connectedAsNumber": "Conectado como {number}."
+        "connectedAsNumber": "Conectado como {number}.",
+        "missing": "Esta conexión ya no existe en el servidor de WhatsApp (se borró fuera de la app). Quita el número abajo y agrégalo de nuevo para generar un código QR.",
+        "missingTitle": "Conexión no encontrada"
       }
     },
     "sections": {
@@ -2996,7 +3033,8 @@
       "recipientsRequired": "Proporciona `recipients` (preferido) o `phone_numbers`; debe ser una lista no vacía",
       "templateNameRequired": "El nombre de la plantilla es obligatorio",
       "templateMalformed": "El registro local de la plantilla está dañado: usa \"Sincronizar desde Meta\" en Configuración para repararlo antes de enviar la difusión.",
-      "invalidPhoneFormat": "Formato de número de teléfono no válido"
+      "invalidPhoneFormat": "Formato de número de teléfono no válido",
+      "textQueued": "Los envíos de texto salen por la cola del servidor y no se pueden reanudar aquí."
     },
     "whatsappConfig": {
       "fetchFailed": "Error al obtener la configuración",
@@ -3093,8 +3131,8 @@
       "body": "Esta cuenta usa números por código QR, que no necesitan plantillas aprobadas: puedes enviar texto libre en cualquier momento, sin la ventana de 24 horas."
     },
     "broadcasts": {
-      "title": "Los envíos masivos para números por código QR llegan pronto",
-      "body": "Los envíos actuales usan plantillas de la API oficial de Meta. Para números por código QR, el envío masivo tendrá una cola con pausas entre mensajes para reducir el riesgo de bloqueo del número."
+      "title": "Los envíos por código QR salen en cola",
+      "body": "En cuentas con números por código QR, el envío es de texto libre y sale un mensaje a la vez, con una pausa aleatoria entre ellos, para reducir el riesgo de bloqueo del número. Puedes cerrar la pantalla: la cola sigue en el servidor."
     }
   }
 }

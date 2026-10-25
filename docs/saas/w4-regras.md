@@ -29,3 +29,16 @@ botões aceitos mas invisíveis; lista falha no servidor com `this.isZero is not
 Testes do menu e do provedor; com WhatsApp real: menu chegou formatado, resposta "1" gravada
 como `interactive` "Sim, quero" com `interactive_reply_id = btn_sim`; conta QR sem selo de 24h,
 sem botão de template e com os avisos em Disparos. Gate verde (1582).
+
+## Mensagens enviadas pelo celular / WhatsApp Web (eco)
+
+`processOutboundEcho` (`inbound.ts`): mensagem `fromMe` que o app não enviou (checado pelo id
+depois de 5 s, para a mensagem do próprio app ser gravada antes) entra na conversa como
+mensagem nossa, sem abrir não lida nem disparar fluxo/automação/IA, e pausa fluxo ativo como uma
+resposta de atendente. O nome do contato nunca vem do `pushName` dessas mensagens (é o nosso).
+A checagem do id é **por número** (canal): o WhatsApp dá à mensagem o mesmo id no remetente e no
+destinatário, então a cópia recebida por outro número do app não pode valer como "enviada pelo
+app" (bug achado no teste com dois números conectados). Verificado com WhatsApp real: mensagem
+do app não duplica; mensagem enviada pelo celular entre dois números conectados aparece como eco
+(nossa) num e como recebida no outro, com o mesmo id.
+

@@ -424,7 +424,9 @@ export async function sendMessageToConversation(
     const message =
       err instanceof Error ? err.message : 'Unknown Meta API error';
     console.error('[send-message] Meta send failed for all variants:', message);
-    throw new SendMessageError('meta_error', `Meta API error: ${message}`, 502);
+    // Evolution errors already say where they came from (fork, W2).
+    const prefix = provider.kind === 'evolution' ? '' : 'Meta API error: ';
+    throw new SendMessageError('meta_error', `${prefix}${message}`, 502);
   }
 
   if (hasValidPhone && workingPhone !== sanitizedPhone) {

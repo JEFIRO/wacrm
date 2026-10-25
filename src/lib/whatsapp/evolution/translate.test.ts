@@ -62,10 +62,17 @@ describe('Evolution inbound translation', () => {
     expect(message.from).toBe('5511977776666');
   });
 
-  it('skips our own messages, groups, broadcasts and unknown senders', () => {
+  it('flags messages sent from the number, without our own name as the contact', () => {
+    const r = ok({ ...base, pushName: 'Você', key: { ...key, fromMe: true }, message: { conversation: 'tudo bem?' } });
+    expect(r.fromMe).toBe(true);
+    expect(r.message.text?.body).toBe('tudo bem?');
+    expect(r.contact).toEqual({ profile: { name: undefined }, wa_id: '5511988887777' });
+    expect(ok({ ...base, message: { conversation: 'x' } }).fromMe).toBe(false);
+  });
+
+  it('skips groups, broadcasts and unknown senders', () => {
     const skipped = (k: Record<string, unknown>) =>
       'skip' in translateInbound({ ...base, key: { ...key, ...k }, message: { conversation: 'x' } });
-    expect(skipped({ fromMe: true })).toBe(true);
     expect(skipped({ remoteJid: '1203630@g.us' })).toBe(true);
     expect(skipped({ remoteJid: 'status@broadcast' })).toBe(true);
     expect(skipped({ remoteJid: '999@newsletter' })).toBe(true);

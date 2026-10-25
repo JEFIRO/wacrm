@@ -455,6 +455,14 @@ export interface Broadcast {
    * send. Added in migration 038.
    */
   delivery_locked_at?: string | null;
+  /** 'text' = text campaign of a QR-code account, sent from the queue
+   *  (fork, migration 068, docs/saas/w5-fila.md); template_name is
+   *  null for those. */
+  kind?: 'template' | 'text';
+  message_text?: string | null;
+  min_interval_seconds?: number;
+  max_interval_seconds?: number;
+  next_send_at?: string | null;
   created_at: string;
 }
 

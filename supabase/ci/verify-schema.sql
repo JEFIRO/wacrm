@@ -231,6 +231,14 @@ BEGIN
     RAISE EXCEPTION 'single-provider rule is missing — migration 067 did not apply';
   END IF;
 
+  -- 068: text campaign queue.
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'broadcasts' AND column_name = 'next_send_at'
+  ) THEN
+    RAISE EXCEPTION 'text broadcast queue is missing — migration 068 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

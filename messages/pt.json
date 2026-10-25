@@ -964,7 +964,10 @@
       "toastResumeStartedCapped": "Enviando para {count} destinatários em segundo plano. Outros {remaining} precisarão de mais uma execução.",
       "toastResumeFailed": "Não foi possível retomar: {error}",
       "unknownError": "Erro desconhecido",
-      "unknownContact": "Desconhecido"
+      "unknownContact": "Desconhecido",
+      "textMessage": "Mensagem: {text}",
+      "queueTitle": "Na fila: {count, plural, one {# mensagem restante} other {# mensagens restantes}}",
+      "queueHint": "Uma mensagem por vez, com {min}–{max} s de intervalo. Próxima por volta de {next}. Pode fechar esta tela."
     },
     "new": {
       "title": "Novo disparo",
@@ -1108,6 +1111,38 @@
       "apiRequestFailed": "Falha na requisição à API de disparo",
       "noPhoneOnContact": "O contato não tem número de telefone",
       "unknownError": "Erro desconhecido"
+    },
+    "text": {
+      "title": "Novo disparo de texto",
+      "subtitle": "Mensagem livre para números por QR code, enviada aos poucos por uma fila.",
+      "stepMessage": "Mensagem",
+      "stepAudience": "Público",
+      "stepConfirm": "Confirmar",
+      "name": "Nome do disparo",
+      "message": "Mensagem",
+      "messagePlaceholder": "Oi '{{primeiro_nome}}'! Temos uma novidade para você…",
+      "variables": "Variáveis:",
+      "unknownVariables": "Variáveis desconhecidas: {list}. Use só as da lista.",
+      "preview": "Prévia (contato de exemplo):",
+      "interval": "Intervalo entre mensagens",
+      "intervalMin": "Mínimo em segundos",
+      "intervalMax": "Máximo em segundos",
+      "to": "a",
+      "seconds": "segundos",
+      "intervalHint": "Cada mensagem sai num momento aleatório dentro desse intervalo, para parecer envio humano e reduzir o risco de bloqueio.",
+      "intervalInvalid": "O mínimo precisa ser pelo menos 5 s e o máximo maior ou igual ao mínimo (até 3600 s).",
+      "cancel": "Cancelar",
+      "next": "Próximo",
+      "back": "Voltar",
+      "recipients": "Destinatários",
+      "duration": "Duração estimada",
+      "aboutMinutes": "cerca de {minutes} min",
+      "banWarning": "Números por QR code não são a API oficial: envio em massa para quem não espera sua mensagem pode bloquear o número. Envie só para contatos que conhecem sua empresa.",
+      "start": "Iniciar disparo",
+      "preparing": "Preparando… {progress}%",
+      "queued": "Disparo na fila. As mensagens saem aos poucos — pode fechar esta tela.",
+      "queueFailed": "Não foi possível criar o disparo.",
+      "underMinute": "menos de 1 min"
     }
   },
   "Automations": {
@@ -2029,7 +2064,9 @@
         "removeConfirm": "Desconectar este número e remover a conexão? As conversas ficam no histórico.",
         "removed": "Número removido.",
         "removeFailed": "Não foi possível remover o número.",
-        "connectedAsNumber": "Conectado como {number}."
+        "connectedAsNumber": "Conectado como {number}.",
+        "missing": "Esta conexão não existe mais no servidor do WhatsApp (foi apagada fora do app). Remova o número abaixo e adicione de novo para gerar um QR code.",
+        "missingTitle": "Conexão não encontrada"
       }
     },
     "sections": {
@@ -2996,7 +3033,8 @@
       "recipientsRequired": "Informe `recipients` (preferencial) ou `phone_numbers` — deve ser uma lista não vazia",
       "templateNameRequired": "O nome do modelo é obrigatório",
       "templateMalformed": "O registro local do modelo está corrompido — use \"Sincronizar da Meta\" em Configurações para corrigi-lo antes de disparar.",
-      "invalidPhoneFormat": "Formato de número de telefone inválido"
+      "invalidPhoneFormat": "Formato de número de telefone inválido",
+      "textQueued": "Disparos de texto saem pela fila do servidor e não podem ser retomados por aqui."
     },
     "whatsappConfig": {
       "fetchFailed": "Falha ao buscar a configuração",
@@ -3093,8 +3131,8 @@
       "body": "Esta conta usa números por QR code, que não precisam de modelos aprovados: você pode mandar texto livre a qualquer hora, sem a janela de 24 horas."
     },
     "broadcasts": {
-      "title": "Disparos para números por QR code chegam em breve",
-      "body": "Os disparos atuais usam modelos da API oficial da Meta. Para números por QR code, o envio em massa terá uma fila com intervalo entre as mensagens, para reduzir o risco de bloqueio do número."
+      "title": "Disparos por QR code saem em fila",
+      "body": "Em contas com números por QR code, o disparo é de texto livre e sai uma mensagem por vez, com um intervalo aleatório entre elas, para reduzir o risco de bloqueio do número. Você pode fechar a tela: a fila continua no servidor."
     }
   }
 }

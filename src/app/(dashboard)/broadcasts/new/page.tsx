@@ -13,6 +13,8 @@ import { Step4ScheduleSend } from '@/components/broadcasts/step4-schedule-send';
 import { useBroadcastSending } from '@/hooks/use-broadcast-sending';
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useAccountProvider } from '@/hooks/use-account-provider';
+import { TextCampaignWizard } from '@/components/broadcasts/text-campaign-wizard';
 
 const steps = [
   { label: 'template', key: 'template' },
@@ -45,6 +47,8 @@ export default function NewBroadcastPage() {
   >({});
   const [headerMediaUrl, setHeaderMediaUrl] = useState('');
   const [name, setName] = useState('');
+  // QR-code accounts have no templates: text campaign from the queue (W5).
+  const providerKind = useAccountProvider();
 
   async function handleSend() {
     if (!template) return;
@@ -128,6 +132,8 @@ export default function NewBroadcastPage() {
     toast.success(t('toastDraftSaved'));
     router.push('/broadcasts');
   }
+
+  if (providerKind === 'evolution') return <TextCampaignWizard />;
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">

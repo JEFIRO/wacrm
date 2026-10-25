@@ -1,9 +1,10 @@
 import { NextResponse, after } from 'next/server'
 import { supabaseAdmin } from '@/lib/automations/admin-client'
 import { readCappedBody } from '@/lib/whatsapp/webhook-body'
-import { processInboundMessage } from '@/lib/whatsapp/inbound'
+import { processInboundMessage, processOutboundEcho } from '@/lib/whatsapp/inbound'
 import { providerForChannel } from '@/lib/whatsapp/provider'
 import { applyMessageStatus } from '@/lib/whatsapp/message-status-sync'
+import { applyBroadcastRecipientStatus } from '@/lib/whatsapp/broadcast-recipient-webhook'
 import { dispatchWebhookEvent } from '@/lib/webhooks/deliver'
 import {
   translateInbound,
@@ -104,10 +105,18 @@ async function processEvent(event: string, instance: string, items: unknown[]) {
     for (const item of items) {
       const status = translateStatus(item as EvolutionStatusData)
       if (!status) continue
+      const statusAt = new Date().toISOString()
       const advanced = await applyMessageStatus(db, config.account_id, {
         ...status,
         failure: null,
-        statusAt: new Date().toISOString(),
+        statusAt,
+      })
+      // Text campaigns (W5) count delivered/read like template broadcasts.
+      await applyBroadcastRecipientStatus(db, {
+        whatsappMessageId: status.wamid,
+        status: status.status,
+        occurredAt: statusAt,
+        failure: null,
       })
       for (const message of advanced) {
         await dispatchWebhookEvent(db, config.account_id, 'message.status_updated', {
@@ -125,6 +134,19 @@ async function processEvent(event: string, instance: string, items: unknown[]) {
     const translated = translateInbound(item as EvolutionMessageData)
     if ('skip' in translated) {
       console.info(`[evolution webhook] skipped message on ${instance}: ${translated.skip}`)
+      continue
+    }
+    if (translated.fromMe) {
+      // Sent from the phone / WhatsApp Web — or by this app (skipped by id).
+      await processOutboundEcho(
+        translated.message,
+        translated.contact,
+        config.account_id,
+        config.user_id,
+        provider,
+        config.mirror_inbound_media !== false,
+        config.id,
+      )
       continue
     }
     await processInboundMessage(

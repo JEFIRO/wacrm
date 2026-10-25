@@ -50,7 +50,20 @@ export async function GET(_request: Request, { params }: Ctx) {
     try {
       state = await instanceState(cfg, channel.phone_number_id, apiKey)
     } catch (err) {
-      console.error('[evolution] state check failed:', err instanceof Error ? err.message : err)
+      const message = err instanceof Error ? err.message : String(err)
+      // Deleted on the server (by hand, or a reset): nothing to pair any
+      // more — the screen offers removing the number instead of retrying.
+      if (/ 404 /.test(message)) {
+        if (channel.status !== 'disconnected') {
+          await supabase
+            .from('whatsapp_config')
+            .update({ status: 'disconnected' })
+            .eq('id', channel.id)
+            .eq('account_id', accountId)
+        }
+        return NextResponse.json({ state: 'missing' })
+      }
+      console.error('[evolution] state check failed:', message)
       return NextResponse.json({ error: t('evolution.unreachable') }, { status: 502 })
     }
 

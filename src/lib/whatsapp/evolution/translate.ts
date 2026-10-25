@@ -2,8 +2,10 @@
 // Evolution API v2 webhook → the inbound shape the app already
 // processes (Meta Cloud API's) — docs/saas/w2-evolution.md.
 //
-// Pure: no DB, no network. Groups, broadcasts/status, newsletters and
-// messages we sent ourselves (fromMe) are skipped.
+// Pure: no DB, no network. Groups, broadcasts/status and newsletters are
+// skipped. Messages sent FROM the number (fromMe — the phone, WhatsApp
+// Web, or this app) come back flagged `fromMe`; the webhook stores the
+// ones the app didn't send (W4, docs/saas/w4-regras.md).
 // ============================================================
 import type { WhatsAppMessage } from '../inbound'
 import type { WaContactPayload } from '../wa-identity'
@@ -69,7 +71,7 @@ const NON_MESSAGE_TYPES = new Set([
 ])
 
 export type InboundTranslation =
-  | { message: WhatsAppMessage; contact: WaContactPayload }
+  | { message: WhatsAppMessage; contact: WaContactPayload; fromMe: boolean }
   | { skip: string }
 
 /** Digits of a person's JID, or null for groups, broadcasts, LIDs, etc. */
@@ -85,7 +87,7 @@ export function phoneFromJid(jid?: string): string | null {
 export function translateInbound(data: EvolutionMessageData): InboundTranslation {
   const key = data.key ?? {}
   if (!key.id) return { skip: 'no message id' }
-  if (key.fromMe) return { skip: 'sent by us' }
+  const fromMe = key.fromMe === true
   const jid = key.remoteJid ?? ''
   if (/@(g\.us|broadcast|newsletter)$/.test(jid)) return { skip: `not a 1:1 chat (${jid})` }
   if (data.messageType && NON_MESSAGE_TYPES.has(data.messageType)) {
@@ -102,7 +104,8 @@ export function translateInbound(data: EvolutionMessageData): InboundTranslation
     type: 'unsupported',
   }
   if (data.contextInfo?.stanzaId) base.context = { id: data.contextInfo.stanzaId }
-  const contact: WaContactPayload = { profile: { name: data.pushName || undefined }, wa_id: phone }
+  // On our own messages pushName is OUR name — never the customer's.
+  const contact: WaContactPayload = { profile: { name: fromMe ? undefined : data.pushName || undefined }, wa_id: phone }
   const m = data.message ?? {}
   // Media is fetched later by the provider with the message id.
   const media = (body: MediaBody) => ({ id: key.id!, mime_type: body.mimetype || 'application/octet-stream' })
@@ -169,7 +172,7 @@ export function translateInbound(data: EvolutionMessageData): InboundTranslation
   } else {
     message = { ...base, type: data.messageType || 'unsupported' }
   }
-  return { message, contact }
+  return { message, contact, fromMe }
 }
 
 /** Evolution's message status → the app's (sent/delivered/read/failed). */

@@ -964,7 +964,10 @@
       "toastResumeStartedCapped": "Sending {count} recipients in the background. {remaining} more will need another run.",
       "toastResumeFailed": "Could not resume: {error}",
       "unknownError": "Unknown error",
-      "unknownContact": "Unknown"
+      "unknownContact": "Unknown",
+      "textMessage": "Message: {text}",
+      "queueTitle": "Queued: {count, plural, one {# message left} other {# messages left}}",
+      "queueHint": "One message at a time, {min}–{max} s apart. Next one around {next}. You can close this screen."
     },
     "new": {
       "title": "New Broadcast",
@@ -1108,6 +1111,38 @@
       "apiRequestFailed": "Broadcast API request failed",
       "noPhoneOnContact": "No phone number on contact",
       "unknownError": "Unknown error"
+    },
+    "text": {
+      "title": "New text broadcast",
+      "subtitle": "Free text for QR-code numbers, sent gradually from a queue.",
+      "stepMessage": "Message",
+      "stepAudience": "Audience",
+      "stepConfirm": "Confirm",
+      "name": "Broadcast name",
+      "message": "Message",
+      "messagePlaceholder": "Hi '{{primeiro_nome}}'! We have news for you…",
+      "variables": "Variables:",
+      "unknownVariables": "Unknown variables: {list}. Use only the ones listed.",
+      "preview": "Preview (sample contact):",
+      "interval": "Pause between messages",
+      "intervalMin": "Minimum in seconds",
+      "intervalMax": "Maximum in seconds",
+      "to": "to",
+      "seconds": "seconds",
+      "intervalHint": "Each message goes out at a random moment within this range, to look like a person sending and lower the risk of a block.",
+      "intervalInvalid": "The minimum must be at least 5 s and the maximum at least the minimum (up to 3600 s).",
+      "cancel": "Cancel",
+      "next": "Next",
+      "back": "Back",
+      "recipients": "Recipients",
+      "duration": "Estimated duration",
+      "aboutMinutes": "about {minutes} min",
+      "banWarning": "QR-code numbers are not the official API: bulk messages to people who don't expect them can get the number blocked. Only send to contacts who know your business.",
+      "start": "Start broadcast",
+      "preparing": "Preparing… {progress}%",
+      "queued": "Broadcast queued. Messages go out gradually — you can close this screen.",
+      "queueFailed": "Could not create the broadcast.",
+      "underMinute": "under 1 min"
     }
   },
   "Automations": {
@@ -2029,7 +2064,9 @@
         "removeConfirm": "Disconnect this number and remove the connection? Conversations stay in the history.",
         "removed": "Number removed.",
         "removeFailed": "Could not remove the number.",
-        "connectedAsNumber": "Connected as {number}."
+        "connectedAsNumber": "Connected as {number}.",
+        "missing": "This connection no longer exists on the WhatsApp server (it was deleted outside the app). Remove the number below and add it again to get a QR code.",
+        "missingTitle": "Connection not found"
       }
     },
     "sections": {
@@ -2996,7 +3033,8 @@
       "recipientsRequired": "Provide either `recipients` (preferred) or `phone_numbers` — must be a non-empty array",
       "templateNameRequired": "template_name is required",
       "templateMalformed": "Template row is malformed locally — run \"Sync from Meta\" in Settings to repair it before broadcasting.",
-      "invalidPhoneFormat": "Invalid phone number format"
+      "invalidPhoneFormat": "Invalid phone number format",
+      "textQueued": "Text broadcasts are sent by the server queue and can't be resumed here."
     },
     "whatsappConfig": {
       "fetchFailed": "Failed to fetch configuration",
@@ -3093,8 +3131,8 @@
       "body": "This account uses QR-code numbers, which don't need approved templates: you can send free text at any time, with no 24-hour window."
     },
     "broadcasts": {
-      "title": "Broadcasts for QR-code numbers are coming soon",
-      "body": "Current broadcasts use templates from the official Meta API. For QR-code numbers, bulk sending will use a queue with a pause between messages to lower the risk of the number being blocked."
+      "title": "QR-code broadcasts go out from a queue",
+      "body": "On accounts with QR-code numbers, broadcasts are free text and go out one message at a time with a random pause in between, to lower the risk of the number being blocked. You can close the screen: the queue keeps running on the server."
     }
   }
 }

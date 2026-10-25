@@ -135,12 +135,6 @@ export default function BroadcastsPage() {
     };
   }, [anySending]);
 
-  // Campaigns send templates — Meta-only until the W5 queue (fork,
-  // docs/saas/w4-regras.md).
-  if (providerKind === 'evolution') {
-    return <QrAccountNotice feature="broadcasts" />;
-  }
-
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -162,6 +156,8 @@ export default function BroadcastsPage() {
 
   return (
     <div className="space-y-6">
+      {/* QR-code accounts: text campaigns from the paced queue (W5). */}
+      {providerKind === 'evolution' && <QrAccountNotice feature="broadcasts" />}
       {/* Top indeterminate progress bar: only visible while a broadcast
           is mid-send. Pure CSS animation so no extra deps. */}
       {anySending && (

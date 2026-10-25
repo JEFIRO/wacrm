@@ -556,6 +556,111 @@ export async function processInboundMessage(
   })
 }
 
+/** How long an echo waits, so a send by this app is saved first. */
+export const ECHO_GRACE_MS = 5000
+
+/**
+ * A message sent FROM the number outside this app — the phone or
+ * WhatsApp Web of a QR-code number (W4, docs/saas/w4-regras.md). Stored
+ * as an agent message so the thread in the inbox is complete; it opens
+ * no unread, fires no flow/automation/AI, and pauses an active flow run
+ * like an agent reply does. Messages this app sent are recognised by
+ * their id (after `ECHO_GRACE_MS`) and skipped. Returns whether stored.
+ */
+export async function processOutboundEcho(
+  message: WhatsAppMessage,
+  contact: WaContactPayload | undefined,
+  accountId: string,
+  configOwnerUserId: string,
+  provider: WhatsAppProvider,
+  mirrorMedia: boolean,
+  channelId: string,
+  { graceMs = ECHO_GRACE_MS }: { graceMs?: number } = {}
+): Promise<boolean> {
+  if (message.type === 'reaction') return false
+  if (graceMs > 0) await new Promise((resolve) => setTimeout(resolve, graceMs))
+
+  // Scoped to THIS number: WhatsApp gives a message the same id on the
+  // sender's and the receiver's side, so the copy another number of the
+  // app received must not count as "this app sent it".
+  const { data: known } = await supabaseAdmin()
+    .from('messages')
+    .select('id, conversations!inner(whatsapp_config_id)')
+    .eq('message_id', message.id)
+    .eq('conversations.whatsapp_config_id', channelId)
+    .limit(1)
+  if (known && known.length > 0) return false
+
+  const identity = resolveInboundIdentity(message, contact)
+  if (!hasUsableIdentity(identity)) return false
+  const contactOutcome = await findOrCreateContact(accountId, configOwnerUserId, identity)
+  if (!contactOutcome) return false
+  const convResult = await findOrCreateConversation(
+    accountId,
+    configOwnerUserId,
+    contactOutcome.contact.id,
+    channelId
+  )
+  if (!convResult) return false
+  const conversation = convResult.conversation
+
+  const { contentText, mediaUrl, mediaType } = await parseMessageContent(
+    message,
+    provider,
+    mirrorMedia ? { accountId } : null,
+    channelId
+  )
+  const contentType = ['text', 'image', 'document', 'audio', 'video', 'location'].includes(message.type)
+    ? message.type
+    : message.type === 'sticker'
+      ? 'image'
+      : 'text'
+  const sentAt = new Date(parseInt(message.timestamp) * 1000).toISOString()
+
+  const { data: inserted, error } = await supabaseAdmin()
+    .from('messages')
+    .upsert(
+      {
+        conversation_id: conversation.id,
+        sender_type: 'agent',
+        content_type: contentType,
+        content_text: contentText,
+        media_url: mediaUrl,
+        media_type: mediaType,
+        message_id: message.id,
+        status: 'sent',
+        created_at: sentAt,
+      },
+      { onConflict: 'conversation_id,message_id', ignoreDuplicates: true }
+    )
+    .select('id')
+  if (error) {
+    console.error('[inbound] echo insert failed:', error.message)
+    return false
+  }
+  if (!inserted || inserted.length === 0) return false
+
+  await supabaseAdmin()
+    .from('conversations')
+    .update({
+      last_message_text: contentText || `[${message.type}]`,
+      last_message_at: sentAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', conversation.id)
+    .eq('account_id', accountId)
+
+  // A human replied from the phone: yield like an agent reply in the app.
+  const { error: pauseErr } = await supabaseAdmin()
+    .from('flow_runs')
+    .update({ status: 'paused_by_agent', ended_at: new Date().toISOString(), end_reason: 'agent_replied' })
+    .eq('account_id', accountId)
+    .eq('contact_id', contactOutcome.contact.id)
+    .eq('status', 'active')
+  if (pauseErr) console.error('[inbound] echo flow pause failed:', pauseErr.message)
+  return true
+}
+
 /**
  * When our latest message in the conversation is a buttons/list menu
  * (sent as numbered text on a QR-code number) and `message` picks one of

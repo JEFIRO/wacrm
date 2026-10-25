@@ -15,7 +15,10 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 - Branch `feat/w3-instancia` (a partir da `feat/w1-provedor`, sem push): W3 número por QR code
   + nono dígito (`26c9d78`) e um tipo de conexão por conta (`9cae7f6`) — `docs/saas/w3-instancia.md`.
 - Branch `feat/w4-regras` (a partir da `feat/w3-instancia`, sem push): W4 regras por
-  provedor — `docs/saas/w4-regras.md`.
+  provedor (`697c9a3`).
+- Branch `feat/w5-fila` (a partir da `feat/w4-regras`, sem push): eco de mensagens
+  enviadas pelo celular (`docs/saas/w4-regras.md`) e W5 fila de disparos de texto
+  (`docs/saas/w5-fila.md`, migration 068). Novo cron: `GET /api/broadcasts/cron`.
 - **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
   `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
   `n8n` é do usuário — não tocar.
@@ -49,7 +52,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `067` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `068` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -146,6 +149,7 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       automação, `/api/automations/engine`) checam a conta, mas não o setor.
 
 ### WhatsApp / provedores
+- [ ] W5 sem limite diário por número, horário comercial nem pausar/cancelar pela tela.
 - [ ] Evolution validado com WhatsApp real (texto, foto, vídeo, áudio, citação, reação,
       status) **exceto** chat endereçado por LID e envio citando (`quoted` só com `key.id`).
 - [ ] O número "Evolution" do seed (`wacrm-dev-evolution`) só existe no servidor falso; com a
@@ -156,12 +160,13 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       criado antes da regra 067) — por isso não aceita número novo de nenhum tipo até ele sair.
 - [ ] Contas de teste locais: `qr@wacrm.test` (conta só QR, número do servidor falso) e
       `novo@wacrm.test` (sem número), senha `TEST_USER_PASSWORD`.
-- [ ] O número pessoal do usuário (instância `wacrm-95ce4431-9994db69`, "Atendimento QR") foi
-      usado no teste; enquanto conectado, conversas pessoais entram no banco local.
+- [ ] Dois números reais do usuário conectados ao app local: `wacrm-95ce4431-9994db69`
+      (9123-4567, conta Usuário Teste) e `wacrm-8b608644-b30c9d6a` (98765-4321, conta Loja QR);
+      enquanto conectados, as conversas deles entram no banco local.
 - [ ] Evolution: template lança `EvolutionUnsupportedError` (nó de template num fluxo de conta QR
       falha). Botões/lista viraram menu numerado (W4).
 - [ ] Evolution: "digitando…" não faz nada; mensagens enviadas pelo próprio celular (`fromMe`)
-      não aparecem na inbox; `connection.update` ignorado (W3).
+      aparecem pelo eco (testado com WhatsApp real); `connection.update` tratado no W3.
 - [ ] Campanhas, templates, registro e webhook seguem falando direto com `meta-api.ts`
       (só existem na Meta); campanha via Evolution é o W5.
 
@@ -251,3 +256,14 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   no lugar de botões/lista no provedor Evolution, resposta "1"/título → toque com o id da opção,
   conta QR sem janela de 24h / sem template / avisos em Modelos e Disparos. Testado com WhatsApp
   real (menu + resposta "1" → `btn_sim`) e na conta `qr@wacrm.test`. Gate verde (1582).
+- **2026-10-25** — Commit do W4 (`697c9a3`). Eco de mensagens `fromMe` (celular/Web) na inbox,
+  sem duplicar as do app (verificado). W5: fila de campanhas de texto no banco + cron
+  (`/api/broadcasts/cron`), intervalo aleatório, assistente na conta QR, detalhe com estado da
+  fila. Campanha real: 2 envios ao número autorizado com 21 s de intervalo. Corrigidos no teste:
+  cursor ao inserir variável, `{{…}}` no texto de exemplo (ICU), aviso "Retomar" em campanha de
+  texto, erro da Evolution prefixado como "Meta API error". Gate verde (1590).
+- **2026-10-25** — Eco testado com dois números reais conectados (um em cada conta): mesma
+  mensagem gravada como eco num e recebida no outro. Corrigido: checagem do eco escopada por
+  número (o id da mensagem é igual nos dois lados). Tela de número QR mostra "Conexão não
+  encontrada" quando a instância foi apagada no servidor (antes: erro repetido a cada 3 s).
+

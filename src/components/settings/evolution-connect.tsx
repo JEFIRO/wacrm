@@ -50,7 +50,9 @@ export function EvolutionConnect({
     const res = await fetch(`/api/whatsapp/evolution/instances/${channelId}`);
     const data: StateResponse = await res.json().catch(() => ({}));
     setInfo(res.ok ? data : { error: data.error || t('checkFailed') });
-    if (data.state === 'open' || Date.now() - startedAt.current > POLL_LIMIT_MS) setPolling(false);
+    if (data.state === 'open' || data.state === 'missing' || Date.now() - startedAt.current > POLL_LIMIT_MS) {
+      setPolling(false);
+    }
   }, [channelId, t]);
 
   useEffect(() => {
@@ -97,6 +99,7 @@ export function EvolutionConnect({
   }
 
   const connected = info?.state === 'open';
+  const missing = info?.state === 'missing';
 
   return (
     <section className="animate-in fade-in-50 duration-200">
@@ -106,11 +109,13 @@ export function EvolutionConnect({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <QrCode className="size-4" />
-            {channelId ? (connected ? t('connectedTitle') : t('pairTitle')) : t('newTitle')}
+            {!channelId ? t('newTitle') : connected ? t('connectedTitle') : missing ? t('missingTitle') : t('pairTitle')}
           </CardTitle>
-          <CardDescription>
-            {channelId ? (connected ? t('connectedHint') : t('pairHint')) : t('newHint')}
-          </CardDescription>
+          {!missing && (
+            <CardDescription>
+              {channelId ? (connected ? t('connectedHint') : t('pairHint')) : t('newHint')}
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {!channelId && (
@@ -126,7 +131,9 @@ export function EvolutionConnect({
 
           {info?.error && <p className="text-sm text-destructive">{info.error}</p>}
 
-          {channelId && info && !connected && !info.error && (
+          {missing && <p className="text-sm text-destructive">{t('missing')}</p>}
+
+          {channelId && info && !connected && !missing && !info.error && (
             <div className="space-y-3">
               {info.qr ? (
                 // eslint-disable-next-line @next/next/no-img-element -- data: URL from Evolution

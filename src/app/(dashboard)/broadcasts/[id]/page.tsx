@@ -197,6 +197,14 @@ export default function BroadcastDetailPage() {
     fetchData();
   }, [fetchData]);
 
+  // Text campaigns (W5) advance on the server queue: refresh while sending.
+  const queueRunning = broadcast?.kind === 'text' && broadcast.status === 'sending';
+  useEffect(() => {
+    if (!queueRunning) return;
+    const timer = setInterval(() => void fetchData(), 5000);
+    return () => clearInterval(timer);
+  }, [queueRunning, fetchData]);
+
   const filteredRecipients = useMemo(
     () =>
       statusFilter === 'all'
@@ -357,7 +365,11 @@ export default function BroadcastDetailPage() {
               </span>
             </div>
             <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
-              <span>{t('template', { name: broadcast.template_name })}</span>
+              <span>
+                {broadcast.kind === 'text'
+                  ? t('textMessage', { text: (broadcast.message_text ?? '').slice(0, 80) })
+                  : t('template', { name: broadcast.template_name })}
+              </span>
               <span>-</span>
               <span>
                 {t('createdAt', { date: new Date(broadcast.created_at).toLocaleDateString() })}
@@ -412,7 +424,22 @@ export default function BroadcastDetailPage() {
 
       {/* Resume / retry (issue #472). Only rendered when there is
           actually something outstanding. */}
-      {(pendingCount > 0 || retryableCount > 0) && (
+      {queueRunning && (
+        <div className="rounded-xl border border-border bg-card p-4 text-sm">
+          <p className="font-medium text-foreground">{t('queueTitle', { count: pendingCount })}</p>
+          <p className="mt-1 text-muted-foreground">
+            {t('queueHint', {
+              min: broadcast.min_interval_seconds ?? 0,
+              max: broadcast.max_interval_seconds ?? 0,
+              next: broadcast.next_send_at
+                ? new Date(broadcast.next_send_at).toLocaleTimeString()
+                : '—',
+            })}
+          </p>
+        </div>
+      )}
+
+      {broadcast.kind !== 'text' && (pendingCount > 0 || retryableCount > 0) && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
           <div className="text-sm">
             <p className="font-medium text-foreground">

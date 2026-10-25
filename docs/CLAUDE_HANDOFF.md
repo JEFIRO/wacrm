@@ -52,7 +52,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `068` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `069` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -156,13 +156,8 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       Evolution real, a tela dele mostra erro 502 (instância inexistente). Esperado.
 - [ ] Eventos da Evolution que chegam entre criar a instância e gravar o número caem no log
       "matched 0 numbers" (só o estado "conectando"; inofensivo).
-- [ ] Conta "Usuário Teste" local mistura Meta e Evolution (o número pessoal do usuário,
-      criado antes da regra 067) — por isso não aceita número novo de nenhum tipo até ele sair.
 - [ ] Contas de teste locais: `qr@wacrm.test` (conta só QR, número do servidor falso) e
       `novo@wacrm.test` (sem número), senha `TEST_USER_PASSWORD`.
-- [ ] Dois números reais do usuário conectados ao app local: `wacrm-95ce4431-9994db69`
-      (9123-4567, conta Usuário Teste) e `wacrm-8b608644-b30c9d6a` (98765-4321, conta Loja QR);
-      enquanto conectados, as conversas deles entram no banco local.
 - [ ] Evolution: template lança `EvolutionUnsupportedError` (nó de template num fluxo de conta QR
       falha). Botões/lista viraram menu numerado (W4).
 - [ ] Evolution: "digitando…" não faz nada; mensagens enviadas pelo próprio celular (`fromMe`)
@@ -266,4 +261,11 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   mensagem gravada como eco num e recebida no outro. Corrigido: checagem do eco escopada por
   número (o id da mensagem é igual nos dois lados). Tela de número QR mostra "Conexão não
   encontrada" quando a instância foi apagada no servidor (antes: erro repetido a cada 3 s).
+- **2026-10-25** — Commit do W5 + eco (`4a347da`). **Bug de remoção de número** (vinha da 062, já
+  na `main`): remover número com conversas falhava com "the sending number of a conversation
+  cannot be changed" — o FK zera o número das conversas e a trava achava que era troca. Migration
+  069 libera só esse caso (número de fato removido); trocar ou forçar órfã segue bloqueado
+  (testado no banco). Afetava Meta e QR. Branch `fix/remover-numero`. Os dois números reais do
+  usuário foram removidos pela tela (instâncias `wacrm-` apagadas; `n8n` intocada; histórico
+  local mantido).
 

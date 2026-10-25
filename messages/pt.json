@@ -58,7 +58,16 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
-    "menuSignOut": "Sair"
+    "menuSignOut": "Sair",
+    "availability": {
+      "online": "Online",
+      "offline": "Offline",
+      "hint": "Online = você está atendendo agora e recebe leads do seu setor.",
+      "nowOnline": "Você está online e pode receber leads.",
+      "nowOffline": "Você está offline.",
+      "offlineRequeued": "Você está offline. {count, plural, one {# lead não iniciado voltou} other {# leads não iniciados voltaram}} para a fila.",
+      "failed": "Não foi possível mudar seu status."
+    }
   },
   "ModeToggle": {
     "switchMode": "Mudar para o modo {mode}"
@@ -385,7 +394,10 @@
       "assignmentUpdateFailed": "Falha ao atualizar a atribuição",
       "networkError": "erro de rede",
       "documentFallback": "Documento",
-      "you": "Você"
+      "you": "Você",
+      "transferred": "Conversa transferida para {sector}.",
+      "transferFailed": "Não foi possível transferir a conversa. Tente novamente.",
+      "transferTo": "Transferir para o setor"
     },
     "sessionTimer": {
       "expired": "Expirada",
@@ -1493,7 +1505,19 @@
         "uploadFailed": "Falha no upload.",
         "fileTooLarge": "O arquivo tem {size} MB — o limite é 16 MB.",
         "defaultOptionTitle": "Opção",
-        "optionN": "Opção {n}"
+        "optionN": "Opção {n}",
+        "handoff": {
+          "routeTo": "Encaminhar para",
+          "modeNone": "Só marcar como pendente (sem setor)",
+          "modeFixed": "Setor fixo",
+          "modeVariable": "Setor escolhido pelo cliente (variável)",
+          "sector": "Setor",
+          "noSectors": "Crie setores em Configurações → Setores.",
+          "variable": "Variável com o nome do setor (ex.: setor)",
+          "queueMessage": "Mensagem quando não houver atendente disponível",
+          "queueMessageHint": "Enviada uma vez por lead. Use '{proximo_horario}' para o próximo horário de atendimento do setor. Vazio = mensagem padrão.",
+          "distributionHint": "O lead vai para o atendente do setor online, dentro da escala e com menos leads ativos; sem ninguém, entra na fila do setor."
+        }
       },
       "categories": {
         "messaging": "Mensagens",
@@ -1950,7 +1974,27 @@
       "phoneNumberIdNotNumeric": "O Phone Number ID deve conter apenas dígitos. Copie o id numérico em Meta → WhatsApp → Configuração da API, não o número de telefone em si.",
       "wabaIdNotNumeric": "O ID da conta do WhatsApp Business deve conter apenas dígitos. Copie-o em Meta → WhatsApp → Configuração da API.",
       "wabaSubscribed": "A conta do WhatsApp Business está inscrita neste app — os webhooks de entrada podem ser entregues.",
-      "wabaNotSubscribed": "A conta do WhatsApp Business não está inscrita neste app, então a Meta não entregará webhooks de entrada. Informe novamente o token de acesso e salve de novo para inscrevê-la."
+      "wabaNotSubscribed": "A conta do WhatsApp Business não está inscrita neste app, então a Meta não entregará webhooks de entrada. Informe novamente o token de acesso e salve de novo para inscrevê-la.",
+      "channels": {
+        "title": "Números",
+        "addNumber": "Adicionar número",
+        "newNumber": "Novo número",
+        "isDefault": "Padrão",
+        "makeDefault": "Tornar padrão",
+        "labelLabel": "Nome do setor",
+        "labelPlaceholder": "ex.: Vendas",
+        "saveLabel": "Salvar nome",
+        "unnamed": "Sem nome",
+        "labelSaved": "Nome salvo.",
+        "defaultChanged": "Número padrão alterado.",
+        "actionFailed": "Não foi possível atualizar o número. Tente novamente.",
+        "newHint": "Preencha abaixo as credenciais do novo número e salve.",
+        "defaultHint": "O número padrão envia campanhas, templates e mensagens da API.",
+        "defaultSector": "Setor padrão deste número",
+        "noSector": "Sem setor (visível para todos)",
+        "defaultSectorHint": "Conversas novas neste número começam neste setor. Gerencie os setores em Configurações → Setores.",
+        "defaultSectorSaved": "Setor padrão salvo."
+      }
     },
     "sections": {
       "overview": "Visão geral",
@@ -1964,7 +2008,8 @@
       "deals": "Negócios e moeda",
       "inbox": "Caixa de entrada",
       "members": "Membros da equipe",
-      "api": "Chaves de API"
+      "api": "Chaves de API",
+      "sectors": "Setores"
     },
     "groups": {
       "account": "Conta",
@@ -2222,6 +2267,63 @@
       "textPlaceholder": "O texto da mensagem a inserir",
       "cancel": "Cancelar",
       "save": "Salvar"
+    },
+    "sectors": {
+      "title": "Setores e distribuição",
+      "description": "Setores da conta, quem atende cada um e como os leads são distribuídos entre os atendentes.",
+      "agentDescription": "Ligue quando estiver atendendo: os leads do seu setor só chegam para você enquanto estiver online.",
+      "myStatus": "Meu status",
+      "onlineHint": "Online = estou atendendo agora. Desligue em imprevistos (reunião, saída).",
+      "nowOnline": "Você está online.",
+      "nowOffline": "Você está offline.",
+      "timezone": "Fuso horário da conta",
+      "timezoneHint": "As escalas dos atendentes usam este fuso.",
+      "timezoneSaved": "Fuso horário salvo.",
+      "sectors": "Setores",
+      "sectorsHint": "Cada setor recebe os leads encaminhados pelo fluxo e precisa de pelo menos uma pessoa. Só entra em setor quem já tem escala.",
+      "noSectors": "Nenhum setor ainda.",
+      "sectorName": "Nome do setor",
+      "deleteSector": "Excluir setor",
+      "deleteConfirm": "Excluir o setor \"{name}\"? As conversas dele ficam sem setor.",
+      "newSectorPlaceholder": "Novo setor (ex.: Vendas)",
+      "addSector": "Adicionar setor",
+      "sectorExists": "Já existe um setor com esse nome.",
+      "agents": "Atendentes",
+      "agentsHint": "Status, limite de leads simultâneos e escala semanal de cada pessoa.",
+      "online": "Online",
+      "offline": "Offline",
+      "cap": "Limite",
+      "capSaved": "Limite salvo.",
+      "schedule": "Escala",
+      "noSchedule": "Sem escala: não pode entrar em setor nem receber leads",
+      "scheduleSummary": "{count, plural, one {# faixa de horário} other {# faixas de horário}}",
+      "scheduleHint": "Horários no fuso {tz}.",
+      "start": "Início",
+      "end": "Fim",
+      "addRange": "Faixa",
+      "removeRange": "Remover faixa",
+      "saveSchedule": "Salvar escala",
+      "scheduleSaved": "Escala salva.",
+      "cancel": "Cancelar",
+      "startedWhileOffline": "{count, plural, one {# lead já iniciado continua com este atendente offline} other {# leads já iniciados continuam com este atendente offline}} — transfira manualmente se precisar.",
+      "wentOfflineRequeued": "{count, plural, one {# lead não iniciado voltou para a fila} other {# leads não iniciados voltaram para a fila}}.",
+      "saveFailed": "Não foi possível salvar. Tente novamente.",
+      "distributionRule": "Recebe o lead quem está no setor, online, dentro da escala e abaixo do limite — o de menos leads ativos; empate é sorteado. Sem ninguém, o lead vai para a fila do setor.",
+      "weekdays": {
+        "0": "Domingo",
+        "1": "Segunda",
+        "2": "Terça",
+        "3": "Quarta",
+        "4": "Quinta",
+        "5": "Sexta",
+        "6": "Sábado"
+      },
+      "newSectorMembers": "Quem atende o novo setor (pelo menos uma pessoa com escala):",
+      "needsMember": "O setor precisa de pelo menos uma pessoa. Para tirá-la, coloque outra antes ou exclua o setor.",
+      "needsSchedule": "Cadastre a escala da pessoa antes de colocá-la em um setor.",
+      "withoutSchedule": "sem escala",
+      "scheduleRequired": "Esta pessoa está em um setor: a escala precisa de pelo menos uma faixa.",
+      "failedNotices": "{count, plural, one {# lead na fila não recebeu} other {# leads na fila não receberam}} o aviso de \"sem atendente disponível\" depois de 5 tentativas. Veja na Caixa de entrada (conversas pendentes) e responda manualmente."
     }
   },
   "SignupPage": {
@@ -2769,7 +2871,8 @@
         "loadFailed": "Falha ao carregar os membros",
         "updateFailed": "Falha ao atualizar o membro",
         "roleInvalid": "A função deve ser owner, admin, agent ou viewer",
-        "useTransferOwnership": "Use POST /api/account/transfer-ownership para promover um membro a proprietário"
+        "useTransferOwnership": "Use POST /api/account/transfer-ownership para promover um membro a proprietário",
+        "lastInSector": "Essa pessoa é a única de um setor. Coloque outra pessoa no setor ou exclua-o antes de removê-la."
       },
       "nameMustBeString": "O nome deve ser um texto",
       "nameEmpty": "O nome da conta não pode ficar vazio",
@@ -2878,7 +2981,9 @@
       "phoneCheckFailed": "Falha na verificação dos dados do número: {message}",
       "wabaNoApps": "O WABA não tem apps inscritos. Salve a configuração novamente para inscrevê-lo.",
       "wabaCheckFailed": "Falha na verificação da inscrição do WABA: {message}",
-      "noWabaId": "Nenhum WABA ID registrado — os webhooks não podem ser conectados sem ele. Adicione-o no formulário e salve novamente."
+      "noWabaId": "Nenhum WABA ID registrado — os webhooks não podem ser conectados sem ele. Adicione-o no formulário e salve novamente.",
+      "channelNotFound": "Esse número de WhatsApp não foi encontrado nesta conta.",
+      "numberAlreadyInAccount": "Este número já está conectado a esta conta."
     },
     "media": {
       "idRequired": "O ID da mídia é obrigatório",
@@ -2922,6 +3027,17 @@
       "submitFailed": "Falha ao enviar o modelo.",
       "metaApiStatus": "Erro da API da Meta: {status}",
       "syncFailed": "Falha ao sincronizar os modelos"
+    },
+    "agents": {
+      "notMember": "Essa pessoa não é membro desta conta.",
+      "invalidCap": "O limite de leads deve ser um número inteiro entre 1 e 100.",
+      "invalidSchedule": "Cada faixa precisa de um dia da semana e de um início antes do fim (HH:MM).",
+      "saveFailed": "Não foi possível salvar as configurações do atendente. Tente novamente.",
+      "scheduleRequired": "Quem está em um setor precisa de pelo menos uma faixa de horário."
     }
+  },
+  "Distribution": {
+    "nextSlotPattern": "'{weekday}' às '{time}'",
+    "defaultQueueMessage": "Não há atendentes disponíveis no momento. Nosso próximo atendimento é '{proximo_horario}'."
   }
 }

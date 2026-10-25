@@ -480,7 +480,18 @@ function ConversationItem({
           <span className="truncate text-sm font-medium text-foreground">
             {displayName}
           </span>
-          <span className="shrink-0 text-[10px] text-muted-foreground">{timeAgo}</span>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {/* Which number (sector) the thread is on — only shown once
+                the number has a sector name (migration 060). */}
+            {/* Sector handling the thread (061); falls back to the number's
+                name for threads without a sector. */}
+            {(conversation.sector?.name || conversation.channel?.label) && (
+              <span className="max-w-32 truncate rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                {conversation.sector?.name || conversation.channel?.label}
+              </span>
+            )}
+            <span className="text-[10px] text-muted-foreground">{timeAgo}</span>
+          </div>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">
           <p className="truncate text-xs text-muted-foreground">

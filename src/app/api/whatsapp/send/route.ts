@@ -12,6 +12,10 @@ import {
   SendMessageError,
 } from '@/lib/whatsapp/send-message'
 import { getT } from '@/lib/i18n/translate'
+import {
+  findOrCreateChannelConversation,
+  loadChannel,
+} from '@/lib/whatsapp/channels'
 
 const t = getT('Api')
 
@@ -196,11 +200,11 @@ export async function POST(request: Request) {
 type SendSupabase = Awaited<ReturnType<typeof createClient>>
 
 /**
- * Return the contact's conversation id in this account, creating one if
- * it doesn't exist yet. Mirrors the webhook's find-or-create so an
- * inbound-then-outbound (or outbound-first) sequence converges on a single
- * thread per contact. Runs under the caller's RLS — the conversations_insert
- * policy requires account agent membership, which the caller already is.
+ * Return the contact's conversation id on the account's default channel,
+ * creating one if needed — same resolution as the webhook (shared
+ * findOrCreateChannelConversation). Runs under the caller's RLS — the
+ * conversations_insert policy requires account agent membership, which
+ * the caller already is.
  */
 async function findOrCreateConversation(
   supabase: SendSupabase,
@@ -208,29 +212,11 @@ async function findOrCreateConversation(
   userId: string,
   contactId: string,
 ): Promise<string | null> {
-  const { data: existing } = await supabase
-    .from('conversations')
-    .select('id')
-    .eq('account_id', accountId)
-    .eq('contact_id', contactId)
-    .maybeSingle()
-
-  if (existing) return existing.id
-
-  const { data: created, error } = await supabase
-    .from('conversations')
-    .insert({
-      account_id: accountId,
-      user_id: userId,
-      contact_id: contactId,
-    })
-    .select('id')
-    .single()
-
-  if (error) {
-    console.error('Error creating conversation for contact send:', error.message)
-    return null
-  }
-
-  return created.id
+  const channel = await loadChannel<{ id: string }>(supabase, accountId, null, 'id')
+  const resolved = await findOrCreateChannelConversation<{ id: string }>(
+    supabase,
+    { accountId, contactId, channelId: channel?.id ?? null, userId },
+    'id',
+  )
+  return resolved?.conversation.id ?? null
 }

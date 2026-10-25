@@ -58,7 +58,16 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configuración",
-    "menuSignOut": "Cerrar sesión"
+    "menuSignOut": "Cerrar sesión",
+    "availability": {
+      "online": "En línea",
+      "offline": "Desconectado",
+      "hint": "En línea = estás atendiendo ahora y recibes leads de tu sector.",
+      "nowOnline": "Estás en línea y puedes recibir leads.",
+      "nowOffline": "Estás desconectado.",
+      "offlineRequeued": "Estás desconectado. {count, plural, one {# lead no iniciado volvió} other {# leads no iniciados volvieron}} a la cola.",
+      "failed": "No se pudo cambiar tu estado."
+    }
   },
   "ModeToggle": {
     "switchMode": "Cambiar al modo {mode}"
@@ -385,7 +394,10 @@
       "assignmentUpdateFailed": "Error al actualizar la asignación",
       "networkError": "error de red",
       "documentFallback": "Documento",
-      "you": "Tú"
+      "you": "Tú",
+      "transferred": "Conversación transferida a {sector}.",
+      "transferFailed": "No se pudo transferir la conversación. Inténtalo de nuevo.",
+      "transferTo": "Transferir al sector"
     },
     "sessionTimer": {
       "expired": "Expirada",
@@ -1493,7 +1505,19 @@
         "uploadFailed": "Error al subir.",
         "fileTooLarge": "El archivo pesa {size} MB; el límite es 16 MB.",
         "defaultOptionTitle": "Opción",
-        "optionN": "Opción {n}"
+        "optionN": "Opción {n}",
+        "handoff": {
+          "routeTo": "Enviar a",
+          "modeNone": "Solo marcar como pendiente (sin sector)",
+          "modeFixed": "Sector fijo",
+          "modeVariable": "Sector elegido por el cliente (variable)",
+          "sector": "Sector",
+          "noSectors": "Crea sectores en Configuración → Sectores.",
+          "variable": "Variable con el nombre del sector (ej.: sector)",
+          "queueMessage": "Mensaje cuando no haya agente disponible",
+          "queueMessageHint": "Se envía una vez por lead. Usa '{proximo_horario}' para el próximo horario de atención del sector. Vacío = mensaje predeterminado.",
+          "distributionHint": "El lead va al agente del sector en línea, dentro de su horario y con menos leads activos; sin nadie, espera en la cola del sector."
+        }
       },
       "categories": {
         "messaging": "Mensajería",
@@ -1950,7 +1974,27 @@
       "phoneNumberIdNotNumeric": "El Phone Number ID debe contener solo dígitos. Copia el id numérico desde Meta → WhatsApp → Configuración de la API, no el número de teléfono en sí.",
       "wabaIdNotNumeric": "El ID de la cuenta de WhatsApp Business debe contener solo dígitos. Cópialo desde Meta → WhatsApp → Configuración de la API.",
       "wabaSubscribed": "La cuenta de WhatsApp Business está suscrita a esta app: los webhooks entrantes pueden entregarse.",
-      "wabaNotSubscribed": "La cuenta de WhatsApp Business no está suscrita a esta app, así que Meta no entregará webhooks entrantes. Vuelve a ingresar el token de acceso y guarda de nuevo para suscribirla."
+      "wabaNotSubscribed": "La cuenta de WhatsApp Business no está suscrita a esta app, así que Meta no entregará webhooks entrantes. Vuelve a ingresar el token de acceso y guarda de nuevo para suscribirla.",
+      "channels": {
+        "title": "Números",
+        "addNumber": "Agregar número",
+        "newNumber": "Nuevo número",
+        "isDefault": "Predeterminado",
+        "makeDefault": "Hacer predeterminado",
+        "labelLabel": "Nombre del sector",
+        "labelPlaceholder": "ej.: Ventas",
+        "saveLabel": "Guardar nombre",
+        "unnamed": "Sin nombre",
+        "labelSaved": "Nombre guardado.",
+        "defaultChanged": "Número predeterminado cambiado.",
+        "actionFailed": "No se pudo actualizar el número. Inténtalo de nuevo.",
+        "newHint": "Completa abajo las credenciales del nuevo número y guarda.",
+        "defaultHint": "El número predeterminado envía difusiones, plantillas y mensajes de la API.",
+        "defaultSector": "Sector predeterminado de este número",
+        "noSector": "Sin sector (visible para todos)",
+        "defaultSectorHint": "Las conversaciones nuevas en este número empiezan en este sector. Gestiona los sectores en Configuración → Sectores.",
+        "defaultSectorSaved": "Sector predeterminado guardado."
+      }
     },
     "sections": {
       "overview": "Resumen",
@@ -1964,7 +2008,8 @@
       "deals": "Negocios y moneda",
       "inbox": "Bandeja de entrada",
       "members": "Miembros del equipo",
-      "api": "Claves de API"
+      "api": "Claves de API",
+      "sectors": "Sectores"
     },
     "groups": {
       "account": "Cuenta",
@@ -2222,6 +2267,63 @@
       "textPlaceholder": "El texto del mensaje que se insertará",
       "cancel": "Cancelar",
       "save": "Guardar"
+    },
+    "sectors": {
+      "title": "Sectores y distribución",
+      "description": "Sectores de la cuenta, quién atiende cada uno y cómo se distribuyen los leads entre los agentes.",
+      "agentDescription": "Actívalo mientras atiendes: los leads de tu sector solo te llegan cuando estás en línea.",
+      "myStatus": "Mi estado",
+      "onlineHint": "En línea = estoy atendiendo ahora. Desactívalo ante imprevistos (reunión, salida).",
+      "nowOnline": "Estás en línea.",
+      "nowOffline": "Estás desconectado.",
+      "timezone": "Zona horaria de la cuenta",
+      "timezoneHint": "Los horarios de los agentes usan esta zona.",
+      "timezoneSaved": "Zona horaria guardada.",
+      "sectors": "Sectores",
+      "sectorsHint": "Cada sector recibe los leads que deriva el flujo y necesita al menos una persona. Solo entra en un sector quien ya tiene horario.",
+      "noSectors": "Aún no hay sectores.",
+      "sectorName": "Nombre del sector",
+      "deleteSector": "Eliminar sector",
+      "deleteConfirm": "¿Eliminar el sector \"{name}\"? Sus conversaciones quedan sin sector.",
+      "newSectorPlaceholder": "Nuevo sector (ej.: Ventas)",
+      "addSector": "Agregar sector",
+      "sectorExists": "Ya existe un sector con ese nombre.",
+      "agents": "Agentes",
+      "agentsHint": "Estado, límite de leads simultáneos y horario semanal de cada persona.",
+      "online": "En línea",
+      "offline": "Desconectado",
+      "cap": "Límite",
+      "capSaved": "Límite guardado.",
+      "schedule": "Horario",
+      "noSchedule": "Sin horario: no puede entrar en un sector ni recibir leads",
+      "scheduleSummary": "{count, plural, one {# franja horaria} other {# franjas horarias}}",
+      "scheduleHint": "Horarios en la zona {tz}.",
+      "start": "Inicio",
+      "end": "Fin",
+      "addRange": "Franja",
+      "removeRange": "Quitar franja",
+      "saveSchedule": "Guardar horario",
+      "scheduleSaved": "Horario guardado.",
+      "cancel": "Cancelar",
+      "startedWhileOffline": "{count, plural, one {# lead ya iniciado sigue con este agente desconectado} other {# leads ya iniciados siguen con este agente desconectado}} — transfiere manualmente si hace falta.",
+      "wentOfflineRequeued": "{count, plural, one {# lead no iniciado volvió a la cola} other {# leads no iniciados volvieron a la cola}}.",
+      "saveFailed": "No se pudo guardar. Inténtalo de nuevo.",
+      "distributionRule": "Recibe el lead quien está en el sector, en línea, dentro de su horario y bajo su límite — el de menos leads activos; el empate se sortea. Sin nadie, el lead espera en la cola del sector.",
+      "weekdays": {
+        "0": "Domingo",
+        "1": "Lunes",
+        "2": "Martes",
+        "3": "Miércoles",
+        "4": "Jueves",
+        "5": "Viernes",
+        "6": "Sábado"
+      },
+      "newSectorMembers": "Quién atiende el nuevo sector (al menos una persona con horario):",
+      "needsMember": "El sector necesita al menos una persona. Agrega a otra antes o elimina el sector.",
+      "needsSchedule": "Registra el horario de la persona antes de agregarla a un sector.",
+      "withoutSchedule": "sin horario",
+      "scheduleRequired": "Esta persona está en un sector: el horario necesita al menos una franja.",
+      "failedNotices": "{count, plural, one {# lead en la fila no recibió} other {# leads en la fila no recibieron}} el aviso de \"sin agente disponible\" tras 5 intentos. Revisa las conversaciones pendientes en la Bandeja y responde manualmente."
     }
   },
   "SignupPage": {
@@ -2769,7 +2871,8 @@
         "loadFailed": "Error al cargar los miembros",
         "updateFailed": "Error al actualizar el miembro",
         "roleInvalid": "El rol debe ser owner, admin, agent o viewer",
-        "useTransferOwnership": "Usa POST /api/account/transfer-ownership para promover a un miembro a propietario"
+        "useTransferOwnership": "Usa POST /api/account/transfer-ownership para promover a un miembro a propietario",
+        "lastInSector": "Esta persona es la única de un sector. Agrega a otra persona al sector o elimínalo antes de quitarla."
       },
       "nameMustBeString": "El nombre debe ser un texto",
       "nameEmpty": "El nombre de la cuenta no puede estar vacío",
@@ -2878,7 +2981,9 @@
       "phoneCheckFailed": "Falló la verificación de los datos del número: {message}",
       "wabaNoApps": "La WABA no tiene apps suscritas. Vuelve a guardar la configuración para suscribirla.",
       "wabaCheckFailed": "Falló la verificación de la suscripción de la WABA: {message}",
-      "noWabaId": "No hay ningún WABA ID registrado; los webhooks no se pueden conectar sin él. Agrégalo en el formulario y vuelve a guardar."
+      "noWabaId": "No hay ningún WABA ID registrado; los webhooks no se pueden conectar sin él. Agrégalo en el formulario y vuelve a guardar.",
+      "channelNotFound": "Ese número de WhatsApp no se encontró en esta cuenta.",
+      "numberAlreadyInAccount": "Este número ya está conectado a esta cuenta."
     },
     "media": {
       "idRequired": "El ID del archivo multimedia es obligatorio",
@@ -2922,6 +3027,17 @@
       "submitFailed": "Error al enviar la plantilla.",
       "metaApiStatus": "Error de la API de Meta: {status}",
       "syncFailed": "Error al sincronizar las plantillas"
+    },
+    "agents": {
+      "notMember": "Esa persona no es miembro de esta cuenta.",
+      "invalidCap": "El límite de leads debe ser un número entero entre 1 y 100.",
+      "invalidSchedule": "Cada franja necesita un día de la semana y un inicio antes del fin (HH:MM).",
+      "saveFailed": "No se pudo guardar la configuración del agente. Inténtalo de nuevo.",
+      "scheduleRequired": "Quien está en un sector necesita al menos una franja horaria."
     }
+  },
+  "Distribution": {
+    "nextSlotPattern": "'{weekday}' a las '{time}'",
+    "defaultQueueMessage": "No hay agentes disponibles en este momento. Nuestra próxima atención es '{proximo_horario}'."
   }
 }

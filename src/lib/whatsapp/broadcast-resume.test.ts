@@ -158,8 +158,9 @@ function planDb(fx: PlanFixture, writes: PlanWrites = {}): SupabaseClient {
           data: fx.broadcast === undefined ? null : fx.broadcast,
           error: null,
         }),
-        single: async () => ({
-          data: fx.config === undefined ? null : fx.config,
+        // Default-channel lookup (loadChannel) ends in limit().
+        limit: async () => ({
+          data: fx.config ? [fx.config] : [],
           error: null,
         }),
         then: (

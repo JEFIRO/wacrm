@@ -49,6 +49,8 @@ import { cn } from "@/lib/utils";
 import { uploadAccountMedia, MEDIA_MAX_BYTES } from "@/lib/storage/upload-media";
 import { slugify, type BuilderNode } from "../shared";
 import { NextNodeRow, NodeKeySelect, TextRow } from "./fields";
+import { HandoffForm } from "./handoff-form";
+import type { HandoffNodeConfig } from "@/lib/flows/types";
 
 interface NodeConfigFormProps {
   node: BuilderNode;
@@ -197,14 +199,8 @@ export function NodeConfigForm({
       );
 
     case "handoff":
-      return (
-        <TextRow
-          label={t("internalNote")}
-          value={(cfg as { note?: string }).note ?? ""}
-          onChange={(v) => onUpdateConfig({ note: v })}
-          rows={2}
-        />
-      );
+      // Sector routing + distribution (fork) — handoff-form.tsx.
+      return <HandoffForm cfg={cfg as HandoffNodeConfig} onUpdateConfig={onUpdateConfig} />;
 
     case "end":
       return (

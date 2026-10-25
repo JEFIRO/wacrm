@@ -105,6 +105,16 @@ export interface HandoffNodeConfig {
    * node fires. Leave unset to flip the status without assignment.
    */
   assign_to?: string;
+  /**
+   * Sector to route the lead to (docs/saas/setores-e-distribuicao.md):
+   * distributed among its agents, or queued. Takes precedence over
+   * `assign_to`.
+   */
+  sector_id?: string;
+  /** Run variable whose value names the sector (the customer's choice). */
+  sector_var?: string;
+  /** Sent once when queued; `{proximo_horario}` = next agent start. */
+  queue_message?: string;
 }
 
 /**

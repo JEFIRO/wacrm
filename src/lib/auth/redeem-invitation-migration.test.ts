@@ -14,6 +14,13 @@ const tablesWithoutDomainData = new Set([
   "account_invitations",
   "member_presence",
   "pending_message_statuses",
+  // Migrations 061/063 (sectors and lead distribution): routing and
+  // per-agent configuration — they hold no customer data. sector_members
+  // and agent_* rows are derived from sectors/profiles of the same account.
+  "sectors",
+  "sector_members",
+  "agent_settings",
+  "agent_schedules",
 ]);
 
 function accountScopedTables(): Set<string> {

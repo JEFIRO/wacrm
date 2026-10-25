@@ -15,6 +15,7 @@ import {
 } from '@/lib/whatsapp/phone-utils'
 import { resolveContactSendTarget } from '@/lib/whatsapp/wa-identity'
 import { assertConversationInAccount } from '@/lib/whatsapp/conversation-scope'
+import { loadChannel } from '@/lib/whatsapp/channels'
 import { supabaseAdmin } from './admin-client'
 import { getT } from '@/lib/i18n/translate'
 
@@ -40,17 +41,20 @@ const t = getT('LibErrors')
  * plus the DECRYPTED access token from `whatsapp_config`. The single
  * home for that decrypt step — callers outside this file (the AI
  * auto-reply's typing indicator) reuse it rather than growing a copy.
+ * `channelId` picks the conversation's number; omitted, the default.
  */
 export async function loadAccountMetaCredentials(
   db: ReturnType<typeof supabaseAdmin>,
   accountId: string,
+  channelId?: string | null,
 ): Promise<{ phoneNumberId: string; accessToken: string }> {
-  const { data: config, error: configErr } = await db
-    .from('whatsapp_config')
-    .select('phone_number_id, access_token')
-    .eq('account_id', accountId)
-    .single()
-  if (configErr || !config) {
+  const config = await loadChannel<{ phone_number_id: string; access_token: string }>(
+    db,
+    accountId,
+    channelId,
+    'phone_number_id, access_token',
+  )
+  if (!config) {
     throw new Error(t('send.notConfigured'))
   }
   return {
@@ -106,7 +110,11 @@ export async function engineSendText(
 
   // Same for the conversation the message lands in — see
   // conversation-scope.ts (GHSA-m4fx-g6pr-hrw8).
-  await assertConversationInAccount(db, args.conversationId, args.accountId)
+  const { channelId } = await assertConversationInAccount(
+    db,
+    args.conversationId,
+    args.accountId,
+  )
 
   // Phone number, or the business-scoped user ID when Meta has never
   // given us a number for this customer (issue #519).
@@ -121,6 +129,7 @@ export async function engineSendText(
   const { phoneNumberId, accessToken } = await loadAccountMetaCredentials(
     db,
     args.accountId,
+    channelId,
   )
 
   const attempt = async (phone: string): Promise<string> => {
@@ -220,7 +229,11 @@ export async function engineSendMedia(
 
   // Same for the conversation the message lands in — see
   // conversation-scope.ts (GHSA-m4fx-g6pr-hrw8).
-  await assertConversationInAccount(db, args.conversationId, args.accountId)
+  const { channelId } = await assertConversationInAccount(
+    db,
+    args.conversationId,
+    args.accountId,
+  )
 
   // Phone number, or the business-scoped user ID when Meta has never
   // given us a number for this customer (issue #519).
@@ -235,6 +248,7 @@ export async function engineSendMedia(
   const { phoneNumberId, accessToken } = await loadAccountMetaCredentials(
     db,
     args.accountId,
+    channelId,
   )
 
   const attempt = async (phone: string): Promise<string> => {
@@ -376,7 +390,11 @@ async function sendInteractiveViaMeta(
 
   // Same for the conversation the message lands in — see
   // conversation-scope.ts (GHSA-m4fx-g6pr-hrw8).
-  await assertConversationInAccount(db, input.conversationId, input.accountId)
+  const { channelId } = await assertConversationInAccount(
+    db,
+    input.conversationId,
+    input.accountId,
+  )
 
   // Phone number, or the business-scoped user ID when Meta has never
   // given us a number for this customer (issue #519).
@@ -391,6 +409,7 @@ async function sendInteractiveViaMeta(
   const { phoneNumberId, accessToken } = await loadAccountMetaCredentials(
     db,
     input.accountId,
+    channelId,
   )
 
   const attempt = async (phone: string): Promise<string> => {

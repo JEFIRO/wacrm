@@ -12,7 +12,7 @@ import { SendMessageError } from './send-message';
 type ContactRow = { id: string; phone: string; name?: string | null };
 
 interface Script {
-  config?: { user_id: string } | null; // whatsapp_config.maybeSingle
+  config?: { user_id: string } | null; // default channel (whatsapp_config … limit)
   contactCandidates?: ContactRow[];
   /** Per-call results — overrides contactCandidates. Lets a
    *  test simulate "miss, then hit" for the unique-race path. */
@@ -27,6 +27,9 @@ interface Script {
   existingConversationByCall?: (({ id: string } | null))[];
   insertedConversationId?: string; // conversations insert -> single
   insertConversationError?: { code?: string } | null;
+  /** Orphaned conversation of the contact (channel NULL), adopted onto
+   *  the default channel — the `.is('whatsapp_config_id', null)` lookup. */
+  orphanConversation?: { id: string } | null;
 }
 
 function makeDb(script: Script): SupabaseClient {
@@ -34,6 +37,7 @@ function makeDb(script: Script): SupabaseClient {
   let mode: 'select' | 'insert' | 'update' = 'select';
   let contactLookupCalls = 0;
   let convLookupCalls = 0;
+  let orphanLookup = false;
 
   const builder: Record<string, unknown> = {
     select: () => builder,
@@ -46,9 +50,21 @@ function makeDb(script: Script): SupabaseClient {
       return builder;
     },
     eq: () => builder,
+    is: () => {
+      orphanLookup = true;
+      return builder;
+    },
     order: () => builder,
     limit: () => {
-      // Only the conversation lookup terminates on `.limit(1)`.
+      if (table === 'whatsapp_config') {
+        const cfg = script.config ? { id: 'cfg-1', ...script.config } : null;
+        return Promise.resolve({ data: cfg ? [cfg] : [], error: null });
+      }
+      if (table === 'conversations' && mode === 'select' && orphanLookup) {
+        const row = script.orphanConversation ?? null;
+        return Promise.resolve({ data: row ? [row] : [], error: null });
+      }
+      // The conversation lookup on the channel terminates on `.limit(1)`.
       if (table === 'conversations' && mode === 'select') {
         const row = script.existingConversationByCall
           ? (script.existingConversationByCall[convLookupCalls] ?? null)
@@ -82,6 +98,9 @@ function makeDb(script: Script): SupabaseClient {
           error: null,
         });
       }
+      if (table === 'conversations' && mode === 'update' && script.orphanConversation) {
+        return Promise.resolve({ data: script.orphanConversation, error: null });
+      }
       if (table === 'conversations' && mode === 'insert') {
         if (script.insertConversationError)
           return Promise.resolve({
@@ -104,6 +123,7 @@ function makeDb(script: Script): SupabaseClient {
     from: (t: string) => {
       table = t;
       mode = 'select';
+      orphanLookup = false;
       return builder;
     },
   } as unknown as SupabaseClient;
@@ -221,6 +241,25 @@ describe('resolveConversationByPhone', () => {
     const res = await resolveConversationByPhone(db, 'acct', '+14155550123');
     expect(res).toEqual({
       conversationId: 'cv-raced',
+      contactId: 'c1',
+      contactCreated: false,
+    });
+  });
+
+  it('adopts an orphaned conversation instead of opening a second thread', async () => {
+    // The contact's thread lost its number (channel disconnected → NULL).
+    // Sending again through the default channel re-attaches that thread
+    // rather than creating a new one, so the history stays together (C1).
+    const db = makeDb({
+      config: { user_id: 'owner-1' },
+      contactCandidates: [{ id: 'c1', phone: '14155550123' }],
+      existingConversation: null,
+      orphanConversation: { id: 'cv-orphan' },
+      insertConversationError: { code: 'should-not-insert' },
+    });
+    const res = await resolveConversationByPhone(db, 'acct', '+14155550123');
+    expect(res).toEqual({
+      conversationId: 'cv-orphan',
       contactId: 'c1',
       contactCreated: false,
     });

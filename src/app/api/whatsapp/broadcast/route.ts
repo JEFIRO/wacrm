@@ -16,6 +16,7 @@ import {
   RATE_LIMITS,
 } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/translate'
+import { loadChannel } from '@/lib/whatsapp/channels'
 
 const t = getT('Api')
 
@@ -123,13 +124,13 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: config, error: configError } = await supabase
-      .from('whatsapp_config')
-      .select('*')
-      .eq('account_id', accountId)
-      .single()
+    // Broadcasts go out through the account's default channel.
+    const config = await loadChannel<{ phone_number_id: string; access_token: string; waba_id: string | null }>(
+      supabase,
+      accountId,
+    )
 
-    if (configError || !config) {
+    if (!config) {
       return NextResponse.json(
         {
           error:

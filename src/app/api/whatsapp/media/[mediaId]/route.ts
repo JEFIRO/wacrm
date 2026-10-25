@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getMediaUrl, downloadMedia } from '@/lib/whatsapp/meta-api'
 import { decrypt } from '@/lib/whatsapp/encryption'
+import { loadChannel } from '@/lib/whatsapp/channels'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/translate'
 import { mediaProxyHeaders } from '@/lib/media/proxy-response-headers'
@@ -56,14 +57,15 @@ export async function GET(
       )
     }
 
-    // Fetch and decrypt WhatsApp config
-    const { data: config, error: configError } = await supabase
-      .from('whatsapp_config')
-      .select('*')
-      .eq('account_id', accountId)
-      .single()
+    // Media belongs to the number it arrived on: the webhook stamps that
+    // channel on the proxy URL (`?channel=`). Older URLs without it — or
+    // a channel since disconnected — fall back to the default number.
+    const channelId = new URL(request.url).searchParams.get('channel')
+    const config =
+      (await loadChannel<{ access_token: string }>(supabase, accountId, channelId, 'access_token')) ??
+      (channelId ? await loadChannel<{ access_token: string }>(supabase, accountId, null, 'access_token') : null)
 
-    if (configError || !config) {
+    if (!config) {
       return NextResponse.json(
         { error: t('common.whatsappNotConfigured') },
         { status: 400 }

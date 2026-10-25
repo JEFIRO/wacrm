@@ -45,3 +45,8 @@ next-env.d.ts
 
 # supabase
 supabase/.temp/
+
+# ferramentas locais (fork JEFIRO)
+supabase/.branches/
+graphify-out/
+docs/.obsidian/

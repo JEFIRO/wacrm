@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { decrypt, encrypt, isLegacyFormat } from '@/lib/whatsapp/encryption'
 import { getMediaUrl, downloadMedia } from '@/lib/whatsapp/meta-api'
 import { mirrorInboundMedia } from '@/lib/whatsapp/mirror-inbound-media'
+import { findOrCreateChannelConversation } from '@/lib/whatsapp/channels'
+import type { Conversation } from '@/types'
 import { normalizePhone } from '@/lib/whatsapp/phone-utils'
 import {
   hasUsableIdentity,
@@ -403,7 +405,8 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
           // Default ON: the column is NOT NULL DEFAULT TRUE, but a row
           // read before migration 039 lands would have it undefined,
           // and losing attachments is the failure mode worth avoiding.
-          config.mirror_inbound_media !== false
+          config.mirror_inbound_media !== false,
+          config.id
         )
       }
     }
@@ -590,7 +593,9 @@ async function processMessage(
   accessToken: string,
   // Per-account opt-out for the inbound-media mirror (migration 039).
   // See parseMessageContent for what it turns off.
-  mirrorMedia: boolean
+  mirrorMedia: boolean,
+  // The channel (whatsapp_config row) the message arrived on.
+  channelId: string
 ) {
   // Phone number OR business-scoped user ID — Meta sends only the
   // latter for a sender who has adopted a WhatsApp username (#519).
@@ -619,7 +624,8 @@ async function processMessage(
   const convResult = await findOrCreateConversation(
     accountId,
     configOwnerUserId,
-    contactRecord.id
+    contactRecord.id,
+    channelId
   )
   if (!convResult) return
   const conversation = convResult.conversation
@@ -648,7 +654,8 @@ async function processMessage(
     await parseMessageContent(
       message,
       accessToken,
-      mirrorMedia ? { accountId } : null
+      mirrorMedia ? { accountId } : null,
+      channelId
     )
 
   // Resolve swipe-reply context if present. A missing parent is fine —
@@ -937,7 +944,10 @@ async function parseMessageContent(
   accessToken: string,
   // Tenancy + opt-out for the media mirror. Null disables mirroring
   // entirely, which is what the account-level toggle does.
-  mirror: { accountId: string } | null
+  mirror: { accountId: string } | null,
+  // Channel the media arrived on — the proxy URL carries it so the
+  // download uses that number's token (migration 060).
+  channelId: string
 ): Promise<{
   contentText: string | null
   mediaUrl: string | null
@@ -990,7 +1000,7 @@ async function parseMessageContent(
         if (mirrored) return mirrored
       }
 
-      return `/api/whatsapp/media/${mediaId}`
+      return `/api/whatsapp/media/${mediaId}?channel=${encodeURIComponent(channelId)}`
     } catch (error) {
       console.error(
         `Failed to verify media ${mediaId} with Meta:`,
@@ -1321,69 +1331,15 @@ async function findOrCreateConversation(
   accountId: string,
   configOwnerUserId: string,
   contactId: string,
+  channelId: string,
 ) {
-  // Look for an existing conversation in this account, oldest-first.
-  //
-  // We deliberately do NOT use `.single()` here. `.single()` errors on
-  // *both* 0 rows and ≥2 rows, and the old code treated any error as
-  // "none found" and inserted a new row. So once two conversations
-  // existed for a contact (from a race — Meta retries a delivery, or a
-  // batch fans out to concurrent runs), every subsequent inbound
-  // message errored on the lookup and created yet another conversation,
-  // snowballing into a wall of duplicate chats (issue #363).
-  //
-  // Ordering oldest-first and taking one row makes the lookup resolve to
-  // the same canonical survivor the dedup migration (036) keeps, so any
-  // pre-existing duplicates converge instead of compounding.
-  const { data: existingRows, error: findError } = await supabaseAdmin()
-    .from('conversations')
-    .select('*')
-    .eq('account_id', accountId)
-    .eq('contact_id', contactId)
-    .order('created_at', { ascending: true })
-    .limit(1)
-
-  if (findError) {
-    console.error('Error finding conversation:', findError)
-    return null
-  }
-
-  if (existingRows && existingRows.length > 0) {
-    return { conversation: existingRows[0], created: false }
-  }
-
-  // Create new conversation. Same tenancy + audit split as
-  // findOrCreateContact above.
-  const { data: newConv, error: createError } = await supabaseAdmin()
-    .from('conversations')
-    .insert({
-      account_id: accountId,
-      user_id: configOwnerUserId,
-      contact_id: contactId,
-    })
-    .select()
-    .single()
-
-  if (createError) {
-    // Lost a race: a concurrent inbound delivery created the
-    // conversation between our lookup and insert, and the unique index
-    // (migration 036) rejected the duplicate. Re-resolve the winning
-    // row instead of dropping the message — mirrors findOrCreateContact.
-    if (isUniqueViolation(createError)) {
-      const { data: raced } = await supabaseAdmin()
-        .from('conversations')
-        .select('*')
-        .eq('account_id', accountId)
-        .eq('contact_id', contactId)
-        .order('created_at', { ascending: true })
-        .limit(1)
-      if (raced && raced.length > 0) {
-        return { conversation: raced[0], created: false }
-      }
-    }
-    console.error('Error creating conversation:', createError)
-    return null
-  }
-
-  return { conversation: newConv, created: true }
+  // One thread per (account, contact, channel) — the number the message
+  // arrived on decides the thread. Lookup, orphan adoption and the
+  // unique-index race (#363) live in the shared helper (migration 060).
+  return findOrCreateChannelConversation<Conversation>(supabaseAdmin(), {
+    accountId,
+    contactId,
+    channelId,
+    userId: configOwnerUserId,
+  })
 }

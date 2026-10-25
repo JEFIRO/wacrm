@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { requestDistribution } from "@/lib/distribution/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePresence } from "@/hooks/use-presence";
 import { PresenceDot } from "@/components/presence/presence-dot";
@@ -27,6 +28,7 @@ import {
   RefreshCw,
   PanelRightOpen,
   PanelRightClose,
+  ArrowRightLeft,
 } from "lucide-react";
 import { format, isToday, isYesterday, differenceInHours } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -35,6 +37,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -93,6 +97,16 @@ interface MessageThreadProps {
   onAssignChange: (
     conversationId: string,
     assignedAgentId: string | null,
+  ) => void;
+  /**
+   * After a transfer to another sector's team (migration 062).
+   * `stillVisible` is false when the caller is not in the new sector —
+   * the page drops the thread from the list.
+   */
+  onTransfer?: (
+    conversationId: string,
+    sectorChannelId: string | null,
+    stillVisible: boolean,
   ) => void;
   /**
    * On mobile, the thread is shown full-screen with the conversation list
@@ -180,6 +194,7 @@ export function MessageThread({
   onUpdateMessage,
   onStatusChange,
   onAssignChange,
+  onTransfer,
   onBack,
   resyncToken = 0,
   onRefresh,
@@ -758,6 +773,8 @@ export function MessageThread({
         .eq("id", conversation.id);
 
       onStatusChange(conversation.id, status);
+      // Closing or reopening changes an agent's load (lead distribution).
+      requestDistribution();
     },
     [conversation, onStatusChange]
   );
@@ -936,6 +953,43 @@ export function MessageThread({
     [conversation, user?.id, t],
   );
 
+  // Sectors of the account — where a thread can be transferred to (C3).
+  // Fetched once; RLS lets every member read them.
+  const [sectors, setSectors] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await createClient()
+        .from("sectors")
+        .select("id, name")
+        .order("name", { ascending: true });
+      if (!cancelled) setSectors(data ?? []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleTransfer = useCallback(
+    async (targetId: string) => {
+      if (!conversation) return;
+      const { data, error } = await createClient().rpc("transfer_conversation", {
+        p_conversation_id: conversation.id,
+        p_sector_id: targetId,
+      });
+      if (error) {
+        console.error("Failed to transfer conversation:", error);
+        toast.error(t("transferFailed"));
+        return;
+      }
+      const target = sectors.find((s) => s.id === targetId);
+      toast.success(t("transferred", { sector: target?.name ?? "" }));
+      onTransfer?.(conversation.id, targetId, data === true);
+      requestDistribution();
+    },
+    [conversation, sectors, onTransfer, t],
+  );
+
   const handleAssignChange = useCallback(
     async (agentId: string | null) => {
       if (!conversation) return;
@@ -953,6 +1007,7 @@ export function MessageThread({
       }
 
       onAssignChange(conversation.id, agentId);
+      requestDistribution();
     },
     [conversation, onAssignChange, t],
   );
@@ -1173,8 +1228,38 @@ export function MessageThread({
                   </DropdownMenuItem>
                 </>
               )}
+              {/* Transfer to another sector (C3). Lives in this menu (who
+                  handles the thread) rather than a header button: the header
+                  has no room left at md widths. The thread keeps replying
+                  from its own number. */}
+              {sectors.length > 0 && (
+                <>
+                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">
+                      {t("transferTo")}
+                    </DropdownMenuLabel>
+                    {sectors.map((s) => {
+                      const isCurrent = s.id === conversation.sector_id;
+                      return (
+                        <DropdownMenuItem
+                          key={s.id}
+                          disabled={isCurrent}
+                          onClick={() => handleTransfer(s.id)}
+                          className="text-sm text-popover-foreground"
+                        >
+                          <ArrowRightLeft className="mr-2 h-3 w-3" />
+                          <span className="flex-1">{s.name}</span>
+                          {isCurrent && <Check className="ml-2 h-3 w-3" />}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuGroup>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
+
         </div>
       </div>
 

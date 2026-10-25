@@ -7,6 +7,8 @@ import {
 } from '@/lib/whatsapp/meta-api'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/translate'
+import { loadChannel } from '@/lib/whatsapp/channels'
+import type { WhatsAppConfig } from '@/types'
 
 const t = getT('Api')
 
@@ -32,7 +34,7 @@ const t = getT('Api')
  * rather than a generic error toast. The combined `live` flag is
  * what the UI badges on.
  */
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -62,11 +64,12 @@ export async function GET() {
     })
   }
 
-  const { data: config } = await supabase
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', accountId)
-    .maybeSingle()
+  // `?channel=<id>` probes that number; without it, the default one.
+  const config = await loadChannel<WhatsAppConfig>(
+    supabase,
+    accountId,
+    new URL(request.url).searchParams.get('channel'),
+  )
 
   if (!config) {
     return NextResponse.json({

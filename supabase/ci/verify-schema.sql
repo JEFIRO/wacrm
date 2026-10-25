@@ -163,6 +163,60 @@ BEGIN
     RAISE EXCEPTION 'anon can execute dashboard_overview — migration 059 grants are wrong';
   END IF;
 
+  -- 060: several numbers per account. The old UNIQUE(account_id) must be
+  -- gone, or saving a second number fails.
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'whatsapp_config_account_id_key')
+     OR to_regclass('public.idx_whatsapp_config_account_default') IS NULL
+     OR to_regclass('public.idx_conversations_account_contact_channel') IS NULL THEN
+    RAISE EXCEPTION 'multi-number schema is incomplete — migration 060 did not apply';
+  END IF;
+
+  -- 061: sectors. dashboard_overview must run as the caller, or it
+  -- returns previews of conversations the caller's RLS hides.
+  IF to_regprocedure('public.can_access_sector(uuid,uuid)') IS NULL
+     OR NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.sectors'::regclass)
+     OR NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.sector_members'::regclass) THEN
+    RAISE EXCEPTION 'sector access is incomplete — migration 061 did not apply';
+  END IF;
+  IF (SELECT prosecdef FROM pg_proc WHERE oid = 'public.dashboard_overview(integer,text)'::regprocedure) THEN
+    RAISE EXCEPTION 'dashboard_overview is SECURITY DEFINER and bypasses sector access — migration 061 did not apply';
+  END IF;
+
+  -- 062: transfer between sectors. Without the guard trigger an agent
+  -- could repoint the number a conversation replies from.
+  IF to_regprocedure('public.transfer_conversation(uuid,uuid)') IS NULL
+     OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'conversations_channel_guard')
+     OR has_function_privilege('anon', 'public.transfer_conversation(uuid,uuid)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'sector transfer is incomplete or exposed to anon — migration 062 did not apply';
+  END IF;
+
+  -- 063: lead distribution. claim_lead skips RLS and must stay
+  -- server-only, or a client could assign leads around the cap.
+  IF to_regprocedure('public.claim_lead(uuid,uuid,uuid)') IS NULL
+     OR has_function_privilege('authenticated', 'public.claim_lead(uuid,uuid,uuid)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.claim_lead(uuid,uuid,uuid)', 'EXECUTE')
+     OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'messages_mark_lead_started') THEN
+    RAISE EXCEPTION 'lead distribution is incomplete or claim_lead is client-callable — migration 063 did not apply';
+  END IF;
+
+  -- 064: sector rules. replace_agent_schedule skips RLS (server-only).
+  IF to_regprocedure('public.create_sector(uuid,text,uuid[])') IS NULL
+     OR to_regprocedure('public.replace_agent_schedule(uuid,uuid,jsonb)') IS NULL
+     OR has_function_privilege('authenticated', 'public.replace_agent_schedule(uuid,uuid,jsonb)', 'EXECUTE')
+     OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'sector_members_keep_one')
+     OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'sector_members_need_schedule') THEN
+    RAISE EXCEPTION 'sector rules are incomplete or replace_agent_schedule is client-callable — migration 064 did not apply';
+  END IF;
+
+  -- 065: failed queue notices are retried by the cron.
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'conversations'
+      AND column_name = 'queue_notice_retry_at'
+  ) THEN
+    RAISE EXCEPTION 'queue notice retry is incomplete — migration 065 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

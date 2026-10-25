@@ -30,8 +30,10 @@ vi.mock('@/lib/supabase/server', () => ({
         maybeSingle: async () => ({
           data: table === 'profiles' && h.accountId ? { account_id: h.accountId } : null,
         }),
-        single: async () => ({
-          data: table === 'whatsapp_config' ? { access_token: 'enc-token' } : null,
+        // Default-channel lookup (loadChannel): eq → order → limit.
+        order: () => chain,
+        limit: async () => ({
+          data: table === 'whatsapp_config' ? [{ access_token: 'enc-token' }] : [],
           error: null,
         }),
       }

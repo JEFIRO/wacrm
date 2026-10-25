@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import {
   Eye,
@@ -31,6 +31,7 @@ import {
   AccordionContent,
 } from '@/components/ui/accordion';
 import type { WhatsAppConfig as WhatsAppConfigType } from '@/types';
+import { loadChannel } from '@/lib/whatsapp/channels';
 
 const MASKED_TOKEN = '••••••••••••••••';
 
@@ -60,7 +61,26 @@ type WabaSubscription = {
   error?: string;
 };
 
-export function WhatsAppConfig() {
+export interface WhatsAppConfigProps {
+  /** Number (channel) to edit; omitted, the account's default — migration 060. */
+  channelId?: string | null;
+  /** Blank form that adds another number to the account. */
+  isNew?: boolean;
+  /** Sector label sent with a new number's first save. */
+  newLabel?: string;
+  /** After a save or reset; receives the saved channel id when known. */
+  onChanged?: (channelId?: string | null) => void;
+  /** Rendered under the panel head — the channel switcher. */
+  channelBar?: ReactNode;
+}
+
+export function WhatsAppConfig({
+  channelId = null,
+  isNew = false,
+  newLabel,
+  onChanged,
+  channelBar,
+}: WhatsAppConfigProps = {}) {
   const t = useTranslations('Settings.whatsapp');
   const supabase = createClient();
   // After multi-user, whatsapp_config is one-row-per-account, not
@@ -149,15 +169,11 @@ export function WhatsAppConfig() {
       // account sees the same saved configuration. UNIQUE(account_id)
       // on the table guarantees the .maybeSingle() return type
       // remains accurate.
-      const { data, error } = await supabase
-        .from('whatsapp_config')
-        .select('*')
-        .eq('account_id', acctId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Failed to load config row:', error);
-      }
+      // The selected number (channel), or the default one; a new number
+      // starts blank.
+      const data = isNew
+        ? null
+        : await loadChannel<WhatsAppConfigType>(supabase, acctId, channelId);
 
       if (data) {
         setConfig(data);
@@ -191,7 +207,7 @@ export function WhatsAppConfig() {
       // Then verify health via the API (decrypts token + pings Meta)
       if (data) {
         try {
-          const res = await fetch('/api/whatsapp/config', { method: 'GET' });
+          const res = await fetch(`/api/whatsapp/config?channel=${data.id}`, { method: 'GET' });
           const payload = await res.json();
 
           if (payload.connected) {
@@ -224,7 +240,7 @@ export function WhatsAppConfig() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, t]);
+  }, [supabase, t, channelId, isNew]);
 
   useEffect(() => {
     // Need both the auth session (`!authLoading`) AND the profile
@@ -254,7 +270,7 @@ export function WhatsAppConfig() {
       const { error } = await supabase
         .from('whatsapp_config')
         .update({ mirror_inbound_media: next })
-        .eq('account_id', accountId);
+        .eq('id', config.id);
       if (error) throw new Error(error.message);
       setConfig({ ...config, mirror_inbound_media: next });
     } catch (error) {
@@ -306,6 +322,9 @@ export function WhatsAppConfig() {
         // requires it on first save or when changing numbers; for a
         // simple token rotation, leaving it blank skips re-register.
         pin: pin.trim() || null,
+        // Which number this save is for (migration 060).
+        ...(config ? { channel_id: config.id } : {}),
+        ...(isNew && !config ? { is_new: true, label: newLabel?.trim() || null } : {}),
       };
 
       if (tokenEdited && accessToken !== MASKED_TOKEN && accessToken.trim()) {
@@ -379,7 +398,8 @@ export function WhatsAppConfig() {
         setPin('');
       }
 
-      if (accountId) await fetchConfig(accountId);
+      if (onChanged) onChanged(data.channel_id ?? config?.id ?? null);
+      else if (accountId) await fetchConfig(accountId);
     } catch (err) {
       console.error('Save error:', err);
       toast.error(t('saveFailed'));
@@ -391,7 +411,9 @@ export function WhatsAppConfig() {
   async function handleTestConnection() {
     try {
       setTesting(true);
-      const res = await fetch('/api/whatsapp/config', { method: 'GET' });
+      const res = await fetch(`/api/whatsapp/config${config ? `?channel=${config.id}` : ''}`, {
+        method: 'GET',
+      });
       const payload = await res.json();
 
       if (payload.connected) {
@@ -426,7 +448,7 @@ export function WhatsAppConfig() {
     setVerifyingRegistration(true);
     setRegistrationProbe(null);
     try {
-      const res = await fetch('/api/whatsapp/config/verify-registration', {
+      const res = await fetch(`/api/whatsapp/config/verify-registration${config ? `?channel=${config.id}` : ''}`, {
         method: 'GET',
       });
       const data = (await res.json()) as RegistrationProbe;
@@ -455,7 +477,9 @@ export function WhatsAppConfig() {
 
     try {
       setResetting(true);
-      const res = await fetch('/api/whatsapp/config', { method: 'DELETE' });
+      const res = await fetch(`/api/whatsapp/config${config ? `?channel=${config.id}` : ''}`, {
+        method: 'DELETE',
+      });
       const data = await res.json();
 
       if (!res.ok) {
@@ -477,6 +501,7 @@ export function WhatsAppConfig() {
       setStatusMeta(null);
       setSaveFailure(null);
       setWabaSubscription(null);
+      onChanged?.(null);
     } catch (err) {
       console.error('Reset error:', err);
       toast.error(t('resetFailed'));
@@ -497,6 +522,7 @@ export function WhatsAppConfig() {
           title={t("title")}
           description={t("description")}
         />
+        {channelBar}
         <div className="flex items-center justify-center py-12">
           <Loader2 className="size-6 animate-spin text-primary" />
         </div>
@@ -545,6 +571,7 @@ export function WhatsAppConfig() {
         title={t("title")}
         description={t("description")}
       />
+      {channelBar}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       {/* Main config form */}
       <div className="space-y-6">

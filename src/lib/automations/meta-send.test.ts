@@ -27,12 +27,15 @@ vi.mock('./admin-client', () => ({
           if (table === 'conversations') return { data: { id: 'cv-1' }, error: null }
           return { data: null, error: null }
         },
-        single: async () => {
+        // Default-channel lookup (loadChannel): eq → order → limit.
+        order: () => builder,
+        limit: async () => {
           if (table === 'whatsapp_config') {
-            return { data: { phone_number_id: 'pn-1', access_token: 'token' }, error: null }
+            return { data: [{ phone_number_id: 'pn-1', access_token: 'token' }], error: null }
           }
-          return { data: null, error: null }
+          return { data: [], error: null }
         },
+        single: async () => ({ data: null, error: null }),
         then: (resolve: (r: { data: unknown; error: null }) => unknown) =>
           resolve({
             data: table === 'message_templates' ? state.templateRows : null,

@@ -58,7 +58,16 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Profile",
     "menuSettings": "Settings",
-    "menuSignOut": "Sign out"
+    "menuSignOut": "Sign out",
+    "availability": {
+      "online": "Online",
+      "offline": "Offline",
+      "hint": "Online = you are working now and receive your sector’s leads.",
+      "nowOnline": "You are online and can receive leads.",
+      "nowOffline": "You are offline.",
+      "offlineRequeued": "You are offline. {count, plural, one {# unstarted lead went} other {# unstarted leads went}} back to the queue.",
+      "failed": "Could not change your status."
+    }
   },
   "ModeToggle": {
     "switchMode": "Switch to {mode} mode"
@@ -385,7 +394,10 @@
       "assignmentUpdateFailed": "Failed to update assignment",
       "networkError": "network error",
       "documentFallback": "Document",
-      "you": "You"
+      "you": "You",
+      "transferred": "Conversation transferred to {sector}.",
+      "transferFailed": "Could not transfer the conversation. Try again.",
+      "transferTo": "Transfer to sector"
     },
     "sessionTimer": {
       "expired": "Expired",
@@ -1493,7 +1505,19 @@
         "uploadFailed": "Upload failed.",
         "fileTooLarge": "File is {size} MB — limit is 16 MB.",
         "defaultOptionTitle": "Option",
-        "optionN": "Option {n}"
+        "optionN": "Option {n}",
+        "handoff": {
+          "routeTo": "Route to",
+          "modeNone": "Only mark as pending (no sector)",
+          "modeFixed": "Fixed sector",
+          "modeVariable": "Sector chosen by the customer (variable)",
+          "sector": "Sector",
+          "noSectors": "Create sectors under Settings → Sectors.",
+          "variable": "Variable holding the sector name (e.g. sector)",
+          "queueMessage": "Message when no agent is available",
+          "queueMessageHint": "Sent once per lead. Use '{proximo_horario}' for the sector’s next service time. Empty = default message.",
+          "distributionHint": "The lead goes to the sector agent who is online, inside their schedule and with the fewest active leads; with nobody, it waits in the sector queue."
+        }
       },
       "categories": {
         "messaging": "Messaging",
@@ -1950,7 +1974,27 @@
       "phoneNumberIdNotNumeric": "Phone Number ID must contain only digits. Copy the numeric id from Meta → WhatsApp → API Setup, not the phone number itself.",
       "wabaIdNotNumeric": "WhatsApp Business Account ID must contain only digits. Copy it from Meta → WhatsApp → API Setup.",
       "wabaSubscribed": "The WhatsApp Business Account is subscribed to this app — inbound webhooks can be delivered.",
-      "wabaNotSubscribed": "The WhatsApp Business Account is not subscribed to this app, so Meta will not deliver inbound webhooks. Re-enter the access token and save again to subscribe it."
+      "wabaNotSubscribed": "The WhatsApp Business Account is not subscribed to this app, so Meta will not deliver inbound webhooks. Re-enter the access token and save again to subscribe it.",
+      "channels": {
+        "title": "Numbers",
+        "addNumber": "Add number",
+        "newNumber": "New number",
+        "isDefault": "Default",
+        "makeDefault": "Make default",
+        "labelLabel": "Sector name",
+        "labelPlaceholder": "e.g. Sales",
+        "saveLabel": "Save name",
+        "unnamed": "Unnamed",
+        "labelSaved": "Name saved.",
+        "defaultChanged": "Default number changed.",
+        "actionFailed": "Could not update the number. Try again.",
+        "newHint": "Fill in the credentials of the new number below and save.",
+        "defaultHint": "The default number sends broadcasts, templates and API messages.",
+        "defaultSector": "Default sector of this number",
+        "noSector": "No sector (visible to everyone)",
+        "defaultSectorHint": "New conversations on this number start in this sector. Manage sectors under Settings → Sectors.",
+        "defaultSectorSaved": "Default sector saved."
+      }
     },
     "sections": {
       "overview": "Overview",
@@ -1964,7 +2008,8 @@
       "deals": "Deals & currency",
       "inbox": "Inbox",
       "members": "Team members",
-      "api": "API keys"
+      "api": "API keys",
+      "sectors": "Sectors"
     },
     "groups": {
       "account": "Account",
@@ -2222,6 +2267,63 @@
       "textPlaceholder": "The message text to insert",
       "cancel": "Cancel",
       "save": "Save"
+    },
+    "sectors": {
+      "title": "Sectors & distribution",
+      "description": "Account sectors, who handles each one and how leads are distributed among agents.",
+      "agentDescription": "Turn on while you are working: your sector’s leads only reach you while you are online.",
+      "myStatus": "My status",
+      "onlineHint": "Online = I am working now. Turn off for the unexpected (meeting, stepping out).",
+      "nowOnline": "You are online.",
+      "nowOffline": "You are offline.",
+      "timezone": "Account timezone",
+      "timezoneHint": "Agent schedules use this timezone.",
+      "timezoneSaved": "Timezone saved.",
+      "sectors": "Sectors",
+      "sectorsHint": "Each sector receives the leads the flow hands over and needs at least one person. Only people with a schedule can join a sector.",
+      "noSectors": "No sectors yet.",
+      "sectorName": "Sector name",
+      "deleteSector": "Delete sector",
+      "deleteConfirm": "Delete the sector \"{name}\"? Its conversations will have no sector.",
+      "newSectorPlaceholder": "New sector (e.g. Sales)",
+      "addSector": "Add sector",
+      "sectorExists": "A sector with this name already exists.",
+      "agents": "Agents",
+      "agentsHint": "Status, simultaneous-lead limit and weekly schedule of each person.",
+      "online": "Online",
+      "offline": "Offline",
+      "cap": "Limit",
+      "capSaved": "Limit saved.",
+      "schedule": "Schedule",
+      "noSchedule": "No schedule: can't join a sector or receive leads",
+      "scheduleSummary": "{count, plural, one {# time range} other {# time ranges}}",
+      "scheduleHint": "Times in the {tz} timezone.",
+      "start": "Start",
+      "end": "End",
+      "addRange": "Range",
+      "removeRange": "Remove range",
+      "saveSchedule": "Save schedule",
+      "scheduleSaved": "Schedule saved.",
+      "cancel": "Cancel",
+      "startedWhileOffline": "{count, plural, one {# started lead stays with this offline agent} other {# started leads stay with this offline agent}} — transfer manually if needed.",
+      "wentOfflineRequeued": "{count, plural, one {# unstarted lead went back to the queue} other {# unstarted leads went back to the queue}}.",
+      "saveFailed": "Could not save. Try again.",
+      "distributionRule": "The lead goes to whoever is in the sector, online, inside their schedule and below their limit — the one with the fewest active leads; ties are drawn. With nobody, the lead waits in the sector queue.",
+      "weekdays": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "newSectorMembers": "Who handles the new sector (at least one person with a schedule):",
+      "needsMember": "A sector needs at least one person. Add someone else first or delete the sector.",
+      "needsSchedule": "Set this person's schedule before adding them to a sector.",
+      "withoutSchedule": "no schedule",
+      "scheduleRequired": "This person is in a sector: the schedule needs at least one range.",
+      "failedNotices": "{count, plural, one {# queued lead did not receive} other {# queued leads did not receive}} the \"no agent available\" notice after 5 tries. Check the pending conversations in the Inbox and reply manually."
     }
   },
   "SignupPage": {
@@ -2769,7 +2871,8 @@
         "loadFailed": "Failed to load members",
         "updateFailed": "Failed to update member",
         "roleInvalid": "'role' must be one of owner, admin, agent, viewer",
-        "useTransferOwnership": "Use POST /api/account/transfer-ownership to promote a member to owner"
+        "useTransferOwnership": "Use POST /api/account/transfer-ownership to promote a member to owner",
+        "lastInSector": "This person is a sector's only member. Add someone else to the sector or delete it before removing them."
       },
       "nameMustBeString": "'name' must be a string",
       "nameEmpty": "Account name cannot be empty",
@@ -2878,7 +2981,9 @@
       "phoneCheckFailed": "Phone metadata check failed: {message}",
       "wabaNoApps": "WABA has no subscribed apps. Re-save the configuration to subscribe.",
       "wabaCheckFailed": "WABA subscription check failed: {message}",
-      "noWabaId": "No WABA ID on file — webhooks can't be wired without it. Add it in the form and re-save."
+      "noWabaId": "No WABA ID on file — webhooks can't be wired without it. Add it in the form and re-save.",
+      "channelNotFound": "That WhatsApp number was not found in this account.",
+      "numberAlreadyInAccount": "This number is already connected to this account."
     },
     "media": {
       "idRequired": "Media ID is required",
@@ -2922,6 +3027,17 @@
       "submitFailed": "Failed to submit template.",
       "metaApiStatus": "Meta API error: {status}",
       "syncFailed": "Failed to sync templates"
+    },
+    "agents": {
+      "notMember": "That person is not a member of this account.",
+      "invalidCap": "The lead limit must be a whole number between 1 and 100.",
+      "invalidSchedule": "Each range needs a weekday and a start time before its end time (HH:MM).",
+      "saveFailed": "Could not save the agent settings. Try again.",
+      "scheduleRequired": "A sector member needs at least one schedule range."
     }
+  },
+  "Distribution": {
+    "nextSlotPattern": "'{weekday}' at '{time}'",
+    "defaultQueueMessage": "No agents are available right now. Our next service window is '{proximo_horario}'."
   }
 }

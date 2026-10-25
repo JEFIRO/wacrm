@@ -39,7 +39,20 @@ function makeSupabaseMock() {
 
     const b: Record<string, unknown> = {}
     const chain = () => b
-    for (const m of ['select', 'eq', 'neq']) b[m] = vi.fn(chain)
+    let excludesARow = false
+    for (const m of ['select', 'eq', 'order']) b[m] = vi.fn(chain)
+    b.neq = vi.fn(() => {
+      excludesARow = true
+      return b
+    })
+    // `.limit(n)` ends a list query. With a `.neq()` it is the
+    // same-account duplicate-number check (no duplicates in these
+    // fixtures); otherwise the default-channel lookup.
+    b.limit = vi.fn(async () => {
+      if (excludesARow) return { data: [], error: null }
+      const r = result()
+      return { data: r.data == null ? [] : [r.data], error: r.error }
+    })
     b.insert = vi.fn((row: Record<string, unknown>) => {
       if (table === 'whatsapp_config') configInserts.push(row)
       return b
@@ -190,7 +203,7 @@ describe('DELETE /api/whatsapp/config', () => {
     callerRole = role
     storedConfig = STORED_CONFIG
 
-    const res = await DELETE()
+    const res = await DELETE(new Request('http://localhost/api/whatsapp/config'))
 
     expect(res.status).toBe(403)
     expect(configDeletes).toBe(0)
@@ -199,7 +212,7 @@ describe('DELETE /api/whatsapp/config', () => {
   it('lets an admin reset the configuration', async () => {
     storedConfig = STORED_CONFIG
 
-    const res = await DELETE()
+    const res = await DELETE(new Request('http://localhost/api/whatsapp/config'))
 
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ success: true })
@@ -212,7 +225,7 @@ describe('GET /api/whatsapp/config', () => {
     callerRole = 'viewer'
     storedConfig = STORED_CONFIG
 
-    const res = await GET()
+    const res = await GET(new Request('http://localhost/api/whatsapp/config'))
     const body = await res.json()
 
     expect(res.status).toBe(200)

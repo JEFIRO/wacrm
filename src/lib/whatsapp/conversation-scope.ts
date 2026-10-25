@@ -24,6 +24,8 @@ const t = getT('LibErrors')
 
 /**
  * Throw unless `conversationId` is a conversation of `accountId`.
+ * Returns the conversation's channel (`whatsapp_config_id`, null when
+ * orphaned) so the caller replies through the right number.
  *
  * The message is deliberately the same for "no such conversation" and
  * "not yours" — the engines surface it into automation logs the
@@ -34,10 +36,10 @@ export async function assertConversationInAccount(
   db: SupabaseClient,
   conversationId: string,
   accountId: string,
-): Promise<void> {
+): Promise<{ channelId: string | null }> {
   const { data, error } = await db
     .from('conversations')
-    .select('id')
+    .select('id, whatsapp_config_id')
     .eq('id', conversationId)
     .eq('account_id', accountId)
     .maybeSingle()
@@ -47,4 +49,5 @@ export async function assertConversationInAccount(
   if (!data) {
     throw new Error(t('send.conversationNotFound'))
   }
+  return { channelId: (data.whatsapp_config_id as string | null) ?? null }
 }

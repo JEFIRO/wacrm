@@ -91,9 +91,15 @@ function makeSupabaseMock() {
 
     const b: Record<string, unknown> = {}
     const chain = () => b
-    for (const m of ['select', 'eq', 'in', 'order', 'limit', 'update', 'delete']) {
+    for (const m of ['select', 'eq', 'is', 'in', 'order', 'update', 'delete']) {
       b[m] = vi.fn(chain)
     }
+    // `.limit(n)` ends a list query (default channel, conversation
+    // lookups): resolve the canned row as a one-element array.
+    b.limit = vi.fn(() => {
+      const r = didInsert ? insertResult() : selectResult()
+      return Promise.resolve({ data: r.data == null ? [] : [r.data], error: r.error })
+    })
     b.insert = vi.fn((payload: Record<string, unknown>) => {
       didInsert = true
       if (table === 'conversations') {

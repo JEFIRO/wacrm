@@ -3083,5 +3083,18 @@
   "Distribution": {
     "nextSlotPattern": "'{weekday}' '{time}'",
     "defaultQueueMessage": "지금은 상담 가능한 상담원이 없습니다. 다음 상담 시간은 '{proximo_horario}'입니다."
+  },
+  "WhatsAppMenu": {
+    "hint": "옵션 번호로 답장해 주세요."
+  },
+  "QrAccountNotice": {
+    "templates": {
+      "title": "템플릿은 Meta 공식 API 기능입니다",
+      "body": "이 계정은 QR 코드 번호를 사용하므로 승인된 템플릿이 필요 없습니다. 24시간 제한 없이 언제든 자유롭게 메시지를 보낼 수 있습니다."
+    },
+    "broadcasts": {
+      "title": "QR 코드 번호용 대량 발송은 곧 제공됩니다",
+      "body": "현재 대량 발송은 Meta 공식 API 템플릿을 사용합니다. QR 코드 번호의 대량 발송은 번호 차단 위험을 줄이기 위해 메시지 사이에 간격을 두는 대기열을 사용할 예정입니다."
+    }
   }
 }

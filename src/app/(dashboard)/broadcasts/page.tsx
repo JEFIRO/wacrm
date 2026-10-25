@@ -18,6 +18,8 @@ import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { getBroadcastStatus } from '@/lib/broadcast-status';
 import { useTranslations } from 'next-intl';
+import { useAccountProvider } from '@/hooks/use-account-provider';
+import { QrAccountNotice } from '@/components/whatsapp/qr-account-notice';
 
 /**
  * Poll cadence while any broadcast is sending. Kept modest so we don't
@@ -58,6 +60,7 @@ function RateCell({
 }
 
 export default function BroadcastsPage() {
+  const providerKind = useAccountProvider();
   const router = useRouter();
   const t = useTranslations('Broadcasts.page');
   const tStatus = useTranslations('Broadcasts.status');
@@ -131,6 +134,12 @@ export default function BroadcastsPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [anySending]);
+
+  // Campaigns send templates — Meta-only until the W5 queue (fork,
+  // docs/saas/w4-regras.md).
+  if (providerKind === 'evolution') {
+    return <QrAccountNotice feature="broadcasts" />;
+  }
 
   if (loading) {
     return (

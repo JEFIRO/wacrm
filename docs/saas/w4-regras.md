@@ -1,0 +1,31 @@
+# W4 — Regras por provedor (contas QR code)
+
+Status: **commitado** · Item do roteiro: W4 · Branch: `feat/w4-regras`
+
+## Problema
+
+Números por QR code (Evolution) não seguem as regras da API oficial: não há janela de 24h nem
+templates aprovados, e botões/listas não aparecem no celular (testado na Evolution 2.3.7:
+botões aceitos mas invisíveis; lista falha no servidor com `this.isZero is not a function`).
+
+## Desenho
+
+- **Menu numerado** (`src/lib/whatsapp/evolution/menu.ts`, puro): o provedor Evolution manda
+  `sendButtons`/`sendList` como texto — `*cabeçalho*`, corpo, `1. opção`, `_rodapé_`,
+  "Responda com o número da opção." (`WhatsAppMenu.hint`). Vale para inbox, fluxos e automações.
+- **Resposta → toque**: no webhook da Evolution (`processInboundMessage(..., { menuReplies:
+  true })`), se a última mensagem nossa na conversa é interativa e o cliente responde o número
+  ("1", "1.", "1)", "opção 1") ou o título da opção (sem acento/maiúscula), a mensagem vira
+  `button_reply`/`list_reply` com o id da opção. Qualquer outra resposta segue como texto.
+  A Meta não usa isso (botões de verdade funcionam lá).
+- **Tela** (`useAccountProvider`, um tipo por conta — migration 067): em conta QR a conversa não
+  mostra o selo "24h restantes" nem trava o composer, o botão de template some, e
+  Configurações → Modelos e Disparos mostram `QrAccountNotice` (disparo QR = W5).
+- Templates continuam recusados no provedor Evolution (`EvolutionUnsupportedError`): nó de
+  template num fluxo de conta QR falha.
+
+## Verificado (2026-10-25)
+
+Testes do menu e do provedor; com WhatsApp real: menu chegou formatado, resposta "1" gravada
+como `interactive` "Sim, quero" com `interactive_reply_id = btn_sim`; conta QR sem selo de 24h,
+sem botão de template e com os avisos em Disparos. Gate verde (1582).

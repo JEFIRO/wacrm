@@ -28,6 +28,8 @@ import { dispatchInboundToFlows } from '@/lib/flows/engine'
 import { dispatchInboundToAiReply } from '@/lib/ai/auto-reply'
 import { dispatchWebhookEvent } from '@/lib/webhooks/deliver'
 import { flagBroadcastReply } from '@/lib/whatsapp/broadcast-recipient-webhook'
+import type { InteractiveMessagePayload } from '@/lib/whatsapp/interactive'
+import { matchMenuReply } from '@/lib/whatsapp/evolution/menu'
 
 // Lazy-initialized to avoid build-time crash when env vars are missing
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -203,7 +205,10 @@ export async function processInboundMessage(
   // See parseMessageContent for what it turns off.
   mirrorMedia: boolean,
   // The channel (whatsapp_config row) the message arrived on.
-  channelId: string
+  channelId: string,
+  // QR-code numbers (W4): a typed "1"/"2"/option text answering the
+  // numbered menu we sent becomes that option's tap.
+  options: { menuReplies?: boolean } = {}
 ) {
   // Phone number OR business-scoped user ID — Meta sends only the
   // latter for a sender who has adopted a WhatsApp username (#519).
@@ -255,6 +260,10 @@ export async function processInboundMessage(
   if (message.type === 'reaction') {
     await handleReaction(message, conversation.id, contactRecord.id)
     return
+  }
+
+  if (options.menuReplies && message.type === 'text' && message.text?.body) {
+    message = await asMenuReply(message, conversation.id)
   }
 
   // Parse message content based on type
@@ -545,6 +554,39 @@ export async function processInboundMessage(
     content_type: contentType,
     text: contentText,
   })
+}
+
+/**
+ * When our latest message in the conversation is a buttons/list menu
+ * (sent as numbered text on a QR-code number) and `message` picks one of
+ * its options, return it as that option's interactive reply — the shape
+ * a tap has on Meta — so flows and automations route on the same id.
+ * Anything else comes back unchanged.
+ */
+async function asMenuReply(message: WhatsAppMessage, conversationId: string): Promise<WhatsAppMessage> {
+  const { data } = await supabaseAdmin()
+    .from('messages')
+    .select('content_type, interactive_payload')
+    .eq('conversation_id', conversationId)
+    .neq('sender_type', 'customer')
+    .order('created_at', { ascending: false })
+    .limit(1)
+  const last = data?.[0] as { content_type?: string; interactive_payload?: InteractiveMessagePayload | null } | undefined
+  const payload = last?.content_type === 'interactive' ? last.interactive_payload : null
+  if (!payload) return message
+  const choices = payload.kind === 'buttons' ? payload.buttons : payload.sections.flatMap((s) => s.rows)
+  const picked = matchMenuReply(message.text?.body ?? '', choices)
+  if (!picked) return message
+  const reply = { id: picked.id, title: picked.title }
+  return {
+    ...message,
+    type: 'interactive',
+    text: undefined,
+    interactive:
+      payload.kind === 'buttons'
+        ? { type: 'button_reply', button_reply: reply }
+        : { type: 'list_reply', list_reply: reply },
+  }
 }
 
 async function parseMessageContent(

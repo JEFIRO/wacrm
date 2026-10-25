@@ -135,6 +135,7 @@ async function processEvent(event: string, instance: string, items: unknown[]) {
       provider,
       config.mirror_inbound_media !== false,
       config.id,
+      { menuReplies: true },
     )
   }
 }

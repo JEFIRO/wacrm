@@ -13,7 +13,9 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 - Branch `feat/w1-provedor` (a partir da `main`, sem push): W1 camada de provedor
   (`7e2570e`, migration 066) e W2 Evolution webhook + envio (`d134241`).
 - Branch `feat/w3-instancia` (a partir da `feat/w1-provedor`, sem push): W3 número por QR code
-  + nono dígito — `docs/saas/w3-instancia.md`.
+  + nono dígito (`26c9d78`) e um tipo de conexão por conta (`9cae7f6`) — `docs/saas/w3-instancia.md`.
+- Branch `feat/w4-regras` (a partir da `feat/w3-instancia`, sem push): W4 regras por
+  provedor — `docs/saas/w4-regras.md`.
 - **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
   `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
   `n8n` é do usuário — não tocar.
@@ -156,8 +158,8 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       `novo@wacrm.test` (sem número), senha `TEST_USER_PASSWORD`.
 - [ ] O número pessoal do usuário (instância `wacrm-95ce4431-9994db69`, "Atendimento QR") foi
       usado no teste; enquanto conectado, conversas pessoais entram no banco local.
-- [ ] Evolution: template, botões e lista lançam `EvolutionUnsupportedError` (fluxo com botões
-      num número Evolution falha; erro chega ao usuário como 500 genérico) — W4.
+- [ ] Evolution: template lança `EvolutionUnsupportedError` (nó de template num fluxo de conta QR
+      falha). Botões/lista viraram menu numerado (W4).
 - [ ] Evolution: "digitando…" não faz nada; mensagens enviadas pelo próprio celular (`fromMe`)
       não aparecem na inbox; `connection.update` ignorado (W3).
 - [ ] Campanhas, templates, registro e webhook seguem falando direto com `meta-api.ts`
@@ -245,3 +247,7 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   conta** (migration 067 + 409 nas rotas + escolha só na conta sem número). Seed: número
   Evolution movido para a conta `qr@wacrm.test`. Verificado: regra no banco (3 casos), 409 na
   API, aviso na conta Meta, escolha na conta nova; gate verde (1577) e schema check.
+- **2026-10-25** — Commit da regra um-tipo-por-conta (`9cae7f6`). W4 (sem commit): menu numerado
+  no lugar de botões/lista no provedor Evolution, resposta "1"/título → toque com o id da opção,
+  conta QR sem janela de 24h / sem template / avisos em Modelos e Disparos. Testado com WhatsApp
+  real (menu + resposta "1" → `btn_sim`) e na conta `qr@wacrm.test`. Gate verde (1582).

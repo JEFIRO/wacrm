@@ -3083,5 +3083,18 @@
   "Distribution": {
     "nextSlotPattern": "'{weekday}' at '{time}'",
     "defaultQueueMessage": "No agents are available right now. Our next service window is '{proximo_horario}'."
+  },
+  "WhatsAppMenu": {
+    "hint": "Reply with the option number."
+  },
+  "QrAccountNotice": {
+    "templates": {
+      "title": "Templates belong to the official Meta API",
+      "body": "This account uses QR-code numbers, which don't need approved templates: you can send free text at any time, with no 24-hour window."
+    },
+    "broadcasts": {
+      "title": "Broadcasts for QR-code numbers are coming soon",
+      "body": "Current broadcasts use templates from the official Meta API. For QR-code numbers, bulk sending will use a queue with a pause between messages to lower the risk of the number being blocked."
+    }
   }
 }

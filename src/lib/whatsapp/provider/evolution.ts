@@ -3,11 +3,16 @@
 //
 // One Evolution instance = one number. Calls use the instance's own
 // API key (stored encrypted in whatsapp_config.access_token; the
-// instance name lives in phone_number_id). Templates and interactive
-// buttons/lists are Meta features — W4 decides what Evolution does.
+// instance name lives in phone_number_id). Templates are Meta-only;
+// buttons and lists go out as a numbered text menu (W4,
+// docs/saas/w4-regras.md) because WhatsApp hides them on linked devices.
 // ============================================================
 import type { MetaPhoneHealth } from '../meta-api'
 import type { ProviderMediaInfo, ProviderSendResult, WhatsAppProvider } from './types'
+import { renderMenu } from '../evolution/menu'
+import { getT } from '@/lib/i18n/translate'
+
+const t = getT('WhatsAppMenu')
 
 export interface EvolutionCredentials {
   /** Server base URL, e.g. https://evolution.example.com */
@@ -75,8 +80,24 @@ export function createEvolutionProvider(creds: EvolutionCredentials): WhatsAppPr
         reaction: emoji,
       }),
     sendTemplate: unsupported('Templates'),
-    sendButtons: unsupported('Interactive buttons'),
-    sendList: unsupported('Interactive lists'),
+    sendButtons: ({ to, bodyText, headerText, footerText, buttons, contextMessageId }) =>
+      send('/message/sendText', {
+        number: to,
+        text: renderMenu({ header: headerText, body: bodyText, footer: footerText, options: buttons, hint: t('hint') }),
+        ...quoted(contextMessageId),
+      }),
+    sendList: ({ to, bodyText, headerText, footerText, sections, contextMessageId }) =>
+      send('/message/sendText', {
+        number: to,
+        text: renderMenu({
+          header: headerText,
+          body: bodyText,
+          footer: footerText,
+          options: sections.flatMap((s) => s.rows),
+          hint: t('hint'),
+        }),
+        ...quoted(contextMessageId),
+      }),
     // Evolution's "composing" presence needs the chat, not the message
     // id the interface carries — skipped (cosmetic, best-effort).
     sendTyping: async () => {},

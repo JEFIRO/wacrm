@@ -3083,5 +3083,18 @@
   "Distribution": {
     "nextSlotPattern": "'{weekday}' a las '{time}'",
     "defaultQueueMessage": "No hay agentes disponibles en este momento. Nuestra próxima atención es '{proximo_horario}'."
+  },
+  "WhatsAppMenu": {
+    "hint": "Responde con el número de la opción."
+  },
+  "QrAccountNotice": {
+    "templates": {
+      "title": "Las plantillas son de la API oficial de Meta",
+      "body": "Esta cuenta usa números por código QR, que no necesitan plantillas aprobadas: puedes enviar texto libre en cualquier momento, sin la ventana de 24 horas."
+    },
+    "broadcasts": {
+      "title": "Los envíos masivos para números por código QR llegan pronto",
+      "body": "Los envíos actuales usan plantillas de la API oficial de Meta. Para números por código QR, el envío masivo tendrá una cola con pausas entre mensajes para reducir el riesgo de bloqueo del número."
+    }
   }
 }

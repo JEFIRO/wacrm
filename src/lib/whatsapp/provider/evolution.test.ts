@@ -54,10 +54,30 @@ describe('Evolution provider', () => {
     );
   });
 
-  it('refuses Meta-only sends', async () => {
-    const p = createEvolutionProvider(CREDS);
-    await expect(p.sendTemplate({ to: '1', templateName: 't' })).rejects.toBeInstanceOf(EvolutionUnsupportedError);
-    await expect(p.sendButtons({ to: '1', bodyText: 'b', buttons: [] })).rejects.toBeInstanceOf(EvolutionUnsupportedError);
+  it('refuses templates (Meta-only)', async () => {
+    await expect(createEvolutionProvider(CREDS).sendTemplate({ to: '1', templateName: 't' })).rejects.toBeInstanceOf(
+      EvolutionUnsupportedError,
+    );
+  });
+
+  it('sends buttons and lists as a numbered text menu', async () => {
+    let fn = mockFetch({ key: { id: 'E5' } });
+    await createEvolutionProvider(CREDS).sendButtons({
+      to: '55119',
+      bodyText: 'Quer?',
+      buttons: [{ id: 'sim', title: 'Sim' }, { id: 'nao', title: 'Não' }],
+    });
+    expect(sent(fn).url).toContain('/message/sendText/');
+    expect(sent(fn).body.text).toMatch(/^Quer\?\n\n1\. Sim\n2\. Não\n\n/);
+
+    fn = mockFetch({ key: { id: 'E6' } });
+    await createEvolutionProvider(CREDS).sendList({
+      to: '55119',
+      bodyText: 'Plano?',
+      buttonLabel: 'Ver',
+      sections: [{ title: 'A', rows: [{ id: 'p1', title: 'Essencial' }] }, { rows: [{ id: 'p2', title: 'Pro' }] }],
+    });
+    expect(sent(fn).body.text).toContain('1. Essencial\n2. Pro');
   });
 
   it('fetches inbound media as base64 and decodes it', async () => {

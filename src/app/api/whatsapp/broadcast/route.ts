@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { loadBillingAccess } from '@/lib/billing/access'
 import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import { sendTemplateMessage } from '@/lib/whatsapp/meta-api'
 import { decrypt } from '@/lib/whatsapp/encryption'
@@ -77,6 +78,11 @@ export async function POST(request: Request) {
     // Nothing about that is recoverable after the fact, so the check has
     // to happen here.
     const { supabase, accountId, userId } = await requireRole('agent')
+
+    // Billing (fork): campaigns only with full access.
+    if ((await loadBillingAccess(supabase, accountId)).level !== 'full') {
+      return NextResponse.json({ error: t('billing.limitedFeature') }, { status: 402 })
+    }
 
     // Per-user broadcast budget. Note: this limits how often a user
     // can *start* a campaign, not how many messages go out inside

@@ -32,6 +32,7 @@ import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit
 import { getT } from '@/lib/i18n/translate'
 import { loadChannel } from '@/lib/whatsapp/channels'
 import { accountProviderKind } from '@/lib/whatsapp/provider'
+import { loadBillingAccess } from '@/lib/billing/access'
 
 const t = getT('Api')
 
@@ -258,6 +259,11 @@ export async function POST(request: Request) {
 
     const limit = checkRateLimit(`whatsapp-admin:${userId}`, RATE_LIMITS.whatsappAdmin)
     if (!limit.success) return rateLimitResponse(limit)
+
+    // Billing (fork): new / changed numbers only with full access.
+    if ((await loadBillingAccess(supabase, accountId)).level !== 'full') {
+      return NextResponse.json({ error: t('billing.limitedFeature') }, { status: 402 })
+    }
 
     // One kind of connection per account (fork, migration 067).
     if ((await accountProviderKind(supabase, accountId)) === 'evolution') {

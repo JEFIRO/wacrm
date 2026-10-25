@@ -1,4 +1,5 @@
 import { supabaseAdmin } from './admin-client'
+import { loadBillingAccess } from '@/lib/billing/access'
 import { loadAiConfig } from './config'
 import { buildConversationContext } from './context'
 import { retrieveKnowledge } from './knowledge'
@@ -62,6 +63,8 @@ export async function dispatchInboundToAiReply(
 
     const config = await loadAiConfig(db, accountId)
     if (!config || !config.autoReplyEnabled) return
+    // Billing (fork): the AI reply pauses while the account is limited.
+    if ((await loadBillingAccess(db, accountId)).level !== 'full') return
 
     // Deterministic, user-configured responders win over the LLM — the
     // caller already excludes messages a Flow consumed. Message-level

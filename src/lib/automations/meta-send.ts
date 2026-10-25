@@ -4,6 +4,7 @@ import {
   engineSendInteractiveList,
 } from '@/lib/flows/meta-send'
 import { loadChannelProvider } from '@/lib/whatsapp/provider'
+import { loadBillingAccess } from '@/lib/billing/access'
 import {
   phoneVariants,
   isRecipientNotAllowedError,
@@ -19,6 +20,7 @@ import { supabaseAdmin } from './admin-client'
 import { getT } from '@/lib/i18n/translate'
 
 const t = getT('LibErrors')
+const tApi = getT('Api')
 
 // ------------------------------------------------------------
 // Automation-side Meta sender.
@@ -151,6 +153,10 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
   }
   const sanitized = sendTarget.target
 
+  // Billing (fork): a blocked account's automations send nothing.
+  if ((await loadBillingAccess(db, input.accountId)).level === 'blocked') {
+    throw new Error(tApi('billing.blocked'))
+  }
   const loaded = await loadChannelProvider(db, input.accountId, channelId)
   if (!loaded) {
     throw new Error(t('send.notConfigured'))

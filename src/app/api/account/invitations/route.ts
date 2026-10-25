@@ -18,6 +18,7 @@
 // ============================================================
 
 import { NextResponse } from "next/server";
+import { loadBillingAccess } from "@/lib/billing/access";
 
 import { requireRole, toErrorResponse } from "@/lib/auth/account";
 import {
@@ -180,6 +181,11 @@ export async function POST(request: Request) {
       RATE_LIMITS.adminAction,
     );
     if (!limit.success) return rateLimitResponse(limit);
+
+    // Billing (fork): no new members while limited or blocked.
+    if ((await loadBillingAccess(ctx.supabase, ctx.accountId)).level !== "full") {
+      return NextResponse.json({ error: t("billing.limitedFeature") }, { status: 402 });
+    }
 
     const body = (await request.json().catch(() => null)) as
       | { role?: unknown; expiresInDays?: unknown; label?: unknown }

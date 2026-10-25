@@ -21,6 +21,8 @@ const h = vi.hoisted(() => ({
 }))
 
 vi.mock('./config', () => ({ loadAiConfig: h.loadAiConfig }))
+// Billing access (fork): the account is paid up in these tests.
+vi.mock('@/lib/billing/access', () => ({ loadBillingAccess: async () => ({ level: 'full' }) }))
 vi.mock('./context', () => ({ buildConversationContext: h.buildConversationContext }))
 vi.mock('./knowledge', () => ({ retrieveKnowledge: h.retrieveKnowledge }))
 vi.mock('./generate', () => ({ generateReply: h.generateReply }))

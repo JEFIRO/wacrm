@@ -15,6 +15,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { findOrCreateChannelConversation, loadChannel } from '@/lib/whatsapp/channels'
 import { sendMessageToConversation } from '@/lib/whatsapp/send-message'
 import { nextIntervalMs, renderCampaignText } from './text-campaign'
+import { loadBillingAccess } from '@/lib/billing/access'
 
 interface QueuedBroadcast {
   id: string
@@ -76,6 +77,16 @@ export async function processTextBroadcasts(
 
     for (const broadcast of due as QueuedBroadcast[]) {
       if (now() >= deadline) break
+      // Billing: campaigns of limited / blocked accounts wait (re-checked hourly).
+      if ((await loadBillingAccess(db, broadcast.account_id, now())).level !== 'full') {
+        await db
+          .from('broadcasts')
+          .update({ next_send_at: new Date(now().getTime() + 3_600_000).toISOString() })
+          .eq('id', broadcast.id)
+          .eq('account_id', broadcast.account_id)
+          .eq('next_send_at', broadcast.next_send_at)
+        continue
+      }
       const outcome = await takeTurn(db, broadcast, now(), random)
       if (outcome === 'sent') result.sent += 1
       if (outcome === 'failed') result.failed += 1

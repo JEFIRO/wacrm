@@ -55,6 +55,12 @@ export function PlanSettings() {
   }, [accountId]);
 
   const plan = plans.find((p) => p.id === sub?.plan_id) ?? null;
+  const priceLabel = (p: Plan) =>
+    p.monthly_price_cents === null
+      ? t('priceTbd')
+      : p.billing_cycle === 'yearly'
+        ? t('pricePerInstalment', { price: formatBRL(p.monthly_price_cents) })
+        : t('pricePerMonth', { price: formatBRL(p.monthly_price_cents) });
   const now = new Date();
   const phase = sub ? subscriptionPhase(sub, now) : null;
 
@@ -77,7 +83,7 @@ export function PlanSettings() {
             <CardDescription>
               {phase === 'trialing' || phase === 'trial_expired'
                 ? t('trialHint', { date: new Date(sub.trial_ends_at ?? '').toLocaleDateString() })
-                : t('pricePerMonth', { price: formatBRL(plan.monthly_price_cents) })}
+                : priceLabel(plan)}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
@@ -87,7 +93,7 @@ export function PlanSettings() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {plans.map((p) => {
           const isCurrent = p.id === sub?.plan_id;
           return (
@@ -95,8 +101,11 @@ export function PlanSettings() {
               <CardHeader>
                 <CardTitle className="text-base">{p.name}</CardTitle>
                 <CardDescription className="text-lg font-semibold text-foreground">
-                  {t('pricePerMonth', { price: formatBRL(p.monthly_price_cents) })}
+                  {priceLabel(p)}
                 </CardDescription>
+                {p.billing_cycle === 'yearly' && (
+                  <p className="text-xs text-muted-foreground">{t('yearlyHint')}</p>
+                )}
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <ul className="space-y-1.5">
@@ -114,12 +123,6 @@ export function PlanSettings() {
                       ? t('extraUserTbd')
                       : t('extraUser', { price: formatBRL(p.extra_user_price_cents) })}
                   </li>
-                  {p.setup_fee_cents > 0 && (
-                    <li className="flex gap-2 text-muted-foreground">
-                      <Check className="size-4" />
-                      {t('setupFee', { price: formatBRL(p.setup_fee_cents) })}
-                    </li>
-                  )}
                 </ul>
                 <Button type="button" className="w-full" variant={isCurrent ? 'outline' : 'default'} disabled title={t('paymentSoon')}>
                   {isCurrent ? t('currentPlan') : t('choose')}

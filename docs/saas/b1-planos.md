@@ -4,6 +4,12 @@ Status: **na `main`** · Itens do roteiro: B1, B4
 
 ## Decisões do usuário (2026-10-25)
 
+- **Sem taxa de implantação** (coluna removida na 071).
+- **Plano anual completo** ("Anual Completo"): limites do Business, 12 parcelas de um valor ainda
+  a definir (`billing_cycle = 'yearly'`, preço nulo = "Valor a definir").
+- **Fim do teste / pagamento atrasado**: modo **limitado** até o próximo vencimento (30 dias),
+  depois **bloqueio total**.
+
 - **Planos com usuários inclusos** (Essencial / Profissional / Business) e **usuário adicional
   pago à parte**. Substitui a ideia inicial de "1 funcionário grátis + taxa por assento".
 - **Teste grátis de 30 dias** para toda conta nova.
@@ -35,9 +41,23 @@ Status: **na `main`** · Itens do roteiro: B1, B4
 
 - O teste usa os limites do plano **Profissional** (5 usuários, 5 números).
 
+## Fim do teste e atraso: modo limitado → bloqueio (migration 071, `billingAccess`)
+
+`billingAccess(sub, agora)` (`src/lib/billing/plan.ts`, testado) devolve `full`, `limited` ou
+`blocked`; o servidor aplica com `loadBillingAccess` e a tela com `useBillingAccess`.
+
+- **Em dia**: teste dentro do prazo ou assinatura `active`.
+- **Limitado** (teste vencido, ou `past_due`, por `GRACE_DAYS` = 30 dias a partir do vencimento):
+  aviso fixo em todas as páginas com a data do bloqueio; envio manual espera 5 s por mensagem;
+  sem campanhas (rota do disparo por template → 402; fila de texto adia 1 h e reconfere), sem IA
+  respondendo sozinha, sem número novo nem convite novo (402). Fluxos e automações continuam.
+- **Bloqueado** (prazo acabou, `suspended`, `canceled`): o app vira a tela "Conta bloqueada"
+  (Configurações continua acessível para ver o plano e assinar); nada é enviado — núcleo da
+  inbox/API (402), fluxos, automações, IA e campanhas. **Mensagens recebidas continuam sendo
+  guardadas.**
+
 ## Fora do escopo (próximos itens)
 
-- Bloquear o uso quando o teste acaba ou o pagamento atrasa — junto com o pagamento (B2/B5),
-  para não travar contas que ainda não têm como pagar.
+- Pagamento (B2, Asaas): é ele que muda o status para `active`/`past_due`/`suspended`.
 - Bloquear convite além dos usuários do plano (B3) e preço do usuário extra (a definir).
 - Cota mensal da API (P3).

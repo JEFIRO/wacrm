@@ -2437,7 +2437,6 @@
       "maxNumbers": "{count, plural, one {# número de WhatsApp} other {hasta # números de WhatsApp}}",
       "extraUserTbd": "Usuario adicional: precio por definir",
       "extraUser": "Usuario adicional: {price}/mes",
-      "setupFee": "Implementación: {price} (una vez)",
       "currentPlan": "Plan actual",
       "choose": "Elegir este plan",
       "paymentSoon": "La suscripción y el cambio de plan en la app llegan con el pago en línea.",
@@ -2447,7 +2446,10 @@
         "suspended": "Suspendido",
         "canceled": "Cancelado",
         "trial_expired": "Prueba terminada"
-      }
+      },
+      "priceTbd": "Precio por definir",
+      "pricePerInstalment": "12× de {price}",
+      "yearlyHint": "Compromiso de 12 meses, pagado en cuotas mensuales."
     }
   },
   "SignupPage": {
@@ -3169,6 +3171,10 @@
       "deleteFailed": "No se pudo desconectar el número en el servidor. Inténtalo de nuevo.",
       "providerMismatch": "Esta cuenta usa la API oficial de Meta. Para usar números por código QR, quita antes todos los números de Meta.",
       "planNumberLimit": "Tu plan permite hasta {max} números de WhatsApp. Cambia de plan para agregar más."
+    },
+    "billing": {
+      "blocked": "Cuenta bloqueada por falta de pago. Suscríbete en Configuración → Plan y uso para volver a enviar.",
+      "limitedFeature": "No disponible: la prueba terminó o hay un pago pendiente. Suscríbete en Configuración → Plan y uso."
     }
   },
   "Distribution": {
@@ -3187,5 +3193,12 @@
       "title": "Los envíos por código QR salen en cola",
       "body": "En cuentas con números por código QR, el envío es de texto libre y sale un mensaje a la vez, con una pausa aleatoria entre ellos, para reducir el riesgo de bloqueo del número. Puedes cerrar la pantalla: la cola sigue en el servidor."
     }
+  },
+  "Billing": {
+    "limitedTrial": "Tu prueba gratis terminó. La cuenta funciona con límites (envíos más lentos, sin campañas, IA ni nuevos números/usuarios) hasta el {date}; después será bloqueada.",
+    "limitedPastDue": "Hay un pago pendiente. La cuenta funciona con límites (envíos más lentos, sin campañas, IA ni nuevos números/usuarios) hasta el {date}; después será bloqueada.",
+    "blockedTitle": "Cuenta bloqueada",
+    "blockedBody": "La prueba o el pago venció y terminó el plazo. Los mensajes de tus clientes se siguen recibiendo y guardando: suscríbete para volver a usar la app.",
+    "subscribe": "Ver planes y suscribirse"
   }
 }

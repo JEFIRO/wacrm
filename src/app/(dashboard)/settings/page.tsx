@@ -13,6 +13,7 @@ import { SecurityPanel } from '@/components/settings/security-panel';
 import { AppearancePanel } from '@/components/settings/appearance-panel';
 import { WhatsAppChannels } from '@/components/settings/whatsapp-channels';
 import { SectorsSettings } from '@/components/settings/sectors-settings';
+import { PlanSettings } from '@/components/settings/plan-settings';
 import { TemplateManager } from '@/components/settings/template-manager';
 import { QrAccountNotice } from '@/components/whatsapp/qr-account-notice';
 import { useAccountProvider } from '@/hooks/use-account-provider';
@@ -89,6 +90,7 @@ function SettingsPageInner() {
     deals: <DealsSettings />,
     members: <MembersTab />,
     sectors: <SectorsSettings />,
+    plan: <PlanSettings />,
     api: <ApiKeysSettings />,
   };
 

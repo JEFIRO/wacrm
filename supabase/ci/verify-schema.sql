@@ -239,6 +239,15 @@ BEGIN
     RAISE EXCEPTION 'text broadcast queue is missing — migration 068 did not apply';
   END IF;
 
+  -- 070: plans, subscriptions (trial on account creation), number limit.
+  IF to_regclass('public.plans') IS NULL
+     OR to_regclass('public.account_subscriptions') IS NULL
+     OR NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.account_subscriptions'::regclass)
+     OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'accounts_start_trial')
+     OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'whatsapp_config_plan_limit') THEN
+    RAISE EXCEPTION 'plans/subscriptions are incomplete — migration 070 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

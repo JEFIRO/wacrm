@@ -2106,7 +2106,8 @@
       "inbox": "Caixa de entrada",
       "members": "Membros da equipe",
       "api": "Chaves de API",
-      "sectors": "Setores"
+      "sectors": "Setores",
+      "plan": "Plano e uso"
     },
     "groups": {
       "account": "Conta",
@@ -2421,6 +2422,32 @@
       "withoutSchedule": "sem escala",
       "scheduleRequired": "Esta pessoa está em um setor: a escala precisa de pelo menos uma faixa.",
       "failedNotices": "{count, plural, one {# lead na fila não recebeu} other {# leads na fila não receberam}} o aviso de \"sem atendente disponível\" depois de 5 tentativas. Veja na Caixa de entrada (conversas pendentes) e responda manualmente."
+    },
+    "plan": {
+      "title": "Plano e uso",
+      "description": "Seu plano, o período de teste e quanto você já usa. O pagamento online chega em breve.",
+      "current": "Plano {plan}",
+      "trialDays": "Teste grátis — {days, plural, one {# dia restante} other {# dias restantes}}",
+      "trialHint": "Teste grátis com os recursos do plano até {date}.",
+      "pricePerMonth": "{price}/mês",
+      "users": "Usuários",
+      "usersHint": "Leitores (somente visualização) não ocupam usuário.",
+      "numbers": "Números de WhatsApp",
+      "includedUsers": "{count, plural, one {# usuário incluso} other {# usuários inclusos}}",
+      "maxNumbers": "{count, plural, one {# número de WhatsApp} other {até # números de WhatsApp}}",
+      "extraUserTbd": "Usuário adicional: valor a definir",
+      "extraUser": "Usuário adicional: {price}/mês",
+      "setupFee": "Implantação: {price} (uma vez)",
+      "currentPlan": "Plano atual",
+      "choose": "Escolher este plano",
+      "paymentSoon": "A assinatura e a troca de plano pelo app chegam com o pagamento online.",
+      "status": {
+        "active": "Ativo",
+        "past_due": "Pagamento atrasado",
+        "suspended": "Suspenso",
+        "canceled": "Cancelado",
+        "trial_expired": "Teste encerrado"
+      }
     }
   },
   "SignupPage": {
@@ -3082,7 +3109,8 @@
       "noWabaId": "Nenhum WABA ID registrado — os webhooks não podem ser conectados sem ele. Adicione-o no formulário e salve novamente.",
       "channelNotFound": "Esse número de WhatsApp não foi encontrado nesta conta.",
       "numberAlreadyInAccount": "Este número já está conectado a esta conta.",
-      "providerMismatch": "Esta conta usa números por QR code. Para usar a API oficial da Meta, remova antes todos os números por QR code."
+      "providerMismatch": "Esta conta usa números por QR code. Para usar a API oficial da Meta, remova antes todos os números por QR code.",
+      "planNumberLimit": "Seu plano já está no limite de números de WhatsApp. Troque de plano para adicionar mais."
     },
     "media": {
       "idRequired": "O ID da mídia é obrigatório",
@@ -3139,7 +3167,8 @@
       "createFailed": "Não foi possível criar a conexão por QR code. Tente novamente.",
       "unreachable": "Não foi possível consultar a conexão do número. Tente novamente em instantes.",
       "deleteFailed": "Não foi possível desconectar o número no servidor. Tente novamente.",
-      "providerMismatch": "Esta conta usa a API oficial da Meta. Para usar números por QR code, remova antes todos os números da Meta."
+      "providerMismatch": "Esta conta usa a API oficial da Meta. Para usar números por QR code, remova antes todos os números da Meta.",
+      "planNumberLimit": "Seu plano permite até {max} números de WhatsApp. Troque de plano para adicionar mais."
     }
   },
   "Distribution": {

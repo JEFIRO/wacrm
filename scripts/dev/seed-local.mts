@@ -7,9 +7,11 @@
 //   owner   teste@wacrm.test      password TEST_USER_PASSWORD
 //   agents  jefferson@wacrm.test  jennifer@wacrm.test  password TEST_AGENT_PASSWORD
 //   numbers "Vendas" 1000000000001 and "Suporte" 1000000000002 (fake tokens:
-//           routing works, any real Meta call fails), and the Evolution
-//           number "Evolution" = instance wacrm-dev-evolution (talks to
-//           scripts/dev/fake-evolution.mts through EVOLUTION_API_URL)
+//           routing works, any real Meta call fails)
+//   qr@wacrm.test (TEST_USER_PASSWORD) — a SECOND account, because an
+//           account uses one kind of connection (migration 067): its number
+//           "Evolution" = instance wacrm-dev-evolution, which only exists on
+//           scripts/dev/fake-evolution.mts
 //   sectors Vendas (Jefferson) and Suporte (Jennifer), each number's default
 //   schedules every day 00:00–23:59 for both agents (a sector member needs one)
 // Loaded by URL: Node needs the .ts extension, which the app's tsc rejects.
@@ -122,7 +124,6 @@ const token = encrypt('fake-token-local-test')
 for (const [label, phone, sector, provider] of [
   ['Vendas', '1000000000001', sectors.vendas, 'meta'],
   ['Suporte', '1000000000002', sectors.suporte, 'meta'],
-  ['Evolution', 'wacrm-dev-evolution', sectors.suporte, 'evolution'],
 ] as const) {
   const existing = (await rest(`whatsapp_config?phone_number_id=eq.${phone}&select=id`)) as { id: string }[]
   if (existing.length) continue
@@ -149,4 +150,31 @@ await rest('agent_settings?on_conflict=user_id', {
   ),
 })
 
-console.log(JSON.stringify({ accountId, ownerId, agents, sectors }, null, 2))
+// QR-code (Evolution) account — its own owner, its own number.
+const qrOwnerId = await ensureUser('qr@wacrm.test', ownerPassword, 'Loja QR')
+const [qrProfile] = (await rest(`profiles?user_id=eq.${qrOwnerId}&select=account_id`)) as { account_id: string }[]
+const qrAccountId = qrProfile.account_id
+const qrExisting = (await rest('whatsapp_config?phone_number_id=eq.wacrm-dev-evolution&select=id,account_id')) as {
+  id: string
+  account_id: string
+}[]
+if (qrExisting.length && qrExisting[0].account_id !== qrAccountId) {
+  // Older seeds put it in the Meta account; move it.
+  await rest(`whatsapp_config?id=eq.${qrExisting[0].id}`, { method: 'DELETE' })
+}
+if (!qrExisting.length || qrExisting[0].account_id !== qrAccountId) {
+  await rest('whatsapp_config', {
+    method: 'POST',
+    body: JSON.stringify({
+      account_id: qrAccountId,
+      user_id: qrOwnerId,
+      phone_number_id: 'wacrm-dev-evolution',
+      access_token: token,
+      status: 'connected',
+      label: 'Evolution',
+      provider: 'evolution',
+    }),
+  })
+}
+
+console.log(JSON.stringify({ accountId, ownerId, agents, sectors, qrAccountId }, null, 2))

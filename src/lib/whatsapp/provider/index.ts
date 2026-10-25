@@ -9,7 +9,7 @@ import { decrypt } from '../encryption'
 import { loadChannel } from '../channels'
 import { createMetaProvider } from './meta'
 import { createEvolutionProvider } from './evolution'
-import type { WhatsAppProvider } from './types'
+import type { ProviderKind, WhatsAppProvider } from './types'
 
 export type * from './types'
 
@@ -46,6 +46,23 @@ export function providerForChannel(channel: ProviderChannel): WhatsAppProvider {
     })
   }
   throw new Error(`WhatsApp provider "${kind}" is not supported`)
+}
+
+/**
+ * The kind of connection the account uses — one per account (migration
+ * 067): 'meta', 'evolution', or null while it has no number yet.
+ */
+export async function accountProviderKind(
+  db: SupabaseClient,
+  accountId: string,
+): Promise<ProviderKind | null> {
+  const { data } = await db
+    .from('whatsapp_config')
+    .select('provider')
+    .eq('account_id', accountId)
+    .limit(1)
+  const kind = (data?.[0] as { provider?: string } | undefined)?.provider
+  return kind === 'meta' || kind === 'evolution' ? kind : null
 }
 
 /**

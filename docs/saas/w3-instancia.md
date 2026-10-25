@@ -29,6 +29,14 @@ cadastrar nome e chave. O pedido: "Adicionar número" → QR code → ler com o 
   (`phone-utils.ts`) passam a considerar as duas grafias, então contato cadastrado com o 9 não
   duplica ao receber mensagem (vale para Meta e Evolution).
 - Envelope de álbum (`albumMessage`) e tráfego de protocolo são ignorados na entrada.
+- **Um tipo de conexão por conta** (decisão do usuário, 2026-10-25; migration 067): a conta usa
+  a API oficial da Meta **ou** números por QR code, nunca os dois. Gatilho no banco
+  (`account_provider_mismatch`), 409 nas rotas de cadastro (Meta e QR), e na tela a escolha só
+  aparece enquanto a conta não tem número — inclusive no primeiro número. Para trocar, remova
+  todos os números do tipo atual. Contas que já misturavam (só dados locais) ficam como estão.
+- Botões e lista pela Evolution 2.3.7 **não funcionam**: botões são aceitos mas não aparecem no
+  celular; lista falha no servidor (`this.isZero is not a function`). Plano do W4: menu
+  numerado em texto, com a resposta traduzida para o id do botão.
 
 ## Variáveis de ambiente
 

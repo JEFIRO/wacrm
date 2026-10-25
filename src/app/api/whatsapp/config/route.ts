@@ -31,6 +31,7 @@ import { resolveVerifyTokenForSave } from '@/lib/whatsapp/verify-token'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/translate'
 import { loadChannel } from '@/lib/whatsapp/channels'
+import { accountProviderKind } from '@/lib/whatsapp/provider'
 
 const t = getT('Api')
 
@@ -257,6 +258,11 @@ export async function POST(request: Request) {
 
     const limit = checkRateLimit(`whatsapp-admin:${userId}`, RATE_LIMITS.whatsappAdmin)
     if (!limit.success) return rateLimitResponse(limit)
+
+    // One kind of connection per account (fork, migration 067).
+    if ((await accountProviderKind(supabase, accountId)) === 'evolution') {
+      return NextResponse.json({ error: t('whatsappConfig.providerMismatch') }, { status: 409 })
+    }
 
     const body = await request.json()
     const { phone_number_id, waba_id, access_token, verify_token, pin } = body

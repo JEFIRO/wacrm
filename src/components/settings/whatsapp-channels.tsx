@@ -7,6 +7,8 @@
 // default. The form itself (WhatsAppConfig) is unchanged apart from
 // receiving the selected channel. QR-code numbers (provider 'evolution',
 // docs/saas/w3-instancia.md) get EvolutionConnect instead of that form.
+// An account uses ONE kind (migration 067): the Meta/QR choice only
+// appears while it has no number.
 // ============================================================
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -87,6 +89,11 @@ export function WhatsAppChannels() {
   }, [loadChannels]);
 
   const current = channels.find((c) => c.id === selected) ?? null;
+  // The account's kind once it has a number; null = still free to choose.
+  const accountKind = (channels[0]?.provider as 'meta' | 'evolution' | undefined) ?? null;
+  // Adding a number: an explicit "new", or the very first one.
+  const adding = selected === 'new' || channels.length === 0;
+  const addKind = accountKind ?? (qrAvailable ? newKind : 'meta');
 
   useEffect(() => {
     if (!accountId) return;
@@ -142,7 +149,8 @@ export function WhatsAppChannels() {
   const channelName = (c: ChannelRow) => c.label || t('unnamed');
 
   // Single number and no admin rights: nothing to switch or manage.
-  const showBar = channels.length > 1 || (canEditSettings && channels.length > 0);
+  const showBar =
+    channels.length > 1 || (canEditSettings && (channels.length > 0 || qrAvailable));
 
   const bar = showBar ? (
     <div className="mb-6 space-y-3 rounded-lg border border-border p-4">
@@ -182,7 +190,13 @@ export function WhatsAppChannels() {
         )}
       </div>
 
-      {canEditSettings && selected === 'new' && qrAvailable && (
+      {canEditSettings && adding && accountKind && selected === 'new' && (
+        <p className="text-sm text-muted-foreground">
+          {accountKind === 'meta' ? t('kindLockedMeta') : t('kindLockedEvolution')}
+        </p>
+      )}
+
+      {canEditSettings && adding && !accountKind && qrAvailable && (
         <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t('connectHow')}>
           <span className="text-sm">{t('connectHow')}</span>
           <Button
@@ -204,10 +218,11 @@ export function WhatsAppChannels() {
           >
             {t('kindMeta')}
           </Button>
+          <span className="w-full text-xs text-muted-foreground">{t('kindOnce')}</span>
         </div>
       )}
 
-      {canEditSettings && (selected === 'new' || current) && (
+      {canEditSettings && (adding || current) && (
         <div className="flex flex-wrap items-end gap-2">
           <div className="min-w-48 flex-1 space-y-1">
             <Label htmlFor="channel-label">{t('labelLabel')}</Label>
@@ -266,17 +281,17 @@ export function WhatsAppChannels() {
       )}
 
       <p className="text-xs text-muted-foreground">
-        {selected === 'new' ? (newKind === 'evolution' && qrAvailable ? t('newQrHint') : t('newHint')) : t('defaultHint')}
+        {adding ? (addKind === 'evolution' ? t('newQrHint') : t('newHint')) : t('defaultHint')}
       </p>
     </div>
   ) : null;
 
-  const useQr = selected === 'new' ? newKind === 'evolution' && qrAvailable : current?.provider === 'evolution';
+  const useQr = adding ? addKind === 'evolution' : current?.provider === 'evolution';
   if (useQr) {
     return (
       <EvolutionConnect
-        key={selected ?? 'new'}
-        channelId={selected === 'new' ? null : selected}
+        key={adding ? 'new' : selected}
+        channelId={adding ? null : selected}
         newLabel={labelDraft}
         onChanged={(savedId) => loadChannels(savedId ?? null)}
         channelBar={bar}
@@ -288,7 +303,7 @@ export function WhatsAppChannels() {
     <WhatsAppConfig
       key={selected ?? 'default'}
       channelId={selected === 'new' ? null : selected}
-      isNew={selected === 'new'}
+      isNew={adding}
       newLabel={labelDraft}
       onChanged={(savedId) => loadChannels(savedId ?? null)}
       channelBar={bar}

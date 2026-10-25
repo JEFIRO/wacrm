@@ -1998,7 +1998,10 @@
         "connectHow": "Como conectar:",
         "kindQr": "QR code (WhatsApp do celular)",
         "kindMeta": "API oficial da Meta",
-        "newQrHint": "Dê um nome ao setor e gere o QR code; depois leia com o celular."
+        "newQrHint": "Dê um nome ao setor e gere o QR code; depois leia com o celular.",
+        "kindLockedMeta": "Esta conta usa a API oficial da Meta. Números por QR code não podem ser misturados — para trocar, remova todos os números da Meta.",
+        "kindLockedEvolution": "Esta conta usa números por QR code. A API oficial da Meta não pode ser misturada — para trocar, remova todos os números por QR code.",
+        "kindOnce": "Escolha uma vez: a conta inteira usa o mesmo tipo de conexão."
       },
       "evolution": {
         "title": "WhatsApp por QR code",
@@ -3016,7 +3019,8 @@
       "wabaCheckFailed": "Falha na verificação da inscrição do WABA: {message}",
       "noWabaId": "Nenhum WABA ID registrado — os webhooks não podem ser conectados sem ele. Adicione-o no formulário e salve novamente.",
       "channelNotFound": "Esse número de WhatsApp não foi encontrado nesta conta.",
-      "numberAlreadyInAccount": "Este número já está conectado a esta conta."
+      "numberAlreadyInAccount": "Este número já está conectado a esta conta.",
+      "providerMismatch": "Esta conta usa números por QR code. Para usar a API oficial da Meta, remova antes todos os números por QR code."
     },
     "media": {
       "idRequired": "O ID da mídia é obrigatório",
@@ -3072,7 +3076,8 @@
       "notConfigured": "Números por QR code não estão disponíveis neste servidor (Evolution não configurada).",
       "createFailed": "Não foi possível criar a conexão por QR code. Tente novamente.",
       "unreachable": "Não foi possível consultar a conexão do número. Tente novamente em instantes.",
-      "deleteFailed": "Não foi possível desconectar o número no servidor. Tente novamente."
+      "deleteFailed": "Não foi possível desconectar o número no servidor. Tente novamente.",
+      "providerMismatch": "Esta conta usa a API oficial da Meta. Para usar números por QR code, remova antes todos os números da Meta."
     }
   },
   "Distribution": {

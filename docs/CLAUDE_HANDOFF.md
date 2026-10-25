@@ -47,7 +47,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `066` (W2 não tem migration) (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `067` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -105,7 +105,8 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   Atendimento/Jennifer), com atendente vendo só o próprio setor e transferência entre setores.
 - **WhatsApp oficial por coexistência** (app WhatsApp Business + Cloud API no mesmo número,
   via Embedded Signup). Exige empresa verificada + Tech Provider na Meta — processo de semanas.
-- **Evolution API em conjunto** para números não oficiais, instância criada automaticamente.
+- **Evolution API** para números não oficiais, instância criada automaticamente. **Revisado em
+  2026-10-25: cada conta usa UM tipo — Meta OU Evolution, nunca os dois** (migration 067).
 - **Cobrança:** preferência por Asaas (Pix/boleto/cartão recorrente + NFS-e).
 
 ## Roadmap sugerido
@@ -149,6 +150,10 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       Evolution real, a tela dele mostra erro 502 (instância inexistente). Esperado.
 - [ ] Eventos da Evolution que chegam entre criar a instância e gravar o número caem no log
       "matched 0 numbers" (só o estado "conectando"; inofensivo).
+- [ ] Conta "Usuário Teste" local mistura Meta e Evolution (o número pessoal do usuário,
+      criado antes da regra 067) — por isso não aceita número novo de nenhum tipo até ele sair.
+- [ ] Contas de teste locais: `qr@wacrm.test` (conta só QR, número do servidor falso) e
+      `novo@wacrm.test` (sem número), senha `TEST_USER_PASSWORD`.
 - [ ] O número pessoal do usuário (instância `wacrm-95ce4431-9994db69`, "Atendimento QR") foi
       usado no teste; enquanto conectado, conversas pessoais entram no banco local.
 - [ ] Evolution: template, botões e lista lançam `EvolutionUnsupportedError` (fluxo com botões
@@ -235,3 +240,8 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   envio + status entregue, recebidos texto/foto/vídeo/áudio (espelhados), resposta citando,
   reação. Corrigidos na hora: nono dígito (contato duplicado — `phone-utils.ts`, vale p/ Meta)
   e envelope `albumMessage`.
+- **2026-10-25** — Commit do W3 (`26c9d78`). Botões/lista testados na Evolution real: não
+  aparecem (botões) / erro do servidor (lista) → W4 com menu numerado. **Um tipo de conexão por
+  conta** (migration 067 + 409 nas rotas + escolha só na conta sem número). Seed: número
+  Evolution movido para a conta `qr@wacrm.test`. Verificado: regra no banco (3 casos), 409 na
+  API, aviso na conta Meta, escolha na conta nova; gate verde (1577) e schema check.

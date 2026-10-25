@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import { encrypt } from '@/lib/whatsapp/encryption'
 import { createInstance, deleteInstance, evolutionServerConfig } from '@/lib/whatsapp/evolution/admin'
+import { accountProviderKind } from '@/lib/whatsapp/provider'
 import { getT } from '@/lib/i18n/translate'
 
 const t = getT('Api')
@@ -34,6 +35,11 @@ export async function POST(request: Request) {
     const { supabase, accountId, userId } = await requireRole('admin')
     const cfg = evolutionServerConfig()
     if (!cfg) return NextResponse.json({ error: t('evolution.notConfigured') }, { status: 503 })
+
+    // One kind of connection per account (migration 067).
+    if ((await accountProviderKind(supabase, accountId)) === 'meta') {
+      return NextResponse.json({ error: t('evolution.providerMismatch') }, { status: 409 })
+    }
 
     const body = await request.json().catch(() => ({}))
     const label = typeof body.label === 'string' ? body.label.trim().slice(0, 60) || null : null

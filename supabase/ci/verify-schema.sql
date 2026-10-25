@@ -226,6 +226,11 @@ BEGIN
     RAISE EXCEPTION 'whatsapp provider is missing — migration 066 did not apply';
   END IF;
 
+  -- 067: one kind of WhatsApp connection per account.
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'whatsapp_config_single_provider') THEN
+    RAISE EXCEPTION 'single-provider rule is missing — migration 067 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

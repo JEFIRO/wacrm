@@ -1998,7 +1998,10 @@
         "connectHow": "연결 방법:",
         "kindQr": "QR 코드 (휴대폰 WhatsApp)",
         "kindMeta": "Meta 공식 API",
-        "newQrHint": "부서 이름을 정하고 QR 코드를 만든 뒤 휴대폰으로 스캔하세요."
+        "newQrHint": "부서 이름을 정하고 QR 코드를 만든 뒤 휴대폰으로 스캔하세요.",
+        "kindLockedMeta": "이 계정은 Meta 공식 API를 사용합니다. QR 코드 번호와 섞어 쓸 수 없습니다 — 바꾸려면 모든 Meta 번호를 삭제하세요.",
+        "kindLockedEvolution": "이 계정은 QR 코드 번호를 사용합니다. Meta 공식 API와 섞어 쓸 수 없습니다 — 바꾸려면 모든 QR 코드 번호를 삭제하세요.",
+        "kindOnce": "한 번만 선택하세요: 계정 전체가 같은 연결 방식을 사용합니다."
       },
       "evolution": {
         "title": "QR 코드로 WhatsApp 연결",
@@ -3016,7 +3019,8 @@
       "wabaCheckFailed": "WABA 구독 확인 실패: {message}",
       "noWabaId": "등록된 WABA ID가 없습니다 — WABA ID 없이는 웹훅을 연결할 수 없습니다. 양식에 추가한 후 다시 저장하세요.",
       "channelNotFound": "이 계정에서 해당 WhatsApp 번호를 찾을 수 없습니다.",
-      "numberAlreadyInAccount": "이 번호는 이미 이 계정에 연결되어 있습니다."
+      "numberAlreadyInAccount": "이 번호는 이미 이 계정에 연결되어 있습니다.",
+      "providerMismatch": "이 계정은 QR 코드 번호를 사용합니다. Meta 공식 API를 쓰려면 먼저 모든 QR 코드 번호를 삭제하세요."
     },
     "media": {
       "idRequired": "미디어 ID는 필수입니다",
@@ -3072,7 +3076,8 @@
       "notConfigured": "이 서버에서는 QR 코드 번호를 사용할 수 없습니다 (Evolution 미설정).",
       "createFailed": "QR 코드 연결을 만들 수 없습니다. 다시 시도하세요.",
       "unreachable": "번호 연결 상태를 확인할 수 없습니다. 잠시 후 다시 시도하세요.",
-      "deleteFailed": "서버에서 번호 연결을 해제할 수 없습니다. 다시 시도하세요."
+      "deleteFailed": "서버에서 번호 연결을 해제할 수 없습니다. 다시 시도하세요.",
+      "providerMismatch": "이 계정은 Meta 공식 API를 사용합니다. QR 코드 번호를 쓰려면 먼저 모든 Meta 번호를 삭제하세요."
     }
   },
   "Distribution": {

@@ -1998,7 +1998,10 @@
         "connectHow": "Cómo conectar:",
         "kindQr": "Código QR (WhatsApp del celular)",
         "kindMeta": "API oficial de Meta",
-        "newQrHint": "Ponle nombre al sector y genera el código QR; luego escanéalo con el celular."
+        "newQrHint": "Ponle nombre al sector y genera el código QR; luego escanéalo con el celular.",
+        "kindLockedMeta": "Esta cuenta usa la API oficial de Meta. No se pueden mezclar números por código QR — para cambiar, quita todos los números de Meta.",
+        "kindLockedEvolution": "Esta cuenta usa números por código QR. No se puede mezclar la API oficial de Meta — para cambiar, quita todos los números por código QR.",
+        "kindOnce": "Elige una vez: toda la cuenta usa el mismo tipo de conexión."
       },
       "evolution": {
         "title": "WhatsApp por código QR",
@@ -3016,7 +3019,8 @@
       "wabaCheckFailed": "Falló la verificación de la suscripción de la WABA: {message}",
       "noWabaId": "No hay ningún WABA ID registrado; los webhooks no se pueden conectar sin él. Agrégalo en el formulario y vuelve a guardar.",
       "channelNotFound": "Ese número de WhatsApp no se encontró en esta cuenta.",
-      "numberAlreadyInAccount": "Este número ya está conectado a esta cuenta."
+      "numberAlreadyInAccount": "Este número ya está conectado a esta cuenta.",
+      "providerMismatch": "Esta cuenta usa números por código QR. Para usar la API oficial de Meta, quita antes todos los números por código QR."
     },
     "media": {
       "idRequired": "El ID del archivo multimedia es obligatorio",
@@ -3072,7 +3076,8 @@
       "notConfigured": "Los números por código QR no están disponibles en este servidor (Evolution no está configurada).",
       "createFailed": "No se pudo crear la conexión por código QR. Inténtalo de nuevo.",
       "unreachable": "No se pudo consultar la conexión del número. Inténtalo en unos instantes.",
-      "deleteFailed": "No se pudo desconectar el número en el servidor. Inténtalo de nuevo."
+      "deleteFailed": "No se pudo desconectar el número en el servidor. Inténtalo de nuevo.",
+      "providerMismatch": "Esta cuenta usa la API oficial de Meta. Para usar números por código QR, quita antes todos los números de Meta."
     }
   },
   "Distribution": {

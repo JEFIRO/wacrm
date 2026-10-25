@@ -1998,7 +1998,10 @@
         "connectHow": "How to connect:",
         "kindQr": "QR code (phone's WhatsApp)",
         "kindMeta": "Official Meta API",
-        "newQrHint": "Name the sector and generate the QR code, then scan it with the phone."
+        "newQrHint": "Name the sector and generate the QR code, then scan it with the phone.",
+        "kindLockedMeta": "This account uses the official Meta API. QR-code numbers can't be mixed in — to switch, remove every Meta number.",
+        "kindLockedEvolution": "This account uses QR-code numbers. The official Meta API can't be mixed in — to switch, remove every QR-code number.",
+        "kindOnce": "Choose once: the whole account uses the same kind of connection."
       },
       "evolution": {
         "title": "WhatsApp by QR code",
@@ -3016,7 +3019,8 @@
       "wabaCheckFailed": "WABA subscription check failed: {message}",
       "noWabaId": "No WABA ID on file — webhooks can't be wired without it. Add it in the form and re-save.",
       "channelNotFound": "That WhatsApp number was not found in this account.",
-      "numberAlreadyInAccount": "This number is already connected to this account."
+      "numberAlreadyInAccount": "This number is already connected to this account.",
+      "providerMismatch": "This account uses QR-code numbers. To use the official Meta API, remove every QR-code number first."
     },
     "media": {
       "idRequired": "Media ID is required",
@@ -3072,7 +3076,8 @@
       "notConfigured": "QR-code numbers are not available on this server (Evolution is not configured).",
       "createFailed": "Could not create the QR-code connection. Please try again.",
       "unreachable": "Could not check the number's connection. Try again in a moment.",
-      "deleteFailed": "Could not disconnect the number on the server. Please try again."
+      "deleteFailed": "Could not disconnect the number on the server. Please try again.",
+      "providerMismatch": "This account uses the official Meta API. To use QR-code numbers, remove every Meta number first."
     }
   },
   "Distribution": {

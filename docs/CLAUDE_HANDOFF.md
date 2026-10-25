@@ -140,6 +140,9 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       automação, `/api/automations/engine`) checam a conta, mas não o setor.
 
 ### WhatsApp / provedores
+- [ ] Tela de números: salvar um número de setor de ponta a ponta
+      (conectar + receber o setor) não foi testado — Meta local tem token falso; com QR exigiria
+      setor com membro com escala na conta Loja QR.
 - [ ] W5 sem limite diário por número, horário comercial nem pausar/cancelar pela tela.
 - [ ] Evolution validado com WhatsApp real (texto, foto, vídeo, áudio, citação, reação,
       status) **exceto** chat endereçado por LID e envio citando (`quoted` só com `key.id`).
@@ -262,4 +265,9 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
 - **2026-10-25** — Commit da correção (`202738b`) e merge de W1–W5 na `main` (`a4a022e`, sem push).
   Dados dos números reais do usuário apagados do banco local (3 contatos com conversas e
   mensagens, 2 campanhas de teste, 3 mídias espelhadas).
+- **2026-10-25** — Tela de números reorganizada (pedido do usuário; na `main`): "Número principal da empresa" (o padrão — recebe tudo, sem setor fixo; o fluxo
+  encaminha) separado de "Números dos setores (opcional)". Adicionar número de setor pede o
+  setor antes de conectar (o formulário só aparece depois) e grava o setor no número salvo;
+  "Tornar número principal" troca o principal. Decisões do usuário: principal roteia pelo
+  fluxo/menu; números de setor opcionais.
 

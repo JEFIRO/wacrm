@@ -74,3 +74,10 @@ sistema **distribui** entre os atendentes desse setor.
 2. Fluxo com nó por setor distribui ao vivo entre atendentes; sem ninguém → fila + mensagem.
 3. Online/offline e limite em Configurações; offline devolve não iniciados à fila.
 4. Gate verde (lint, typecheck, testes com `LC_ALL=en_US.UTF-8`, build) e schema check.
+
+## Tela de números (2026-10-25)
+
+Configurações → WhatsApp separa o **número principal da empresa** (o número padrão: todas as
+conversas chegam por ele, sem setor fixo — o fluxo/menu encaminha ao setor) dos **números dos
+setores** (opcionais: cada um com o setor que atende, para o cliente falar direto com o setor).
+

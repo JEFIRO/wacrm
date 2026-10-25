@@ -56,6 +56,18 @@ export interface EvolutionStatusData {
   status?: string
 }
 
+/**
+ * Wrappers and protocol traffic, not something a person wrote: an
+ * album's envelope (each photo/video of it arrives as its own message),
+ * edits/deletes, key distribution.
+ */
+const NON_MESSAGE_TYPES = new Set([
+  'albumMessage',
+  'protocolMessage',
+  'senderKeyDistributionMessage',
+  'messageContextInfo',
+])
+
 export type InboundTranslation =
   | { message: WhatsAppMessage; contact: WaContactPayload }
   | { skip: string }
@@ -76,6 +88,9 @@ export function translateInbound(data: EvolutionMessageData): InboundTranslation
   if (key.fromMe) return { skip: 'sent by us' }
   const jid = key.remoteJid ?? ''
   if (/@(g\.us|broadcast|newsletter)$/.test(jid)) return { skip: `not a 1:1 chat (${jid})` }
+  if (data.messageType && NON_MESSAGE_TYPES.has(data.messageType)) {
+    return { skip: `not a message (${data.messageType})` }
+  }
   const phone = phoneFromJid(jid) ?? phoneFromJid(key.remoteJidAlt)
   if (!phone) return { skip: `no phone number for ${jid}` }
 

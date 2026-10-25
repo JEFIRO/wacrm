@@ -73,6 +73,12 @@ describe('Evolution inbound translation', () => {
     expect(skipped({ id: undefined })).toBe(true);
   });
 
+  it("skips an album's envelope and protocol traffic", () => {
+    for (const messageType of ['albumMessage', 'protocolMessage']) {
+      expect('skip' in translateInbound({ ...base, messageType, message: {} })).toBe(true);
+    }
+  });
+
   it('keeps unknown message types as unsupported', () => {
     expect(ok({ ...base, messageType: 'pollCreationMessage', message: {} }).message.type).toBe('pollCreationMessage');
   });

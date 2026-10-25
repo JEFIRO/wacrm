@@ -5,11 +5,12 @@
 // docs/saas/c1-canais.md. A switcher above the existing connection form:
 // pick a number to edit, add another one, name its sector, choose the
 // default. The form itself (WhatsAppConfig) is unchanged apart from
-// receiving the selected channel.
+// receiving the selected channel. QR-code numbers (provider 'evolution',
+// docs/saas/w3-instancia.md) get EvolutionConnect instead of that form.
 // ============================================================
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Star } from 'lucide-react';
+import { Plus, QrCode, Star } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -17,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { WhatsAppConfig } from './whatsapp-config';
+import { EvolutionConnect } from './evolution-connect';
 
 interface ChannelRow {
   id: string;
@@ -25,6 +27,7 @@ interface ChannelRow {
   is_default: boolean;
   status: string;
   default_sector_id: string | null;
+  provider: string;
 }
 
 /** `'new'` = the blank form that adds a number; null = no number yet. */
@@ -41,13 +44,24 @@ export function WhatsAppChannels() {
   const [busy, setBusy] = useState(false);
   // Sectors (061): new conversations of a number start in its default.
   const [sectors, setSectors] = useState<{ id: string; name: string }[]>([]);
+  // How a new number connects: Meta credentials or a QR code (Evolution).
+  const [newKind, setNewKind] = useState<'meta' | 'evolution'>('meta');
+  const [qrAvailable, setQrAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!canEditSettings) return;
+    fetch('/api/whatsapp/evolution/instances')
+      .then((res) => (res.ok ? res.json() : { available: false }))
+      .then((data) => setQrAvailable(data.available === true))
+      .catch(() => setQrAvailable(false));
+  }, [canEditSettings]);
 
   const loadChannels = useCallback(
     async (prefer?: string | null) => {
       if (!accountId) return;
       const { data, error } = await supabase
         .from('whatsapp_config')
-        .select('id, label, phone_number_id, is_default, status, default_sector_id')
+        .select('id, label, phone_number_id, is_default, status, default_sector_id, provider')
         .eq('account_id', accountId)
         .order('created_at', { ascending: true });
       if (error) {
@@ -145,7 +159,11 @@ export function WhatsAppChannels() {
           >
             {c.is_default && <Star className="fill-current" aria-label={t('isDefault')} />}
             {channelName(c)}
-            <span className="text-xs opacity-70">…{c.phone_number_id.slice(-4)}</span>
+            {c.provider === 'evolution' ? (
+              <QrCode className="opacity-70" aria-label={t('qrNumber')} />
+            ) : (
+              <span className="text-xs opacity-70">…{c.phone_number_id.slice(-4)}</span>
+            )}
           </Button>
         ))}
         {canEditSettings && (
@@ -163,6 +181,31 @@ export function WhatsAppChannels() {
           </Button>
         )}
       </div>
+
+      {canEditSettings && selected === 'new' && qrAvailable && (
+        <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t('connectHow')}>
+          <span className="text-sm">{t('connectHow')}</span>
+          <Button
+            type="button"
+            size="sm"
+            variant={newKind === 'evolution' ? 'default' : 'outline'}
+            aria-pressed={newKind === 'evolution'}
+            onClick={() => setNewKind('evolution')}
+          >
+            <QrCode />
+            {t('kindQr')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={newKind === 'meta' ? 'default' : 'outline'}
+            aria-pressed={newKind === 'meta'}
+            onClick={() => setNewKind('meta')}
+          >
+            {t('kindMeta')}
+          </Button>
+        </div>
+      )}
 
       {canEditSettings && (selected === 'new' || current) && (
         <div className="flex flex-wrap items-end gap-2">
@@ -223,10 +266,23 @@ export function WhatsAppChannels() {
       )}
 
       <p className="text-xs text-muted-foreground">
-        {selected === 'new' ? t('newHint') : t('defaultHint')}
+        {selected === 'new' ? (newKind === 'evolution' && qrAvailable ? t('newQrHint') : t('newHint')) : t('defaultHint')}
       </p>
     </div>
   ) : null;
+
+  const useQr = selected === 'new' ? newKind === 'evolution' && qrAvailable : current?.provider === 'evolution';
+  if (useQr) {
+    return (
+      <EvolutionConnect
+        key={selected ?? 'new'}
+        channelId={selected === 'new' ? null : selected}
+        newLabel={labelDraft}
+        onChanged={(savedId) => loadChannels(savedId ?? null)}
+        channelBar={bar}
+      />
+    );
+  }
 
   return (
     <WhatsAppConfig

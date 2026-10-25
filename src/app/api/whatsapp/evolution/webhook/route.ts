@@ -17,13 +17,16 @@ import { EVOLUTION_SECRET_HEADER, evolutionSecretMatches } from '@/lib/whatsapp/
 // media downloads, flows, automations and the AI reply.
 export const maxDuration = 60
 
+const HANDLED_EVENTS = new Set(['messages.upsert', 'messages.update', 'connection.update'])
+
 /**
  * POST /api/whatsapp/evolution/webhook — Evolution API v2 events for
  * every instance (docs/saas/w2-evolution.md). Authenticated by a shared
  * secret header; the instance name picks the number (whatsapp_config
  * row with provider 'evolution'). Handles messages.upsert (inbound,
- * through the same pipeline as Meta) and messages.update (delivery
- * status of what we sent). Acks right away and works in `after()`.
+ * through the same pipeline as Meta), messages.update (delivery
+ * status of what we sent) and connection.update (paired / logged out,
+ * W3). Acks right away and works in `after()`.
  */
 export async function POST(request: Request) {
   const expected = process.env.EVOLUTION_WEBHOOK_SECRET
@@ -48,7 +51,7 @@ export async function POST(request: Request) {
 
   // "messages.upsert" or "MESSAGES_UPSERT", depending on the server config.
   const event = (body.event ?? '').toLowerCase().replace(/_/g, '.')
-  if (!body.instance || (event !== 'messages.upsert' && event !== 'messages.update')) {
+  if (!body.instance || !HANDLED_EVENTS.has(event)) {
     return NextResponse.json({ status: 'ignored' }, { status: 200 })
   }
   const instance = body.instance
@@ -80,6 +83,22 @@ async function processEvent(event: string, instance: string, items: unknown[]) {
     return
   }
   const config = rows[0]
+
+  if (event === 'connection.update') {
+    // 'open' = phone paired, 'close' = logged out; 'connecting' changes nothing.
+    const state = (items[0] as { state?: string } | undefined)?.state
+    if (state !== 'open' && state !== 'close') return
+    await db
+      .from('whatsapp_config')
+      .update({
+        status: state === 'open' ? 'connected' : 'disconnected',
+        ...(state === 'open' ? { connected_at: new Date().toISOString() } : {}),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', config.id)
+      .eq('account_id', config.account_id)
+    return
+  }
 
   if (event === 'messages.update') {
     for (const item of items) {

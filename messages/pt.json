@@ -1993,7 +1993,40 @@
         "defaultSector": "Setor padrão deste número",
         "noSector": "Sem setor (visível para todos)",
         "defaultSectorHint": "Conversas novas neste número começam neste setor. Gerencie os setores em Configurações → Setores.",
-        "defaultSectorSaved": "Setor padrão salvo."
+        "defaultSectorSaved": "Setor padrão salvo.",
+        "qrNumber": "Número por QR code",
+        "connectHow": "Como conectar:",
+        "kindQr": "QR code (WhatsApp do celular)",
+        "kindMeta": "API oficial da Meta",
+        "newQrHint": "Dê um nome ao setor e gere o QR code; depois leia com o celular."
+      },
+      "evolution": {
+        "title": "WhatsApp por QR code",
+        "description": "Conecte o WhatsApp do celular lendo um QR code, sem a API oficial da Meta.",
+        "newTitle": "Novo número por QR code",
+        "newHint": "Vamos criar a conexão e mostrar o QR code para você ler com o celular.",
+        "generate": "Gerar QR code",
+        "created": "Conexão criada. Leia o QR code com o celular.",
+        "createFailed": "Não foi possível criar a conexão.",
+        "pairTitle": "Leia o QR code",
+        "pairHint": "O código se renova sozinho enquanto esta tela estiver aberta.",
+        "step1": "No celular, abra o WhatsApp.",
+        "step2": "Toque em Mais opções (⋮) ou Configurações → Aparelhos conectados → Conectar aparelho.",
+        "step3": "Aponte a câmera para o QR code.",
+        "waitingQr": "Gerando QR code…",
+        "qrAlt": "QR code para conectar o WhatsApp",
+        "newQr": "Mostrar QR code de novo",
+        "loading": "Carregando",
+        "checkFailed": "Não foi possível consultar a conexão.",
+        "connectedTitle": "Conectado",
+        "connectedHint": "Mensagens deste número já chegam na Caixa de entrada.",
+        "connectedAs": "Conectado como {number} ({name}).",
+        "remove": "Desconectar e remover número",
+        "removeHint": "Desconecta o celular e apaga a conexão. As conversas continuam no histórico.",
+        "removeConfirm": "Desconectar este número e remover a conexão? As conversas ficam no histórico.",
+        "removed": "Número removido.",
+        "removeFailed": "Não foi possível remover o número.",
+        "connectedAsNumber": "Conectado como {number}."
       }
     },
     "sections": {
@@ -3034,6 +3067,12 @@
       "invalidSchedule": "Cada faixa precisa de um dia da semana e de um início antes do fim (HH:MM).",
       "saveFailed": "Não foi possível salvar as configurações do atendente. Tente novamente.",
       "scheduleRequired": "Quem está em um setor precisa de pelo menos uma faixa de horário."
+    },
+    "evolution": {
+      "notConfigured": "Números por QR code não estão disponíveis neste servidor (Evolution não configurada).",
+      "createFailed": "Não foi possível criar a conexão por QR code. Tente novamente.",
+      "unreachable": "Não foi possível consultar a conexão do número. Tente novamente em instantes.",
+      "deleteFailed": "Não foi possível desconectar o número no servidor. Tente novamente."
     }
   },
   "Distribution": {

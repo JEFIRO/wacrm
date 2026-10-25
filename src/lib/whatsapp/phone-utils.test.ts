@@ -70,8 +70,17 @@ describe("phonesMatch", () => {
     expect(phonesMatch("370630949836", "37063949836")).toBe(false);
   });
 
+  it("matches a Brazilian mobile with and without the nono dígito", () => {
+    expect(phonesMatch("5511987654321", "551187654321")).toBe(true);
+    expect(phonesMatch("+55 (11) 8765-4321", "5511987654321")).toBe(true);
+    // Landlines (first digit 2–5) never gain a 9.
+    expect(phonesMatch("557532803265", "5575932803265")).toBe(false);
+    // Other countries are untouched.
+    expect(phonesMatch("4411987654321", "441187654321")).toBe(false);
+  });
+
   it("agrees with phoneVariants on every trunk variant it accepts", () => {
-    for (const phone of ["37063949836", "370063949836", "14155551212"]) {
+    for (const phone of ["37063949836", "370063949836", "14155551212", "5511987654321", "551187654321"]) {
       for (const variant of phoneVariants(phone)) {
         if (phonesMatch(phone, variant)) {
           expect(phoneVariants(variant)).toContain(phone);

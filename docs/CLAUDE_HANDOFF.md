@@ -10,9 +10,13 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 - `main` **local** (sem push) tem o merge `752ffab` de `feat/c1-canais`: C1 vários números,
   setores próprios + transferência (C2/C3), distribuição de leads (P1), regras de cadastro
   (064) e nova tentativa do aviso de fila (065).
-- Branch `feat/w1-provedor` (a partir da `main`, sem push): W1 camada de provedor commitado
-  (`7e2570e`, migration 066); W2 Evolution (webhook + envio) commitado —
-  `docs/saas/w1-provedor.md`, `docs/saas/w2-evolution.md`.
+- Branch `feat/w1-provedor` (a partir da `main`, sem push): W1 camada de provedor
+  (`7e2570e`, migration 066) e W2 Evolution webhook + envio (`d134241`).
+- Branch `feat/w3-instancia` (a partir da `feat/w1-provedor`, sem push): W3 número por QR code
+  + nono dígito — `docs/saas/w3-instancia.md`.
+- **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
+  `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
+  `n8n` é do usuário — não tocar.
 - Status de cada item do roadmap: `docs/saas/roteiro.md`. Pendências abertas: seção
   "Pendências e riscos" abaixo.
 - Ambiente local funcionando (verificado em 2026-10-25): cadastro, login e dashboard
@@ -139,9 +143,14 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       automação, `/api/automations/engine`) checam a conta, mas não o setor.
 
 ### WhatsApp / provedores
-- [ ] **Evolution testado só contra servidor falso** (`scripts/dev/fake-evolution.mts`), feito a
-      partir do código-fonte e da doc. Confirmar com instância real no W3: mídia por
-      `getBase64FromMediaMessage` só com `key.id`, citação só com `key.id`, LID, `apikey` da instância.
+- [ ] Evolution validado com WhatsApp real (texto, foto, vídeo, áudio, citação, reação,
+      status) **exceto** chat endereçado por LID e envio citando (`quoted` só com `key.id`).
+- [ ] O número "Evolution" do seed (`wacrm-dev-evolution`) só existe no servidor falso; com a
+      Evolution real, a tela dele mostra erro 502 (instância inexistente). Esperado.
+- [ ] Eventos da Evolution que chegam entre criar a instância e gravar o número caem no log
+      "matched 0 numbers" (só o estado "conectando"; inofensivo).
+- [ ] O número pessoal do usuário (instância `wacrm-95ce4431-9994db69`, "Atendimento QR") foi
+      usado no teste; enquanto conectado, conversas pessoais entram no banco local.
 - [ ] Evolution: template, botões e lista lançam `EvolutionUnsupportedError` (fluxo com botões
       num número Evolution falha; erro chega ao usuário como 500 genérico) — W4.
 - [ ] Evolution: "digitando…" não faz nada; mensagens enviadas pelo próprio celular (`fromMe`)
@@ -219,3 +228,10 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   `scripts/dev/simulate-evolution.mts`, número "Evolution" no seed. Verificado local com o
   servidor falso: texto e imagem na inbox (imagem espelhada), resposta citando, reação,
   status até "lido", 401 com segredo errado; 24 testes novos; gate verde (1570).
+- **2026-10-25** — Commit do W2 (`d134241`). W3 número por QR code: `evolution/admin.ts`,
+  rotas `/api/whatsapp/evolution/instances[/:id]`, tela `EvolutionConnect`, `connection.update`
+  no webhook. Proxy local `wacrm-evo-proxy` para a Evolution do usuário. Teste com WhatsApp
+  real (número pessoal do usuário, envio só para o número que ele autorizou): QR → conectado,
+  envio + status entregue, recebidos texto/foto/vídeo/áudio (espelhados), resposta citando,
+  reação. Corrigidos na hora: nono dígito (contato duplicado — `phone-utils.ts`, vale p/ Meta)
+  e envelope `albumMessage`.

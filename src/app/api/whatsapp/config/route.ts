@@ -574,6 +574,10 @@ export async function POST(request: Request) {
       savedChannelId = inserted?.id ?? null
 
       if (insertError) {
+        // Plan limit (fork, migration 070).
+        if (insertError.message === 'plan_number_limit') {
+          return NextResponse.json({ error: t('whatsappConfig.planNumberLimit') }, { status: 403 })
+        }
         console.error('Error inserting whatsapp_config:', insertError)
         return NextResponse.json(
           { error: t('whatsappConfig.saveFailed') },

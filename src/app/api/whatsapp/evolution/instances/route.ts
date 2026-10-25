@@ -4,6 +4,7 @@ import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import { encrypt } from '@/lib/whatsapp/encryption'
 import { createInstance, deleteInstance, evolutionServerConfig } from '@/lib/whatsapp/evolution/admin'
 import { accountProviderKind } from '@/lib/whatsapp/provider'
+import { numberLimitReached } from '@/lib/billing/limits'
 import { getT } from '@/lib/i18n/translate'
 
 const t = getT('Api')
@@ -39,6 +40,12 @@ export async function POST(request: Request) {
     // One kind of connection per account (migration 067).
     if ((await accountProviderKind(supabase, accountId)) === 'meta') {
       return NextResponse.json({ error: t('evolution.providerMismatch') }, { status: 409 })
+    }
+
+    // Plan limit (B1/B4) before creating anything on the Evolution server.
+    const limit = await numberLimitReached(supabase, accountId)
+    if (limit.reached) {
+      return NextResponse.json({ error: t('evolution.planNumberLimit', { max: limit.max ?? 0 }) }, { status: 403 })
     }
 
     const body = await request.json().catch(() => ({}))

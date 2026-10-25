@@ -8,8 +8,8 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 - Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm` (último commit
   upstream `34bce1a`).
 - `main` **local** (sem push): C1–C3 + P1 (merge `752ffab`) e W1–W5 + correção da remoção de
-  número (merge `a4a022e`; migrations até 069). Branches `feat/*` e `fix/remover-numero` já
-  estão contidas na `main`.
+  número (merge `a4a022e`), tela de números (`6f71c55`) e B1/B4 planos (migrations até 070).
+  Todas as branches `feat/*` e `fix/*` já estão contidas na `main`.
 - **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
   `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
   `n8n` é do usuário — não tocar.
@@ -43,7 +43,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `069` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `070` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -85,7 +85,8 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
 ## Decisões de produto (tomadas com o usuário)
 
 - **Modelo:** SaaS central; o cliente cria a conta e paga, sem deploy próprio.
-- **Planos propostos** (ainda não fechados):
+- **Planos com usuários inclusos + usuário extra pago; teste grátis de 30 dias** (decidido em
+  2026-10-25; implementado no B1 — `docs/saas/b1-planos.md`). Valores (editáveis na tabela `plans`):
 
   | | Essencial | Profissional | Business |
   |---|---|---|---|
@@ -160,6 +161,8 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       (só existem na Meta); campanha via Evolution é o W5.
 
 ### Produto e plataforma
+- [ ] B1: teste usa os limites do Profissional (decisão sem o usuário); preço do usuário extra
+      a definir; fim do teste ainda não bloqueia nada (fica para B2/B5).
 - Itens da tabela de planos que o sistema não faz: limite de números por plano, cota mensal
   de API, recursos por plano, relatórios por atendente/exportação.
 - Coexistência: requisitos e limites da Meta mudam com frequência — confirmar na
@@ -270,4 +273,7 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   setor antes de conectar (o formulário só aparece depois) e grava o setor no número salvo;
   "Tornar número principal" troca o principal. Decisões do usuário: principal roteia pelo
   fluxo/menu; números de setor opcionais.
+- **2026-10-25** — Merge da tela de números (`6f71c55`). B1 + B4 (na `main`): `plans` + `account_subscriptions` (migration 070), teste de 30 dias por gatilho em
+  `accounts`, limite de números no banco e nas rotas, Configurações → Plano e uso. Verificado:
+  limite no banco (Essencial recusa o 3º número, Profissional aceita), tela com dados reais.
 

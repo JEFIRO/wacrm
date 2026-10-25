@@ -32,7 +32,8 @@ export function createMetaProvider(creds: MetaCredentials): WhatsAppProvider {
     sendTemplate: (args) => sendTemplateMessage({ ...args, phoneNumberId, accessToken }),
     sendButtons: (args) => sendInteractiveButtons({ ...args, phoneNumberId, accessToken }),
     sendList: (args) => sendInteractiveList({ ...args, phoneNumberId, accessToken }),
-    sendReaction: (args) => sendReactionMessage({ ...args, phoneNumberId, accessToken }),
+    sendReaction: ({ targetFromMe: _ours, ...args }) =>
+      sendReactionMessage({ ...args, phoneNumberId, accessToken }),
     sendTyping: (args) => sendTypingIndicator({ ...args, phoneNumberId, accessToken }),
     getMedia: (mediaId) => getMediaUrl({ mediaId, accessToken }),
     downloadMedia: (url) => downloadMedia({ downloadUrl: url, accessToken }),

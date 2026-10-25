@@ -10,8 +10,9 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 - `main` **local** (sem push) tem o merge `752ffab` de `feat/c1-canais`: C1 vários números,
   setores próprios + transferência (C2/C3), distribuição de leads (P1), regras de cadastro
   (064) e nova tentativa do aviso de fila (065).
-- Branch `feat/w1-provedor` (a partir da `main`), **sem commit**: W1 camada de provedor
-  (migration 066, `src/lib/whatsapp/provider/`) — `docs/saas/w1-provedor.md`.
+- Branch `feat/w1-provedor` (a partir da `main`, sem push): W1 camada de provedor commitado
+  (`7e2570e`, migration 066); W2 Evolution (webhook + envio) commitado —
+  `docs/saas/w1-provedor.md`, `docs/saas/w2-evolution.md`.
 - Status de cada item do roadmap: `docs/saas/roteiro.md`. Pendências abertas: seção
   "Pendências e riscos" abaixo.
 - Ambiente local funcionando (verificado em 2026-10-25): cadastro, login e dashboard
@@ -42,7 +43,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `066` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `066` (W2 não tem migration) (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -138,8 +139,13 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       automação, `/api/automations/engine`) checam a conta, mas não o setor.
 
 ### WhatsApp / provedores
-- [ ] Número com `provider = 'evolution'` falha com 500 genérico ("Erro interno") até o W2
-      existir; o log mostra `WhatsApp provider "evolution" is not supported yet`.
+- [ ] **Evolution testado só contra servidor falso** (`scripts/dev/fake-evolution.mts`), feito a
+      partir do código-fonte e da doc. Confirmar com instância real no W3: mídia por
+      `getBase64FromMediaMessage` só com `key.id`, citação só com `key.id`, LID, `apikey` da instância.
+- [ ] Evolution: template, botões e lista lançam `EvolutionUnsupportedError` (fluxo com botões
+      num número Evolution falha; erro chega ao usuário como 500 genérico) — W4.
+- [ ] Evolution: "digitando…" não faz nada; mensagens enviadas pelo próprio celular (`fromMe`)
+      não aparecem na inbox; `connection.update` ignorado (W3).
 - [ ] Campanhas, templates, registro e webhook seguem falando direto com `meta-api.ts`
       (só existem na Meta); campanha via Evolution é o W5.
 
@@ -206,3 +212,10 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   suíte inteira (1552) sem mudar testes antigos além do mock da IA, envio real local chegando
   à Meta (token inválido, esperado), número `evolution` recusado com erro claro no log, gate
   verde e schema check.
+- **2026-10-25** — Commit do W1 (`7e2570e`). W2 Evolution (sem commit): pipeline de entrada
+  extraído do webhook da Meta para `src/lib/whatsapp/inbound.ts` (testes do webhook verdes sem
+  mudança), provedor Evolution, tradução pura do payload e `POST /api/whatsapp/evolution/webhook`
+  com segredo em cabeçalho. Ferramentas: `scripts/dev/fake-evolution.mts`,
+  `scripts/dev/simulate-evolution.mts`, número "Evolution" no seed. Verificado local com o
+  servidor falso: texto e imagem na inbox (imagem espelhada), resposta citando, reação,
+  status até "lido", 401 com segredo errado; 24 testes novos; gate verde (1570).

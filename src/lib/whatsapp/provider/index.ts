@@ -8,6 +8,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { decrypt } from '../encryption'
 import { loadChannel } from '../channels'
 import { createMetaProvider } from './meta'
+import { createEvolutionProvider } from './evolution'
 import type { WhatsAppProvider } from './types'
 
 export type * from './types'
@@ -33,8 +34,18 @@ export function providerForChannel(channel: ProviderChannel): WhatsAppProvider {
       accessToken: decrypt(channel.access_token),
     })
   }
-  // W2 adds the Evolution implementation.
-  throw new Error(`WhatsApp provider "${kind}" is not supported yet`)
+  if (kind === 'evolution') {
+    // Instance name in phone_number_id, instance API key in access_token
+    // (docs/saas/w2-evolution.md); the server is the SaaS's own.
+    const baseUrl = process.env.EVOLUTION_API_URL
+    if (!baseUrl) throw new Error('EVOLUTION_API_URL is not configured')
+    return createEvolutionProvider({
+      baseUrl,
+      instance: channel.phone_number_id,
+      apiKey: decrypt(channel.access_token),
+    })
+  }
+  throw new Error(`WhatsApp provider "${kind}" is not supported`)
 }
 
 /**

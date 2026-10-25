@@ -140,8 +140,8 @@ não depende de código: comece já, porque a aprovação leva semanas e trava a
 | C1 | Vários números por conta: tabela de canais (nome do setor, provedor), `channel_id` na conversa, envio pelo número certo, webhook roteando por canal. Sai o `UNIQUE(account_id)` do `whatsapp_config`. Spec: `docs/saas/c1-canais.md`. | — | 6–8 | ✅ na `main` (merge local, sem push) |
 | C2 | Acesso por setor: atendente vinculado a canais e só vê a inbox deles; dono/admin veem tudo. **No banco (RLS)**, não só na tela. | C1 | 3–4 | ✅ na `main` (setores próprios, `docs/saas/setores-e-distribuicao.md`) |
 | C3 | Transferir conversa entre setores | C2 | 1–2 | ✅ na `main` (`transfer_conversation(conv, setor)`) |
-| W1 | Camada de provedor: interface única (`sendText`, `sendMedia`, `sendReaction`, `sendTyping`, `getMedia`, `health`); Meta passa a ser uma implementação dela | C1 | 2–3 | 🟨 implementado na branch `feat/w1-provedor` (`docs/saas/w1-provedor.md`), sem commit |
-| W2 | Evolution v2: rota de webhook que traduz `messages.upsert`/`messages.update` para o fluxo existente (`processMessage`), envio de texto/mídia, ignora grupos | W1 | 3–4 | ⬜ |
+| W1 | Camada de provedor: interface única (`sendText`, `sendMedia`, `sendReaction`, `sendTyping`, `getMedia`, `health`); Meta passa a ser uma implementação dela | C1 | 2–3 | 🟨 commitado na branch `feat/w1-provedor` (`docs/saas/w1-provedor.md`), sem merge |
+| W2 | Evolution v2: rota de webhook que traduz `messages.upsert`/`messages.update` para o fluxo existente (`processMessage`), envio de texto/mídia, ignora grupos | W1 | 3–4 | 🟨 implementado na branch `feat/w1-provedor` (`docs/saas/w2-evolution.md`), commitado, sem merge; testado só com servidor falso |
 | W3 | Criar a instância Evolution automaticamente ao adicionar um número + tela de QR code + status de conexão | W2 | 2 | ⬜ |
 | W4 | Regras por provedor: sem janela de 24h nem template obrigatório no Evolution; esconder templates e botões interativos nesses números | W2 | 2–3 | ⬜ |
 | W5 | Fila de campanhas (Redis + worker) com intervalo entre envios | W2 | 3–4 | ⬜ |

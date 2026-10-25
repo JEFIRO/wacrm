@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     // Resolve target message + its conversation; verify ownership.
     const { data: targetMessage, error: msgError } = await supabase
       .from('messages')
-      .select('id, message_id, conversation_id')
+      .select('id, message_id, conversation_id, sender_type')
       .eq('id', message_id)
       .maybeSingle();
 
@@ -112,6 +112,7 @@ export async function POST(request: Request) {
       await loaded.provider.sendReaction({
         to: sendTarget.target,
         targetMessageId: targetMessage.message_id,
+        targetFromMe: targetMessage.sender_type !== 'customer',
         emoji,
       });
     } catch (err) {

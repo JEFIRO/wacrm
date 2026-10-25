@@ -86,8 +86,16 @@ describe('provider of a channel', () => {
     }
   });
 
-  it('refuses a provider that has no implementation yet', () => {
-    expect(() => providerForChannel({ ...row, provider: 'evolution' })).toThrow(/evolution/);
+  it('builds an Evolution provider from the instance name and its key', () => {
+    vi.stubEnv('EVOLUTION_API_URL', 'https://evo.test');
+    expect(providerForChannel({ ...row, provider: 'evolution' }).kind).toBe('evolution');
+    vi.stubEnv('EVOLUTION_API_URL', '');
+    expect(() => providerForChannel({ ...row, provider: 'evolution' })).toThrow(/EVOLUTION_API_URL/);
+    vi.unstubAllEnvs();
+  });
+
+  it('refuses an unknown provider', () => {
+    expect(() => providerForChannel({ ...row, provider: 'other' })).toThrow(/other/);
   });
 
   it('loads the channel asked for with the provider columns', async () => {

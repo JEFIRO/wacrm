@@ -28,7 +28,10 @@ export type SendMediaArgs = WithoutCredentials<SendMediaMessageArgs>
 export type SendTemplateArgs = WithoutCredentials<SendTemplateMessageArgs>
 export type SendButtonsArgs = WithoutCredentials<SendInteractiveButtonsArgs>
 export type SendListArgs = WithoutCredentials<SendInteractiveListArgs>
-export type SendReactionArgs = WithoutCredentials<SendReactionMessageArgs>
+export type SendReactionArgs = WithoutCredentials<SendReactionMessageArgs> & {
+  /** The reacted message was ours — Evolution needs it to address it. */
+  targetFromMe?: boolean
+}
 export type SendTypingArgs = WithoutCredentials<SendTypingIndicatorArgs>
 
 export interface ProviderMediaInfo {

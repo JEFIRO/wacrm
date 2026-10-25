@@ -7,7 +7,9 @@
 //   owner   teste@wacrm.test      password TEST_USER_PASSWORD
 //   agents  jefferson@wacrm.test  jennifer@wacrm.test  password TEST_AGENT_PASSWORD
 //   numbers "Vendas" 1000000000001 and "Suporte" 1000000000002 (fake tokens:
-//           routing works, any real Meta call fails)
+//           routing works, any real Meta call fails), and the Evolution
+//           number "Evolution" = instance wacrm-dev-evolution (talks to
+//           scripts/dev/fake-evolution.mts through EVOLUTION_API_URL)
 //   sectors Vendas (Jefferson) and Suporte (Jennifer), each number's default
 //   schedules every day 00:00–23:59 for both agents (a sector member needs one)
 // Loaded by URL: Node needs the .ts extension, which the app's tsc rejects.
@@ -117,9 +119,10 @@ const sectors = {
 }
 
 const token = encrypt('fake-token-local-test')
-for (const [label, phone, sector] of [
-  ['Vendas', '1000000000001', sectors.vendas],
-  ['Suporte', '1000000000002', sectors.suporte],
+for (const [label, phone, sector, provider] of [
+  ['Vendas', '1000000000001', sectors.vendas, 'meta'],
+  ['Suporte', '1000000000002', sectors.suporte, 'meta'],
+  ['Evolution', 'wacrm-dev-evolution', sectors.suporte, 'evolution'],
 ] as const) {
   const existing = (await rest(`whatsapp_config?phone_number_id=eq.${phone}&select=id`)) as { id: string }[]
   if (existing.length) continue
@@ -133,6 +136,7 @@ for (const [label, phone, sector] of [
       status: 'connected',
       label,
       default_sector_id: sector,
+      provider,
     }),
   })
 }

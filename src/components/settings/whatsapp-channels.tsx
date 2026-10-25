@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { WhatsAppConfig } from './whatsapp-config';
 
 interface ChannelRow {
@@ -24,6 +25,12 @@ interface ChannelRow {
   phone_number_id: string;
   is_default: boolean;
   status: string;
+}
+
+interface MemberRow {
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
 }
 
 /** `'new'` = the blank form that adds a number; null = no number yet. */
@@ -38,6 +45,10 @@ export function WhatsAppChannels() {
   const [selected, setSelected] = useState<Selection>(null);
   const [labelDraft, setLabelDraft] = useState('');
   const [busy, setBusy] = useState(false);
+  // Sector access (C2, migration 061): agents/viewers who handle the
+  // selected number. Owners and admins always see every number.
+  const [members, setMembers] = useState<MemberRow[]>([]);
+  const [assigned, setAssigned] = useState<Set<string>>(new Set());
 
   const loadChannels = useCallback(
     async (prefer?: string | null) => {
@@ -70,6 +81,53 @@ export function WhatsAppChannels() {
   }, [loadChannels]);
 
   const current = channels.find((c) => c.id === selected) ?? null;
+
+  useEffect(() => {
+    if (!accountId || !canEditSettings) return;
+    (async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email')
+        .eq('account_id', accountId)
+        .in('account_role', ['agent', 'viewer'])
+        .order('full_name', { ascending: true });
+      setMembers((data ?? []) as MemberRow[]);
+    })();
+  }, [accountId, canEditSettings, supabase]);
+
+  const loadAssigned = useCallback(
+    async (channelId: string) => {
+      const { data } = await supabase
+        .from('whatsapp_config_members')
+        .select('user_id')
+        .eq('whatsapp_config_id', channelId);
+      setAssigned(new Set((data ?? []).map((r: { user_id: string }) => r.user_id)));
+    },
+    [supabase],
+  );
+
+  useEffect(() => {
+    if (current?.id && canEditSettings) loadAssigned(current.id);
+    else setAssigned(new Set());
+  }, [current?.id, canEditSettings, loadAssigned]);
+
+  async function toggleMember(userId: string, on: boolean) {
+    if (!current) return;
+    const { error } = on
+      ? await supabase
+          .from('whatsapp_config_members')
+          .insert({ whatsapp_config_id: current.id, user_id: userId })
+      : await supabase
+          .from('whatsapp_config_members')
+          .delete()
+          .eq('whatsapp_config_id', current.id)
+          .eq('user_id', userId);
+    if (error) {
+      console.error('Sector access update failed:', error.message);
+      toast.error(t('actionFailed'));
+    }
+    await loadAssigned(current.id);
+  }
 
   useEffect(() => {
     setLabelDraft(current?.label ?? '');
@@ -169,6 +227,30 @@ export function WhatsAppChannels() {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {canEditSettings && current && (
+        <div className="space-y-2 border-t border-border pt-3">
+          <p className="text-sm font-medium">{t('whoHandles')}</p>
+          {members.length === 0 ? (
+            <p className="text-xs text-muted-foreground">{t('noAgents')}</p>
+          ) : (
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {members.map((m) => (
+                <label key={m.user_id} className="flex cursor-pointer items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={assigned.has(m.user_id)}
+                    onCheckedChange={(checked) => toggleMember(m.user_id, checked === true)}
+                  />
+                  {m.full_name || m.email}
+                </label>
+              ))}
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">
+            {assigned.size === 0 ? t('openToAll') : t('restricted')}
+          </p>
         </div>
       )}
 

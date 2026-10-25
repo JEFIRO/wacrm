@@ -1965,7 +1965,11 @@
         "defaultChanged": "Número padrão alterado.",
         "actionFailed": "Não foi possível atualizar o número. Tente novamente.",
         "newHint": "Preencha abaixo as credenciais do novo número e salve.",
-        "defaultHint": "O número padrão envia campanhas, templates e mensagens da API."
+        "defaultHint": "O número padrão envia campanhas, templates e mensagens da API.",
+        "whoHandles": "Quem atende este número",
+        "noAgents": "Ainda não há atendentes na conta — convide em Membros da equipe.",
+        "openToAll": "Ninguém marcado: todos os atendentes da conta veem as conversas deste número.",
+        "restricted": "Só os marcados (além de donos e admins) veem as conversas deste número."
       }
     },
     "sections": {

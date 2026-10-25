@@ -163,6 +163,24 @@ BEGIN
     RAISE EXCEPTION 'anon can execute dashboard_overview — migration 059 grants are wrong';
   END IF;
 
+  -- 060: several numbers per account. The old UNIQUE(account_id) must be
+  -- gone, or saving a second number fails.
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'whatsapp_config_account_id_key')
+     OR to_regclass('public.idx_whatsapp_config_account_default') IS NULL
+     OR to_regclass('public.idx_conversations_account_contact_channel') IS NULL THEN
+    RAISE EXCEPTION 'multi-number schema is incomplete — migration 060 did not apply';
+  END IF;
+
+  -- 061: sector access. dashboard_overview must run as the caller, or it
+  -- returns previews of conversations the caller's RLS hides.
+  IF to_regprocedure('public.can_access_channel(uuid,uuid)') IS NULL
+     OR NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.whatsapp_config_members'::regclass) THEN
+    RAISE EXCEPTION 'sector access is incomplete — migration 061 did not apply';
+  END IF;
+  IF (SELECT prosecdef FROM pg_proc WHERE oid = 'public.dashboard_overview(integer,text)'::regprocedure) THEN
+    RAISE EXCEPTION 'dashboard_overview is SECURITY DEFINER and bypasses sector access — migration 061 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

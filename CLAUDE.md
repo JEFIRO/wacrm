@@ -42,7 +42,7 @@ skils/              material de referência de skills, não é código do app
 
 **1. Pense antes de codar.** Não assuma; exponha tradeoffs. Se o alvo estiver ambíguo,
 pergunte antes de planejar. Antes de presumir que um recurso existe (Evolution, cobrança,
-acesso por setor), confira o status em `docs/saas/roteiro.md` e no código.
+transferência entre setores), confira o status em `docs/saas/roteiro.md` e no código.
 
 **2. Simplicidade primeiro.** Código mínimo que resolve o pedido. Sem abstração para uso
 único, sem flexibilidade não pedida.
@@ -76,9 +76,10 @@ resultado real (comando, contagem, falhas); sem evidência não está concluído
 - ⚠️ Rotas de webhook, cron e engines usam o client **service role**, que ignora RLS. Ali,
   todo `select`/`update` precisa de filtro explícito por `account_id` — sem ele, uma conta
   lê ou altera dados de outra, sem erro nem teste vermelho.
-- ⚠️ Uma conta tem vários números (migration 060). Nunca leia `whatsapp_config` com
-  `.eq('account_id').single()`/`.maybeSingle()` — quebra com o 2º número. Use `loadChannel`
-  e `findOrCreateChannelConversation` (`src/lib/whatsapp/channels.ts`).
+- ⚠️ Conta tem vários números (060): nunca `whatsapp_config` por `account_id` com `.single()`;
+  use `loadChannel` / `findOrCreateChannelConversation` (`src/lib/whatsapp/channels.ts`).
+- ⚠️ Acesso por setor (061) vive no RLS. Rota com client service role e ID de conversa vindo
+  do usuário ignora o setor: confira `can_access_channel` ou use o client do usuário.
 - ⚠️ `supabase start` pode subir o banco "from backup" **sem migrations**: o app abre, mas
   tudo que toca o banco falha. Rode `migration up --local` e confira.
 - ⚠️ A máquina está em pt-BR: sem `LC_ALL=en_US.UTF-8`, testes de formatação de moeda falham

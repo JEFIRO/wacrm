@@ -30,6 +30,10 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
 - Conta de teste local: `teste@wacrm.test`; a senha está comentada no fim do `.env.local`.
   Tem dois números falsos ("Vendas" …0001 e "Suporte" …0002) com token cifrado inválido:
   servem para testar roteamento, mas toda chamada real à Meta falha (esperado).
+- Atendentes de teste (C2): `jefferson@wacrm.test` marcado em Vendas e `jennifer@wacrm.test`
+  em Suporte; senha em `TEST_AGENT_PASSWORD` no `.env.local`. Usuário criado direto em
+  `auth.users` precisa dos campos de token como `''` (não NULL) e de uma linha em
+  `auth.identities`, senão o login dá 500.
 - Simular mensagem recebida (assinada como a Meta, com `META_APP_SECRET`), app rodando:
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
@@ -63,7 +67,8 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   deixa escolher o número de saída).
 - **Só Meta Cloud API.** Sem Evolution/Baileys, sem Embedded Signup, sem coexistência
   (nenhum tratamento de `smb_message_echoes`). Configuração da Meta é manual (IDs + token).
-- Todo atendente vê todas as conversas da conta (sem permissão por setor/número).
+- Acesso por setor (C2) vale no RLS; rotas service role com ID de conversa vindo do usuário
+  (ex.: disparo manual de automação) só checam a conta, não o setor.
 - Campanhas rodam dentro da requisição (`maxDuration` 60–300 s), sem fila.
 - Rate limit em memória (`src/lib/rate-limit.ts`) — válido só com uma instância.
 - Automações/flows dependem de cron externo chamando `/api/automations/cron` e
@@ -129,3 +134,8 @@ Roteiro detalhado, com grafo de dependências, IDs, estimativas e status: `docs/
   Verificado: suíte 1517 testes, schema check do CI, webhook simulado (1 contato → 2
   conversas, uma por número) e tela de configuração no navegador. Pendente: `supabase db
   reset` do zero (apaga o banco local — pedir antes), revisão e merge.
+- **2026-10-25** — C2 implementado na branch (migration 061: `whatsapp_config_members`,
+  `can_access_channel`, RLS de conversas/mensagens/reações, `dashboard_overview` como
+  INVOKER; "Quem atende este número" nas configurações). Verificado: matriz de acesso como
+  cada usuário com RLS, 6 tentativas de burla bloqueadas, painel do dono inalterado, login
+  como atendente mostrando só o setor, tempo real sem vazamento, gate verde.

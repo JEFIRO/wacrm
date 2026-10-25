@@ -1965,7 +1965,11 @@
         "defaultChanged": "Default number changed.",
         "actionFailed": "Could not update the number. Try again.",
         "newHint": "Fill in the credentials of the new number below and save.",
-        "defaultHint": "The default number sends broadcasts, templates and API messages."
+        "defaultHint": "The default number sends broadcasts, templates and API messages.",
+        "whoHandles": "Who handles this number",
+        "noAgents": "No agents in this account yet — invite them under Team members.",
+        "openToAll": "Nobody selected: every agent of the account sees this number’s conversations.",
+        "restricted": "Only the selected agents (plus owners and admins) see this number’s conversations."
       }
     },
     "sections": {

@@ -14,6 +14,10 @@ const tablesWithoutDomainData = new Set([
   "account_invitations",
   "member_presence",
   "pending_message_statuses",
+  // Migration 061: a row can only exist for a whatsapp_config row of the
+  // same account (its trigger copies account_id from the number), and
+  // whatsapp_config is already checked — no data of its own to lose.
+  "whatsapp_config_members",
 ]);
 
 function accountScopedTables(): Set<string> {

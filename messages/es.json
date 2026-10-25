@@ -1965,7 +1965,11 @@
         "defaultChanged": "Número predeterminado cambiado.",
         "actionFailed": "No se pudo actualizar el número. Inténtalo de nuevo.",
         "newHint": "Completa abajo las credenciales del nuevo número y guarda.",
-        "defaultHint": "El número predeterminado envía difusiones, plantillas y mensajes de la API."
+        "defaultHint": "El número predeterminado envía difusiones, plantillas y mensajes de la API.",
+        "whoHandles": "Quién atiende este número",
+        "noAgents": "Aún no hay agentes en la cuenta — invítalos en Miembros del equipo.",
+        "openToAll": "Nadie seleccionado: todos los agentes de la cuenta ven las conversaciones de este número.",
+        "restricted": "Solo los seleccionados (además de dueños y admins) ven las conversaciones de este número."
       }
     },
     "sections": {

@@ -7,18 +7,9 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 
 - Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm` (último commit
   upstream `34bce1a`).
-- `main` **local** (sem push) tem o merge `752ffab` de `feat/c1-canais`: C1 vários números,
-  setores próprios + transferência (C2/C3), distribuição de leads (P1), regras de cadastro
-  (064) e nova tentativa do aviso de fila (065).
-- Branch `feat/w1-provedor` (a partir da `main`, sem push): W1 camada de provedor
-  (`7e2570e`, migration 066) e W2 Evolution webhook + envio (`d134241`).
-- Branch `feat/w3-instancia` (a partir da `feat/w1-provedor`, sem push): W3 número por QR code
-  + nono dígito (`26c9d78`) e um tipo de conexão por conta (`9cae7f6`) — `docs/saas/w3-instancia.md`.
-- Branch `feat/w4-regras` (a partir da `feat/w3-instancia`, sem push): W4 regras por
-  provedor (`697c9a3`).
-- Branch `feat/w5-fila` (a partir da `feat/w4-regras`, sem push): eco de mensagens
-  enviadas pelo celular (`docs/saas/w4-regras.md`) e W5 fila de disparos de texto
-  (`docs/saas/w5-fila.md`, migration 068). Novo cron: `GET /api/broadcasts/cron`.
+- `main` **local** (sem push): C1–C3 + P1 (merge `752ffab`) e W1–W5 + correção da remoção de
+  número (merge `a4a022e`; migrations até 069). Branches `feat/*` e `fix/remover-numero` já
+  estão contidas na `main`.
 - **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
   `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
   `n8n` é do usuário — não tocar.
@@ -268,4 +259,7 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   (testado no banco). Afetava Meta e QR. Branch `fix/remover-numero`. Os dois números reais do
   usuário foram removidos pela tela (instâncias `wacrm-` apagadas; `n8n` intocada; histórico
   local mantido).
+- **2026-10-25** — Commit da correção (`202738b`) e merge de W1–W5 na `main` (`a4a022e`, sem push).
+  Dados dos números reais do usuário apagados do banco local (3 contatos com conversas e
+  mensagens, 2 campanhas de teste, 3 mídias espelhadas).
 

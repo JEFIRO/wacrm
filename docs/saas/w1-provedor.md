@@ -1,6 +1,6 @@
 # W1 — Camada de provedor de WhatsApp
 
-Status: **commitado** (`7e2570e`, branch `feat/w1-provedor`) · Item do roteiro: W1 · Branch: `feat/w1-provedor`
+Status: **na `main`** · Item do roteiro: W1 · Branch: `feat/w1-provedor`
 
 ## Problema
 

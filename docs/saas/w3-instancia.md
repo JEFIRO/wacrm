@@ -1,6 +1,6 @@
 # W3 — Número por QR code (instância Evolution automática)
 
-Status: **commitado** · Item do roteiro: W3 · Branch: `feat/w3-instancia`
+Status: **na `main`** · Item do roteiro: W3 · Branch: `feat/w3-instancia`
 
 ## Problema
 

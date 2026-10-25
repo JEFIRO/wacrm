@@ -1,6 +1,6 @@
 # W4 — Regras por provedor (contas QR code)
 
-Status: **commitado** · Item do roteiro: W4 · Branch: `feat/w4-regras`
+Status: **na `main`** · Item do roteiro: W4 · Branch: `feat/w4-regras`
 
 ## Problema
 

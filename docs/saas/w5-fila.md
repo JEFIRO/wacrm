@@ -1,6 +1,6 @@
 # W5 — Fila de disparos de texto (contas QR code)
 
-Status: **commitado** · Item do roteiro: W5 · Branch: `feat/w5-fila`
+Status: **na `main`** · Item do roteiro: W5 · Branch: `feat/w5-fila`
 
 ## Problema
 

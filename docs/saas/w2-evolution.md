@@ -1,6 +1,6 @@
 # W2 — Evolution API v2: webhook de entrada e envio
 
-Status: **commitado** · Item do roteiro: W2 · Branch: `feat/w1-provedor`
+Status: **na `main`** · Item do roteiro: W2 · Branch: `feat/w1-provedor`
 
 ## Problema
 

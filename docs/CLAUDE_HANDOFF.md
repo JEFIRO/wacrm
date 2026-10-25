@@ -5,13 +5,13 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 
 ## Estado atual
 
-- Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm`, branch `main`,
-  sem alterações de código em relação ao upstream (último commit upstream `34bce1a`).
-- Branch `feat/c1-canais` (sem push/merge):
-  - commitados: C1 vários números (`f6ef137`), C2 e C3 na versão antiga (`b63bd43`, `ab699e9`);
-  - commitados depois: setores próprios (061/062 reescritas), distribuição de leads (063),
-    regras de cadastro (064) e nova tentativa do aviso de fila (065) —
-    `docs/saas/setores-e-distribuicao.md`. Falta revisar e fazer merge na `main`.
+- Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm` (último commit
+  upstream `34bce1a`).
+- `main` **local** (sem push) tem o merge `752ffab` de `feat/c1-canais`: C1 vários números,
+  setores próprios + transferência (C2/C3), distribuição de leads (P1), regras de cadastro
+  (064) e nova tentativa do aviso de fila (065).
+- Branch `feat/w1-provedor` (a partir da `main`), **sem commit**: W1 camada de provedor
+  (migration 066, `src/lib/whatsapp/provider/`) — `docs/saas/w1-provedor.md`.
 - Status de cada item do roadmap: `docs/saas/roteiro.md`. Pendências abertas: seção
   "Pendências e riscos" abaixo.
 - Ambiente local funcionando (verificado em 2026-10-25): cadastro, login e dashboard
@@ -42,7 +42,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `064` (aplicada com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `066` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -137,6 +137,12 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
 - [ ] Rotas com client service role e ID de conversa vindo do usuário (ex.: disparo manual de
       automação, `/api/automations/engine`) checam a conta, mas não o setor.
 
+### WhatsApp / provedores
+- [ ] Número com `provider = 'evolution'` falha com 500 genérico ("Erro interno") até o W2
+      existir; o log mostra `WhatsApp provider "evolution" is not supported yet`.
+- [ ] Campanhas, templates, registro e webhook seguem falando direto com `meta-api.ts`
+      (só existem na Meta); campanha via Evolution é o W5.
+
 ### Produto e plataforma
 - Itens da tabela de planos que o sistema não faz: limite de números por plano, cota mensal
   de API, recursos por plano, relatórios por atendente/exportação.
@@ -192,3 +198,11 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   falha → cron reagenda → 5ª falha → alerta na tela) e em testes com banco simulado (sucesso,
   falha, lead fora da fila, autor ausente). Caminho de envio com sucesso só nos testes (token
   local é falso). Gate verde (1546 testes). Commit de C2/C3 com setores, P1, 064 e 065.
+- **2026-10-25** — Merge local de `feat/c1-canais` na `main` (`752ffab`, sem push).
+- **2026-10-25** — W1 camada de provedor (branch `feat/w1-provedor`, sem commit): migration
+  066 (`whatsapp_config.provider`), interface `WhatsAppProvider` + implementação Meta +
+  `loadChannelProvider`; composer, fluxos, automações, reação, "digitando" da IA, proxy de
+  mídia e saúde do número passaram a usar o provedor. Verificado: 6 testes do provedor,
+  suíte inteira (1552) sem mudar testes antigos além do mock da IA, envio real local chegando
+  à Meta (token inválido, esperado), número `evolution` recusado com erro claro no log, gate
+  verde e schema check.

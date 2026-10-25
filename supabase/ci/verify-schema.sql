@@ -217,6 +217,15 @@ BEGIN
     RAISE EXCEPTION 'queue notice retry is incomplete — migration 065 did not apply';
   END IF;
 
+  -- 066: each number says which provider it talks through.
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'whatsapp_config'
+      AND column_name = 'provider'
+  ) THEN
+    RAISE EXCEPTION 'whatsapp provider is missing — migration 066 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

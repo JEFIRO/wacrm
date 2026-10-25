@@ -26,7 +26,7 @@ Mudança visível no app: confira no navegador, não só nos testes.
 ## Mapa
 
 ```
-src/lib/whatsapp/   única porta para o WhatsApp; meta-api.ts é o cliente da Meta
+src/lib/whatsapp/   única porta para o WhatsApp; provider/ (Meta/Evolution por número) → meta-api.ts
 src/app/api/v1/     API pública com chave por escopo — contrato com integrações de clientes
 supabase/migrations/ fonte da verdade do schema e das políticas RLS
 docs/saas/          documentação do SaaS (nossa); demais docs/ e README são do upstream

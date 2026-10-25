@@ -1,11 +1,9 @@
-import { sendTextMessage, sendTemplateMessage } from '@/lib/whatsapp/meta-api'
 import type { InteractiveMessagePayload } from '@/lib/whatsapp/interactive'
 import {
   engineSendInteractiveButtons,
   engineSendInteractiveList,
 } from '@/lib/flows/meta-send'
-import { decrypt } from '@/lib/whatsapp/encryption'
-import { loadChannel } from '@/lib/whatsapp/channels'
+import { loadChannelProvider } from '@/lib/whatsapp/provider'
 import {
   phoneVariants,
   isRecipientNotAllowedError,
@@ -153,16 +151,11 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
   }
   const sanitized = sendTarget.target
 
-  const config = await loadChannel<{ phone_number_id: string; access_token: string }>(
-    db,
-    input.accountId,
-    channelId,
-  )
-  if (!config) {
+  const loaded = await loadChannelProvider(db, input.accountId, channelId)
+  if (!loaded) {
     throw new Error(t('send.notConfigured'))
   }
-
-  const accessToken = decrypt(config.access_token)
+  const { provider } = loaded
 
   // Local template row. A missing row is fine: the send still goes
   // out, we just can't reconstruct the text the customer saw.
@@ -180,9 +173,7 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
 
   const attempt = async (phone: string): Promise<string> => {
     if (input.kind === 'template') {
-      const r = await sendTemplateMessage({
-        phoneNumberId: config.phone_number_id,
-        accessToken,
+      const r = await provider.sendTemplate({
         to: phone,
         templateName: input.templateName,
         language: input.language,
@@ -191,9 +182,7 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
       })
       return r.messageId
     }
-    const r = await sendTextMessage({
-      phoneNumberId: config.phone_number_id,
-      accessToken,
+    const r = await provider.sendText({
       to: phone,
       text: input.text,
     })

@@ -107,6 +107,7 @@ beforeEach(() => {
     assigned_agent_id: null,
     ai_autoreply_disabled: false,
     ai_reply_count: 0,
+    whatsapp_config_id: 'ch-sales',
   }
   h.state.autoResponders = []
   h.state.claim = true
@@ -240,9 +241,11 @@ describe('dispatchInboundToAiReply — eligibility gates', () => {
 describe('dispatchInboundToAiReply — typing indicator (#527)', () => {
   it('shows "typing…" on the inbound wamid before calling the LLM', async () => {
     await dispatchInboundToAiReply(ARGS)
+    // Typing shows on the number the customer wrote to (C1).
     expect(h.loadAccountMetaCredentials).toHaveBeenCalledWith(
       expect.anything(),
       'acct-1',
+      'ch-sales',
     )
     expect(h.sendTypingIndicator).toHaveBeenCalledTimes(1)
     expect(h.sendTypingIndicator).toHaveBeenCalledWith({

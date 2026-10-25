@@ -60,7 +60,12 @@ function makeSupabaseMock() {
 
     const b: Record<string, unknown> = {}
     const chain = () => b
-    for (const m of ['select', 'eq', 'in', 'order', 'limit']) b[m] = vi.fn(chain)
+    for (const m of ['select', 'eq', 'in', 'order']) b[m] = vi.fn(chain)
+    // `.limit(n)` ends the default-channel lookup: a one-element array.
+    b.limit = vi.fn(async () => {
+      const r = result()
+      return { data: r.data == null ? [] : [r.data], error: r.error }
+    })
     b.update = vi.fn((patch: Record<string, unknown>) => {
       if (table === 'message_templates') templateUpdates.push(patch)
       return b

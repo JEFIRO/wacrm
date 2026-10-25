@@ -18,6 +18,7 @@ import { buildMetaTemplatePayload } from '@/lib/whatsapp/template-components'
 import { ensureMediaHeaderHandle } from '@/lib/whatsapp/template-header-handle'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/translate'
+import { loadChannel } from '@/lib/whatsapp/channels'
 
 const t = getT('Api')
 
@@ -136,12 +137,11 @@ export async function PATCH(
     }
 
     if (!isDryRun()) {
-      const { data: config, error: configError } = await supabase
-        .from('whatsapp_config')
-        .select('*')
-        .eq('account_id', accountId)
-        .single()
-      if (configError || !config) {
+      const config = await loadChannel<{ phone_number_id: string; access_token: string; waba_id: string | null }>(
+        supabase,
+        accountId,
+      )
+      if (!config) {
         return NextResponse.json(
           { error: t('common.whatsappNotConfiguredDot') },
           { status: 400 },
@@ -264,12 +264,11 @@ export async function DELETE(
     }
 
     if (existing.meta_template_id && !isDryRun()) {
-      const { data: config, error: configError } = await supabase
-        .from('whatsapp_config')
-        .select('*')
-        .eq('account_id', accountId)
-        .single()
-      if (configError || !config || !config.waba_id) {
+      const config = await loadChannel<{ phone_number_id: string; access_token: string; waba_id: string | null }>(
+        supabase,
+        accountId,
+      )
+      if (!config || !config.waba_id) {
         return NextResponse.json(
           { error: t('templates.notConfiguredDelete') },
           { status: 400 },

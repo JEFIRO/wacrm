@@ -17,6 +17,7 @@ import { ensureMediaHeaderHandle } from '@/lib/whatsapp/template-header-handle'
 import { normalizeStatus } from '@/lib/whatsapp/template-status-normalize'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/translate'
+import { loadChannel } from '@/lib/whatsapp/channels'
 
 const t = getT('Api')
 
@@ -145,12 +146,12 @@ export async function POST(request: Request) {
       metaTemplateId = `dry-run-${crypto.randomUUID()}`
       metaStatus = 'PENDING'
     } else {
-      const { data: config, error: configError } = await supabase
-        .from('whatsapp_config')
-        .select('*')
-        .eq('account_id', accountId)
-        .single()
-      if (configError || !config) {
+      // Templates follow the default channel's WABA (docs/saas/c1-canais.md).
+      const config = await loadChannel<{ phone_number_id: string; access_token: string; waba_id: string | null }>(
+        supabase,
+        accountId,
+      )
+      if (!config) {
         return NextResponse.json(
           {
             error:

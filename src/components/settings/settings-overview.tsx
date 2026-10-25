@@ -125,12 +125,12 @@ export function SettingsOverview({
           .from('whatsapp_config')
           .select('phone_number_id')
           .eq('account_id', acctId)
-          .maybeSingle(),
+          .limit(1),
         fetch('/api/whatsapp/config', { cache: 'no-store' }).then((r) => r.json()),
       ]);
       if (cancelled) return;
       setWhatsapp({
-        configured: row.status === 'fulfilled' && !!row.value.data?.phone_number_id,
+        configured: row.status === 'fulfilled' && !!row.value.data?.[0]?.phone_number_id,
         connected: health.status === 'fulfilled' && !!health.value?.connected,
       });
       setWhatsappLoading(false);

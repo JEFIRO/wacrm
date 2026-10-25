@@ -207,13 +207,15 @@ function InboxPageInner() {
         return;
       }
 
+      // Connected when at least one of the account's numbers is.
       const { data } = await supabase
         .from("whatsapp_config")
-        .select("status")
+        .select("id")
         .eq("account_id", accountId)
-        .maybeSingle();
+        .eq("status", "connected")
+        .limit(1);
 
-      setWhatsappConnected(data?.status === "connected");
+      setWhatsappConnected(!!data?.length);
     };
 
     checkConnection();

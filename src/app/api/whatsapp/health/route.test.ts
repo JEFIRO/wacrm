@@ -17,7 +17,9 @@ vi.mock('@/lib/auth/account', async () => {
           const b: Record<string, unknown> = {}
           b.select = () => b
           b.eq = () => b
-          b.maybeSingle = async () => ({ data: storedConfig, error: null })
+          // Default-channel lookup (loadChannel): eq → order → limit.
+          b.order = () => b
+          b.limit = async () => ({ data: storedConfig ? [storedConfig] : [], error: null })
           return b
         },
       },

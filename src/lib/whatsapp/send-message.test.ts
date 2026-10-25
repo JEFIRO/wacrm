@@ -216,6 +216,7 @@ function sendPathDb(
 ): SupabaseClient {
   const conversation = {
     id: 'cv-1',
+    whatsapp_config_id: 'cfg-1',
     contact,
   };
   const config = {
@@ -237,7 +238,11 @@ function sendPathDb(
           if (table === 'conversations') captured.conversation = row;
           return builder;
         },
-        maybeSingle: async () => ({ data: null, error: null }),
+        // The conversation's channel is loaded by id (loadChannel).
+        maybeSingle: async () => ({
+          data: table === 'whatsapp_config' ? config : null,
+          error: null,
+        }),
         single: async () => {
           if (table === 'conversations') {
             return { data: conversation, error: null };

@@ -1950,7 +1950,23 @@
       "phoneNumberIdNotNumeric": "Phone Number ID must contain only digits. Copy the numeric id from Meta → WhatsApp → API Setup, not the phone number itself.",
       "wabaIdNotNumeric": "WhatsApp Business Account ID must contain only digits. Copy it from Meta → WhatsApp → API Setup.",
       "wabaSubscribed": "The WhatsApp Business Account is subscribed to this app — inbound webhooks can be delivered.",
-      "wabaNotSubscribed": "The WhatsApp Business Account is not subscribed to this app, so Meta will not deliver inbound webhooks. Re-enter the access token and save again to subscribe it."
+      "wabaNotSubscribed": "The WhatsApp Business Account is not subscribed to this app, so Meta will not deliver inbound webhooks. Re-enter the access token and save again to subscribe it.",
+      "channels": {
+        "title": "Numbers",
+        "addNumber": "Add number",
+        "newNumber": "New number",
+        "isDefault": "Default",
+        "makeDefault": "Make default",
+        "labelLabel": "Sector name",
+        "labelPlaceholder": "e.g. Sales",
+        "saveLabel": "Save name",
+        "unnamed": "Unnamed",
+        "labelSaved": "Name saved.",
+        "defaultChanged": "Default number changed.",
+        "actionFailed": "Could not update the number. Try again.",
+        "newHint": "Fill in the credentials of the new number below and save.",
+        "defaultHint": "The default number sends broadcasts, templates and API messages."
+      }
     },
     "sections": {
       "overview": "Overview",
@@ -2878,7 +2894,9 @@
       "phoneCheckFailed": "Phone metadata check failed: {message}",
       "wabaNoApps": "WABA has no subscribed apps. Re-save the configuration to subscribe.",
       "wabaCheckFailed": "WABA subscription check failed: {message}",
-      "noWabaId": "No WABA ID on file — webhooks can't be wired without it. Add it in the form and re-save."
+      "noWabaId": "No WABA ID on file — webhooks can't be wired without it. Add it in the form and re-save.",
+      "channelNotFound": "That WhatsApp number was not found in this account.",
+      "numberAlreadyInAccount": "This number is already connected to this account."
     },
     "media": {
       "idRequired": "Media ID is required",

@@ -180,6 +180,11 @@ export interface Conversation {
   last_inbound_at?: string | null;
   last_reply_at?: string | null;
   closed_at?: string | null;
+  /** Channel (whatsapp_config row) the thread belongs to — migration 060.
+   *  Null when its number was disconnected. */
+  whatsapp_config_id?: string | null;
+  /** Embedded channel (number) of the thread, when selected. */
+  channel?: { id: string; label: string | null; phone_number_id: string } | null;
   created_at: string;
   updated_at: string;
   contact?: Contact;
@@ -298,6 +303,10 @@ export interface WhatsAppConfig {
   id: string;
   user_id: string;
   phone_number_id: string;
+  /** Sector name shown in the UI ("Vendas") — migration 060. */
+  label?: string | null;
+  /** The account's default channel — migration 060. */
+  is_default?: boolean;
   waba_id?: string;
   access_token: string;
   verify_token?: string;

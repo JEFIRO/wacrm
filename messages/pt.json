@@ -1950,7 +1950,23 @@
       "phoneNumberIdNotNumeric": "O Phone Number ID deve conter apenas dígitos. Copie o id numérico em Meta → WhatsApp → Configuração da API, não o número de telefone em si.",
       "wabaIdNotNumeric": "O ID da conta do WhatsApp Business deve conter apenas dígitos. Copie-o em Meta → WhatsApp → Configuração da API.",
       "wabaSubscribed": "A conta do WhatsApp Business está inscrita neste app — os webhooks de entrada podem ser entregues.",
-      "wabaNotSubscribed": "A conta do WhatsApp Business não está inscrita neste app, então a Meta não entregará webhooks de entrada. Informe novamente o token de acesso e salve de novo para inscrevê-la."
+      "wabaNotSubscribed": "A conta do WhatsApp Business não está inscrita neste app, então a Meta não entregará webhooks de entrada. Informe novamente o token de acesso e salve de novo para inscrevê-la.",
+      "channels": {
+        "title": "Números",
+        "addNumber": "Adicionar número",
+        "newNumber": "Novo número",
+        "isDefault": "Padrão",
+        "makeDefault": "Tornar padrão",
+        "labelLabel": "Nome do setor",
+        "labelPlaceholder": "ex.: Vendas",
+        "saveLabel": "Salvar nome",
+        "unnamed": "Sem nome",
+        "labelSaved": "Nome salvo.",
+        "defaultChanged": "Número padrão alterado.",
+        "actionFailed": "Não foi possível atualizar o número. Tente novamente.",
+        "newHint": "Preencha abaixo as credenciais do novo número e salve.",
+        "defaultHint": "O número padrão envia campanhas, templates e mensagens da API."
+      }
     },
     "sections": {
       "overview": "Visão geral",
@@ -2878,7 +2894,9 @@
       "phoneCheckFailed": "Falha na verificação dos dados do número: {message}",
       "wabaNoApps": "O WABA não tem apps inscritos. Salve a configuração novamente para inscrevê-lo.",
       "wabaCheckFailed": "Falha na verificação da inscrição do WABA: {message}",
-      "noWabaId": "Nenhum WABA ID registrado — os webhooks não podem ser conectados sem ele. Adicione-o no formulário e salve novamente."
+      "noWabaId": "Nenhum WABA ID registrado — os webhooks não podem ser conectados sem ele. Adicione-o no formulário e salve novamente.",
+      "channelNotFound": "Esse número de WhatsApp não foi encontrado nesta conta.",
+      "numberAlreadyInAccount": "Este número já está conectado a esta conta."
     },
     "media": {
       "idRequired": "O ID da mídia é obrigatório",

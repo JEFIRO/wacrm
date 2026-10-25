@@ -4,10 +4,11 @@ import type { Conversation, Contact, Tag } from "@/types";
  * Conversation select that embeds the contact plus its tags, so the Inbox
  * can filter conversations by contact tag without a second round-trip.
  * `contact_tags(tags(*))` returns the join rows; {@link normalizeConversation}
- * flattens them onto `contact.tags`.
+ * flattens them onto `contact.tags`. `channel` is the number (sector) the
+ * thread belongs to — migration 060.
  */
 export const CONVERSATION_SELECT =
-  "*, contact:contacts(*, contact_tags(tags(*)))";
+  "*, contact:contacts(*, contact_tags(tags(*))), channel:whatsapp_config(id, label, phone_number_id)";
 
 /** Raw shape returned by {@link CONVERSATION_SELECT} before flattening. */
 type RawContact = Contact & { contact_tags?: { tags: Tag | null }[] };

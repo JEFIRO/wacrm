@@ -5,6 +5,7 @@ import {
   engineSendInteractiveList,
 } from '@/lib/flows/meta-send'
 import { decrypt } from '@/lib/whatsapp/encryption'
+import { loadChannel } from '@/lib/whatsapp/channels'
 import {
   phoneVariants,
   isRecipientNotAllowedError,
@@ -136,7 +137,11 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
 
   // Same for the conversation the message lands in — see
   // conversation-scope.ts (GHSA-m4fx-g6pr-hrw8).
-  await assertConversationInAccount(db, input.conversationId, input.accountId)
+  const { channelId } = await assertConversationInAccount(
+    db,
+    input.conversationId,
+    input.accountId,
+  )
 
   // Phone number, or the business-scoped user ID when Meta has never
   // given us a number for this customer (issue #519).
@@ -148,12 +153,12 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
   }
   const sanitized = sendTarget.target
 
-  const { data: config, error: configErr } = await db
-    .from('whatsapp_config')
-    .select('*')
-    .eq('account_id', input.accountId)
-    .single()
-  if (configErr || !config) {
+  const config = await loadChannel<{ phone_number_id: string; access_token: string }>(
+    db,
+    input.accountId,
+    channelId,
+  )
+  if (!config) {
     throw new Error(t('send.notConfigured'))
   }
 

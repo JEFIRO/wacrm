@@ -30,6 +30,7 @@ import { encrypt, decrypt } from '@/lib/whatsapp/encryption'
 import { resolveVerifyTokenForSave } from '@/lib/whatsapp/verify-token'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/translate'
+import { loadChannel } from '@/lib/whatsapp/channels'
 
 const t = getT('Api')
 
@@ -106,7 +107,7 @@ function metaFailure(err: unknown, step: MetaConnectStep, ctx: MetaErrorContext)
  *   { connected: false, reason: 'meta_api_error',   message: '...',
  *     meta: { code, subcode, fbtrace_id, step, field, message } }
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createClient()
 
@@ -131,19 +132,14 @@ export async function GET() {
       )
     }
 
-    const { data: config, error: configError } = await supabase
-      .from('whatsapp_config')
-      .select('phone_number_id, waba_id, access_token, status')
-      .eq('account_id', accountId)
-      .maybeSingle()
-
-    if (configError) {
-      console.error('Error fetching whatsapp_config:', configError)
-      return NextResponse.json(
-        { connected: false, reason: 'db_error', message: t('whatsappConfig.fetchFailed') },
-        { status: 200 }
-      )
-    }
+    // `?channel=<id>` checks that number; without it, the default one.
+    const channelId = new URL(request.url).searchParams.get('channel')
+    const config = await loadChannel<{
+      phone_number_id: string
+      waba_id: string | null
+      access_token: string
+      status: string
+    }>(supabase, accountId, channelId, 'phone_number_id, waba_id, access_token, status')
 
     if (!config) {
       return NextResponse.json(
@@ -264,6 +260,13 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const { phone_number_id, waba_id, access_token, verify_token, pin } = body
+    // Channel being saved (migration 060): `channel_id` edits that number,
+    // `is_new` adds another one, neither edits the default (single-number
+    // clients keep working unchanged).
+    const channelId: string | null = typeof body.channel_id === 'string' ? body.channel_id : null
+    const isNew = body.is_new === true
+    const label: string | null =
+      typeof body.label === 'string' && body.label.trim() ? body.label.trim().slice(0, 60) : null
 
     if (!access_token || !phone_number_id) {
       return NextResponse.json(
@@ -389,11 +392,34 @@ export async function POST(request: Request) {
     // around), and we need the stored verify_token — the settings form
     // never shows it, so a save that leaves the field blank must keep it
     // rather than null it out.
-    const { data: existing } = await supabase
+    const existing = isNew
+      ? null
+      : await loadChannel<{
+          id: string
+          registered_at: string | null
+          phone_number_id: string
+          verify_token: string | null
+        }>(supabase, accountId, channelId, 'id, registered_at, phone_number_id, verify_token')
+    if (channelId && !existing) {
+      return NextResponse.json({ error: t('whatsappConfig.channelNotFound') }, { status: 404 })
+    }
+
+    // The same number twice in one account would split its threads
+    // between two channels; the global UNIQUE(phone_number_id) would also
+    // reject it with a generic error.
+    const { data: sameAccountDup } = await supabase
       .from('whatsapp_config')
-      .select('id, registered_at, phone_number_id, verify_token')
+      .select('id')
       .eq('account_id', accountId)
-      .maybeSingle()
+      .eq('phone_number_id', phone_number_id)
+      .neq('id', existing?.id ?? '00000000-0000-0000-0000-000000000000')
+      .limit(1)
+    if (sameAccountDup && sameAccountDup.length > 0) {
+      return NextResponse.json(
+        { error: t('whatsappConfig.numberAlreadyInAccount'), field: 'phone_number_id' },
+        { status: 409 }
+      )
+    }
 
     // Encrypt sensitive tokens before storing
     let encryptedAccessToken: string
@@ -509,10 +535,12 @@ export async function POST(request: Request) {
       updated_at: new Date().toISOString(),
     }
 
+    let savedChannelId: string | null = existing?.id ?? null
     if (existing) {
       const { error: updateError } = await supabase
         .from('whatsapp_config')
-        .update(baseRow)
+        .update(label ? { ...baseRow, label } : baseRow)
+        .eq('id', existing.id)
         .eq('account_id', accountId)
 
       if (updateError) {
@@ -527,13 +555,17 @@ export async function POST(request: Request) {
       // (NOT NULL post-017, UNIQUE so duplicates trip the constraint
       // up-front), `user_id` is the audit column identifying which
       // member of the account saved the config.
-      const { error: insertError } = await supabase
+      const { data: inserted, error: insertError } = await supabase
         .from('whatsapp_config')
         .insert({
           account_id: accountId,
           user_id: userId,
+          label,
           ...baseRow,
         })
+        .select('id')
+        .single()
+      savedChannelId = inserted?.id ?? null
 
       if (insertError) {
         console.error('Error inserting whatsapp_config:', insertError)
@@ -551,6 +583,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: false,
         saved: true,
+        channel_id: savedChannelId,
         registered: false,
         registration_error: registrationError,
         error: registrationError,
@@ -562,6 +595,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       saved: true,
+      channel_id: savedChannelId,
       registered: registeredAt != null,
       // Credentials are valid and saved, but inbound webhook
       // registration was skipped because no PIN was supplied (e.g. a
@@ -580,19 +614,28 @@ export async function POST(request: Request) {
 }
 
 /**
- * DELETE /api/whatsapp/config
+ * DELETE /api/whatsapp/config?channel=<id>
  *
- * Removes the authenticated user's WhatsApp configuration row.
- * Used by the "Reset Configuration" button to recover from a corrupted
- * encrypted token (mismatched ENCRYPTION_KEY across environments).
+ * Removes one number (channel) of the account; without `channel`, the
+ * default one. Its conversations keep their history (channel set to
+ * NULL) and the oldest remaining number becomes the default — both by
+ * migration 060. Also the "Reset Configuration" path for a token the
+ * current ENCRYPTION_KEY cannot decrypt.
  */
-export async function DELETE() {
+export async function DELETE(request: Request) {
   try {
     const { supabase, accountId } = await requireRole('admin')
+
+    const channelId = new URL(request.url).searchParams.get('channel')
+    const channel = await loadChannel<{ id: string }>(supabase, accountId, channelId, 'id')
+    if (!channel) {
+      return NextResponse.json({ error: t('whatsappConfig.channelNotFound') }, { status: 404 })
+    }
 
     const { error: deleteError } = await supabase
       .from('whatsapp_config')
       .delete()
+      .eq('id', channel.id)
       .eq('account_id', accountId)
 
     if (deleteError) {
@@ -609,6 +652,71 @@ export async function DELETE() {
       return toErrorResponse(error)
     }
     console.error('Error in WhatsApp config DELETE:', error)
+    return NextResponse.json({ error: t('common.internalServerError') }, { status: 500 })
+  }
+}
+
+/**
+ * PATCH /api/whatsapp/config
+ *
+ * Body: `{ channel_id, label?, is_default? }`. Renames a number's sector
+ * label and/or makes it the account's default — no Meta round-trip, so
+ * no token re-entry. Admin only.
+ */
+export async function PATCH(request: Request) {
+  try {
+    const { supabase, accountId } = await requireRole('admin')
+
+    const body = await request.json()
+    const channelId: string | null = typeof body.channel_id === 'string' ? body.channel_id : null
+    const channel = channelId
+      ? await loadChannel<{ id: string }>(supabase, accountId, channelId, 'id')
+      : null
+    if (!channel) {
+      return NextResponse.json({ error: t('whatsappConfig.channelNotFound') }, { status: 404 })
+    }
+
+    if (typeof body.label === 'string') {
+      const label = body.label.trim().slice(0, 60) || null
+      const { error } = await supabase
+        .from('whatsapp_config')
+        .update({ label, updated_at: new Date().toISOString() })
+        .eq('id', channel.id)
+        .eq('account_id', accountId)
+      if (error) {
+        console.error('Error renaming channel:', error)
+        return NextResponse.json({ error: t('whatsappConfig.updateFailed') }, { status: 500 })
+      }
+    }
+
+    if (body.is_default === true) {
+      // Clear the old default first: the partial unique index allows at
+      // most one default per account at any moment.
+      const { error: clearError } = await supabase
+        .from('whatsapp_config')
+        .update({ is_default: false })
+        .eq('account_id', accountId)
+        .eq('is_default', true)
+        .neq('id', channel.id)
+      const { error: setError } = clearError
+        ? { error: clearError }
+        : await supabase
+            .from('whatsapp_config')
+            .update({ is_default: true })
+            .eq('id', channel.id)
+            .eq('account_id', accountId)
+      if (setError) {
+        console.error('Error changing default channel:', setError)
+        return NextResponse.json({ error: t('whatsappConfig.updateFailed') }, { status: 500 })
+      }
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    if (error instanceof UnauthorizedError || error instanceof ForbiddenError) {
+      return toErrorResponse(error)
+    }
+    console.error('Error in WhatsApp config PATCH:', error)
     return NextResponse.json({ error: t('common.internalServerError') }, { status: 500 })
   }
 }

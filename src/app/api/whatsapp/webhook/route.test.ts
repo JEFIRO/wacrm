@@ -39,6 +39,8 @@ const h = vi.hoisted(() => ({
     /** Patches applied to an existing `contacts` row. */
     contactUpdates: [] as Record<string, unknown>[],
     whatsappConfigLookups: [] as { columns: string; value: unknown }[],
+    /** Filters of each conversation lookup (account, contact, channel). */
+    conversationLookups: [] as Record<string, unknown>[],
     /** broadcast_recipients row the status webhook targets. */
     broadcastRecipient: null as { id: string; status: string } | null,
     /** Patches applied to that broadcast_recipients row. */
@@ -67,6 +69,7 @@ vi.mock('@supabase/supabase-js', () => ({
                 return Promise.resolve({
                   data: [
                     {
+                      id: 'cfg-1',
                       account_id: 'acc-1',
                       user_id: 'user-1',
                       access_token: 'enc',
@@ -79,21 +82,27 @@ vi.mock('@supabase/supabase-js', () => ({
             }),
           }
         case 'conversations':
-          // findOrCreateConversation: select().eq().eq().order().limit()
+          // findOrCreateChannelConversation:
+          //   select().eq(account).eq(contact).eq(channel).order().limit()
           return {
-            select: () => ({
-              eq: () => ({
-                eq: () => ({
-                  order: () => ({
-                    limit: () =>
-                      Promise.resolve({
-                        data: [h.state.conversation],
-                        error: null,
-                      }),
-                  }),
-                }),
-              }),
-            }),
+            select: () => {
+              const filters: Record<string, unknown> = {}
+              const q: Record<string, unknown> = {
+                eq: (column: string, value: unknown) => {
+                  filters[column] = value
+                  return q
+                },
+                order: () => q,
+                limit: () => {
+                  h.state.conversationLookups.push(filters)
+                  return Promise.resolve({
+                    data: [h.state.conversation],
+                    error: null,
+                  })
+                },
+              }
+              return q
+            },
             update: () => ({
               eq: () => ({
                 is: () => ({
@@ -379,6 +388,7 @@ beforeEach(() => {
   h.state.contactInserts = []
   h.state.contactUpdates = []
   h.state.whatsappConfigLookups = []
+  h.state.conversationLookups = []
   h.state.broadcastRecipient = null
   h.state.recipientUpdates = []
   mockFindExistingContact.mockResolvedValue({
@@ -441,6 +451,20 @@ describe('inbound webhook: idempotent insert (#367)', () => {
     expect(h.runAutomationsForTrigger).not.toHaveBeenCalled()
     expect(h.dispatchInboundToAiReply).not.toHaveBeenCalled()
     expect(h.dispatchWebhookEvent).not.toHaveBeenCalled()
+  })
+})
+
+describe('inbound webhook: one thread per channel (C1)', () => {
+  it('looks the conversation up on the number the message arrived on', async () => {
+    await runWebhook()
+
+    // The receiving phone_number_id resolves to channel cfg-1, and the
+    // thread is resolved inside that channel — so the same contact
+    // writing to another number of the account gets its own thread.
+    expect(h.state.conversationLookups[0]).toMatchObject({
+      account_id: 'acc-1',
+      whatsapp_config_id: 'cfg-1',
+    })
   })
 })
 
@@ -552,7 +576,7 @@ describe('inbound webhook: inbound media is mirrored (#466)', () => {
     // the mirror failing must never cost us the message.
     expect(h.state.upsertCalls).toHaveLength(1)
     expect(h.state.upsertCalls[0].row).toMatchObject({
-      media_url: '/api/whatsapp/media/1234567890123456',
+      media_url: '/api/whatsapp/media/1234567890123456?channel=cfg-1',
       media_type: 'image/jpeg',
     })
   })
@@ -563,7 +587,7 @@ describe('inbound webhook: inbound media is mirrored (#466)', () => {
     await runWebhook(IMAGE_MESSAGE)
 
     expect(h.state.upsertCalls[0].row).toMatchObject({
-      media_url: '/api/whatsapp/media/1234567890123456',
+      media_url: '/api/whatsapp/media/1234567890123456?channel=cfg-1',
     })
   })
 
@@ -589,7 +613,7 @@ describe('inbound webhook: inbound media is mirrored (#466)', () => {
     expect(mockDownloadMedia).not.toHaveBeenCalled()
     expect(h.state.storageUploads).toHaveLength(0)
     expect(h.state.upsertCalls[0].row).toMatchObject({
-      media_url: '/api/whatsapp/media/999',
+      media_url: '/api/whatsapp/media/999?channel=cfg-1',
       media_type: 'application/pdf',
     })
   })
@@ -631,7 +655,7 @@ describe('inbound webhook: inbound media is mirrored (#466)', () => {
     expect(mockDownloadMedia).not.toHaveBeenCalled()
     expect(h.state.storageUploads).toHaveLength(0)
     expect(h.state.upsertCalls[0].row).toMatchObject({
-      media_url: '/api/whatsapp/media/1234567890123456',
+      media_url: '/api/whatsapp/media/1234567890123456?channel=cfg-1',
       // Still recorded — the MIME type costs nothing and makes the
       // download name right even for proxied media.
       media_type: 'image/jpeg',

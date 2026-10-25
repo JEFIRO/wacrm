@@ -2437,7 +2437,6 @@
       "maxNumbers": "{count, plural, one {# WhatsApp number} other {up to # WhatsApp numbers}}",
       "extraUserTbd": "Extra user: price to be defined",
       "extraUser": "Extra user: {price}/month",
-      "setupFee": "Setup: {price} (once)",
       "currentPlan": "Current plan",
       "choose": "Choose this plan",
       "paymentSoon": "Subscribing and changing plan in the app come with online payment.",
@@ -2447,7 +2446,10 @@
         "suspended": "Suspended",
         "canceled": "Canceled",
         "trial_expired": "Trial ended"
-      }
+      },
+      "priceTbd": "Price to be defined",
+      "pricePerInstalment": "12× {price}",
+      "yearlyHint": "12-month commitment, paid in monthly instalments."
     }
   },
   "SignupPage": {
@@ -3169,6 +3171,10 @@
       "deleteFailed": "Could not disconnect the number on the server. Please try again.",
       "providerMismatch": "This account uses the official Meta API. To use QR-code numbers, remove every Meta number first.",
       "planNumberLimit": "Your plan allows up to {max} WhatsApp numbers. Change plan to add more."
+    },
+    "billing": {
+      "blocked": "Account blocked for lack of payment. Subscribe in Settings → Plan & usage to send again.",
+      "limitedFeature": "Unavailable: the trial ended or a payment is overdue. Subscribe in Settings → Plan & usage."
     }
   },
   "Distribution": {
@@ -3187,5 +3193,12 @@
       "title": "QR-code broadcasts go out from a queue",
       "body": "On accounts with QR-code numbers, broadcasts are free text and go out one message at a time with a random pause in between, to lower the risk of the number being blocked. You can close the screen: the queue keeps running on the server."
     }
+  },
+  "Billing": {
+    "limitedTrial": "Your free trial ended. The account works with limits (slower sending, no campaigns, AI or new numbers/users) until {date}; after that it will be blocked.",
+    "limitedPastDue": "A payment is overdue. The account works with limits (slower sending, no campaigns, AI or new numbers/users) until {date}; after that it will be blocked.",
+    "blockedTitle": "Account blocked",
+    "blockedBody": "The trial or payment expired and the grace period is over. Your customers' messages are still received and stored — subscribe to use the app again.",
+    "subscribe": "See plans and subscribe"
   }
 }

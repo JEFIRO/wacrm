@@ -43,7 +43,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `070` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `071` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -162,7 +162,8 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
 
 ### Produto e plataforma
 - [ ] B1: teste usa os limites do Profissional (decisão sem o usuário); preço do usuário extra
-      a definir; fim do teste ainda não bloqueia nada (fica para B2/B5).
+      e do plano anual a definir.
+- [ ] Modo limitado/bloqueio só muda de estado pela data do teste até existir o B2 (Asaas).
 - Itens da tabela de planos que o sistema não faz: limite de números por plano, cota mensal
   de API, recursos por plano, relatórios por atendente/exportação.
 - Coexistência: requisitos e limites da Meta mudam com frequência — confirmar na
@@ -276,4 +277,11 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
 - **2026-10-25** — Merge da tela de números (`6f71c55`). B1 + B4 (na `main`): `plans` + `account_subscriptions` (migration 070), teste de 30 dias por gatilho em
   `accounts`, limite de números no banco e nas rotas, Configurações → Plano e uso. Verificado:
   limite no banco (Essencial recusa o 3º número, Profissional aceita), tela com dados reais.
+- **2026-10-25** — Merge do B1 (`b3d51b1`). Fim do teste (na `main`): sem
+  implantação, plano Anual Completo (preço a definir), fim do teste/atraso → modo limitado por
+  30 dias → bloqueio (decisões do usuário). Aplicado no envio da inbox/API, disparos, IA,
+  números, convites, fluxos e automações (só no bloqueio), aviso e tela de bloqueio. Testado
+  na tela e nas rotas (limitado: aviso + envio 5 s + 402 em disparo/convite; bloqueado: tela +
+  402). Chave do Asaas **sandbox** no `.env.local` (escapar o `$` como `\$` — o Next expande
+  variáveis); testada (200).
 

@@ -2437,7 +2437,6 @@
       "maxNumbers": "WhatsApp 번호 최대 {count}개",
       "extraUserTbd": "추가 사용자: 가격 미정",
       "extraUser": "추가 사용자: {price}/월",
-      "setupFee": "도입비: {price} (1회)",
       "currentPlan": "현재 요금제",
       "choose": "이 요금제 선택",
       "paymentSoon": "앱에서의 구독 및 요금제 변경은 온라인 결제와 함께 제공됩니다.",
@@ -2447,7 +2446,10 @@
         "suspended": "정지됨",
         "canceled": "취소됨",
         "trial_expired": "체험 종료"
-      }
+      },
+      "priceTbd": "가격 미정",
+      "pricePerInstalment": "12× {price}",
+      "yearlyHint": "12개월 약정, 매월 분할 결제."
     }
   },
   "SignupPage": {
@@ -3169,6 +3171,10 @@
       "deleteFailed": "서버에서 번호 연결을 해제할 수 없습니다. 다시 시도하세요.",
       "providerMismatch": "이 계정은 Meta 공식 API를 사용합니다. QR 코드 번호를 쓰려면 먼저 모든 Meta 번호를 삭제하세요.",
       "planNumberLimit": "요금제에서 WhatsApp 번호를 최대 {max}개까지 사용할 수 있습니다. 더 추가하려면 요금제를 변경하세요."
+    },
+    "billing": {
+      "blocked": "결제가 없어 계정이 차단되었습니다. 다시 보내려면 설정 → 요금제 및 사용량에서 구독하세요.",
+      "limitedFeature": "사용할 수 없음: 체험이 끝났거나 결제가 연체되었습니다. 설정 → 요금제 및 사용량에서 구독하세요."
     }
   },
   "Distribution": {
@@ -3187,5 +3193,12 @@
       "title": "QR 코드 대량 발송은 대기열로 나갑니다",
       "body": "QR 코드 번호 계정의 대량 발송은 자유 텍스트이며, 번호 차단 위험을 줄이기 위해 메시지 사이에 임의의 간격을 두고 하나씩 발송됩니다. 화면을 닫아도 서버에서 대기열이 계속 진행됩니다."
     }
+  },
+  "Billing": {
+    "limitedTrial": "무료 체험이 끝났습니다. {date}까지 제한된 상태(느린 발송, 캠페인·AI·새 번호/사용자 불가)로 사용할 수 있으며, 그 후 계정이 차단됩니다.",
+    "limitedPastDue": "연체된 결제가 있습니다. {date}까지 제한된 상태(느린 발송, 캠페인·AI·새 번호/사용자 불가)로 사용할 수 있으며, 그 후 계정이 차단됩니다.",
+    "blockedTitle": "계정 차단됨",
+    "blockedBody": "체험 또는 결제가 만료되고 유예 기간이 끝났습니다. 고객 메시지는 계속 수신·저장됩니다. 앱을 다시 사용하려면 구독하세요.",
+    "subscribe": "요금제 보기 및 구독"
   }
 }

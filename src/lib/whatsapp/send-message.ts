@@ -36,6 +36,11 @@ import {
 } from '@/lib/whatsapp/phone-utils';
 import { resolveContactSendTarget } from '@/lib/whatsapp/wa-identity';
 import { applyPendingMessageStatuses } from '@/lib/whatsapp/message-status-sync';
+import { loadBillingAccess } from '@/lib/billing/access';
+import { LIMITED_SEND_DELAY_MS } from '@/lib/billing/plan';
+import { getT } from '@/lib/i18n/translate';
+
+const tApi = getT('Api');
 import type { MessageTemplate } from '@/types';
 import {
   resolveTemplateRow,
@@ -215,6 +220,16 @@ export async function sendMessageToConversation(
     templateName,
     interactivePayload,
   });
+
+  // Billing (fork, docs/saas/b1-planos.md): blocked accounts send nothing;
+  // limited ones (expired trial / overdue) send slower.
+  const access = await loadBillingAccess(db, accountId);
+  if (access.level === 'blocked') {
+    throw new SendMessageError('billing_blocked', tApi('billing.blocked'), 402);
+  }
+  if (access.level === 'limited') {
+    await new Promise((resolve) => setTimeout(resolve, LIMITED_SEND_DELAY_MS));
+  }
 
   const isMediaKind = (MEDIA_KINDS as readonly string[]).includes(messageType);
 

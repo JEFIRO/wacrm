@@ -11,10 +11,12 @@ import {
 import { resolveContactSendTarget } from '@/lib/whatsapp/wa-identity'
 import { assertConversationInAccount } from '@/lib/whatsapp/conversation-scope'
 import { loadChannelProvider, type WhatsAppProvider } from '@/lib/whatsapp/provider'
+import { loadBillingAccess } from '@/lib/billing/access'
 import { supabaseAdmin } from './admin-client'
 import { getT } from '@/lib/i18n/translate'
 
 const t = getT('LibErrors')
+const tApi = getT('Api')
 
 // ------------------------------------------------------------
 // Flows-side Meta sender (interactive variants).
@@ -42,6 +44,11 @@ export async function loadAccountProvider(
   accountId: string,
   channelId?: string | null,
 ): Promise<WhatsAppProvider> {
+  // Billing (fork): a blocked account sends nothing — flows and AI
+  // included. Limited accounts keep their flows answering customers.
+  if ((await loadBillingAccess(db, accountId)).level === 'blocked') {
+    throw new Error(tApi('billing.blocked'))
+  }
   const loaded = await loadChannelProvider(db, accountId, channelId)
   if (!loaded) {
     throw new Error(t('send.notConfigured'))

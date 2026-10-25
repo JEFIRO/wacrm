@@ -176,6 +176,12 @@ vi.mock('@/lib/whatsapp/meta-api', async (importOriginal) => ({
   sendInteractiveList: vi.fn(async () => ({ messageId: 'wamid.list' })),
 }));
 
+// Billing access (fork): full unless a test says otherwise.
+const billing = vi.hoisted(() => ({ level: 'full' as 'full' | 'limited' | 'blocked' }));
+vi.mock('@/lib/billing/access', () => ({
+  loadBillingAccess: async () => ({ level: billing.level }),
+}));
+
 vi.mock('@/lib/whatsapp/encryption', () => ({
   decrypt: (v: string) => v,
   encrypt: (v: string) => v,
@@ -535,3 +541,21 @@ describe('sendMessageToConversation — statuses that beat the insert', () => {
     );
   });
 });
+
+describe('sendMessageToConversation — billing (fork)', () => {
+  it('refuses to send from a blocked account with 402', async () => {
+    billing.level = 'blocked';
+    try {
+      await expect(
+        sendMessageToConversation({} as SupabaseClient, 'acc-1', {
+          conversationId: 'conv-1',
+          messageType: 'text',
+          contentText: 'oi',
+        }),
+      ).rejects.toMatchObject({ code: 'billing_blocked', status: 402 });
+    } finally {
+      billing.level = 'full';
+    }
+  });
+});
+

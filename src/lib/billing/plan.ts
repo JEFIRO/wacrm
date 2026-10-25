@@ -7,8 +7,10 @@
 export interface Plan {
   id: string
   name: string
-  monthly_price_cents: number
-  setup_fee_cents: number
+  /** Null while the price is still being decided (annual plan). */
+  monthly_price_cents: number | null
+  /** 'yearly' = 12-month commitment paid in monthly instalments. */
+  billing_cycle: 'monthly' | 'yearly'
   included_users: number
   max_numbers: number
   extra_user_price_cents: number | null
@@ -52,6 +54,55 @@ export function seatLimit(plan: Pick<Plan, 'included_users'>, sub: Pick<Subscrip
 export function seatsUsed(roles: string[]): number {
   return roles.filter((r) => r !== 'viewer').length
 }
+
+/** Days an account keeps working (limited) after the trial or a due
+ *  date passes unpaid — "until the next due date". Then it is blocked. */
+export const GRACE_DAYS = 30
+
+export type AccessLevel = 'full' | 'limited' | 'blocked'
+
+export interface BillingAccess {
+  level: AccessLevel
+  /** Why it isn't full. */
+  reason?: 'trial_expired' | 'past_due' | 'suspended' | 'canceled'
+  /** When a limited account becomes blocked. */
+  blocksAt?: Date
+}
+
+const plusDays = (iso: string | null, days: number, fallback: Date) =>
+  new Date((iso ? new Date(iso) : fallback).getTime() + days * 86_400_000)
+
+/**
+ * What the account may do now (decision of the user, 2026-10-25): an
+ * expired trial or an overdue payment keeps the account working in a
+ * LIMITED mode until the next due date; still unpaid then, BLOCKED.
+ * Suspended / canceled accounts are blocked.
+ */
+export function billingAccess(sub: Subscription | null, now: Date): BillingAccess {
+  if (!sub) return { level: 'full' }
+  switch (sub.status) {
+    case 'active':
+      return { level: 'full' }
+    case 'trialing': {
+      if (!sub.trial_ends_at || new Date(sub.trial_ends_at) > now) return { level: 'full' }
+      const blocksAt = plusDays(sub.trial_ends_at, GRACE_DAYS, now)
+      return blocksAt > now
+        ? { level: 'limited', reason: 'trial_expired', blocksAt }
+        : { level: 'blocked', reason: 'trial_expired' }
+    }
+    case 'past_due': {
+      const blocksAt = plusDays(sub.current_period_end, GRACE_DAYS, now)
+      return blocksAt > now
+        ? { level: 'limited', reason: 'past_due', blocksAt }
+        : { level: 'blocked', reason: 'past_due' }
+    }
+    default:
+      return { level: 'blocked', reason: sub.status }
+  }
+}
+
+/** Pause before each manual send while limited ("slower"). */
+export const LIMITED_SEND_DELAY_MS = 5000
 
 /** "R$ 349,00" */
 export function formatBRL(cents: number): string {

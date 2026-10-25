@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { WhatsAppConfig } from './whatsapp-config';
 import { EvolutionConnect } from './evolution-connect';
+import { SettingsPanelHead } from './settings-panel-head';
 
 interface ChannelRow {
   id: string;
@@ -37,6 +38,7 @@ type Selection = string | 'new' | null;
 
 export function WhatsAppChannels() {
   const t = useTranslations('Settings.whatsapp.channels');
+  const tw = useTranslations('Settings.whatsapp');
   const supabase = createClient();
   const { accountId, canEditSettings } = useAuth();
 
@@ -146,145 +148,232 @@ export function WhatsAppChannels() {
     }
   }
 
-  const channelName = (c: ChannelRow) => c.label || t('unnamed');
+  const sectorName = (id: string | null) => sectors.find((x) => x.id === id)?.name ?? null;
+  const channelName = (c: ChannelRow) => c.label || sectorName(c.default_sector_id) || t('unnamed');
+
+  // The company's main number (where every customer writes) and the
+  // optional per-sector numbers — the main one is the account default.
+  const mainChannel = channels.find((c) => c.is_default) ?? channels[0] ?? null;
+  const sectorChannels = channels.filter((c) => c.id !== mainChannel?.id);
+  const addingMain = channels.length === 0;
+  const addingSector = selected === 'new' && !addingMain;
+  // Sector a new sector number will serve (its default sector).
+  const [newSectorId, setNewSectorId] = useState('');
+  const canAddSector = !addingSector || newSectorId !== '';
+
+  // A new number reports its id back: give it its sector, then reload.
+  async function afterSaved(savedId?: string | null) {
+    if (savedId && newSectorId && addingSector) {
+      const { error } = await supabase
+        .from('whatsapp_config')
+        .update({ default_sector_id: newSectorId })
+        .eq('id', savedId);
+      if (error) console.error('Sector of the new number not saved:', error.message);
+      setNewSectorId('');
+    }
+    await loadChannels(savedId ?? null);
+  }
+
+  const chip = (c: ChannelRow) => (
+    <Button
+      key={c.id}
+      type="button"
+      size="sm"
+      variant={selected === c.id ? 'default' : 'outline'}
+      onClick={() => setSelected(c.id)}
+      aria-pressed={selected === c.id}
+    >
+      {channelName(c)}
+      {c.provider === 'evolution' ? (
+        <QrCode className="opacity-70" aria-label={t('qrNumber')} />
+      ) : (
+        <span className="text-xs opacity-70">…{c.phone_number_id.slice(-4)}</span>
+      )}
+      <span
+        className={`size-1.5 rounded-full ${c.status === 'connected' ? 'bg-emerald-500' : 'bg-muted-foreground/50'}`}
+        aria-label={c.status === 'connected' ? t('connected') : t('disconnected')}
+      />
+    </Button>
+  );
 
   // Single number and no admin rights: nothing to switch or manage.
   const showBar =
     channels.length > 1 || (canEditSettings && (channels.length > 0 || qrAvailable));
 
   const bar = showBar ? (
-    <div className="mb-6 space-y-3 rounded-lg border border-border p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 text-sm font-medium">{t('title')}</span>
-        {channels.map((c) => (
-          <Button
-            key={c.id}
-            type="button"
-            size="sm"
-            variant={selected === c.id ? 'default' : 'outline'}
-            onClick={() => setSelected(c.id)}
-            aria-pressed={selected === c.id}
-          >
-            {c.is_default && <Star className="fill-current" aria-label={t('isDefault')} />}
-            {channelName(c)}
-            {c.provider === 'evolution' ? (
-              <QrCode className="opacity-70" aria-label={t('qrNumber')} />
-            ) : (
-              <span className="text-xs opacity-70">…{c.phone_number_id.slice(-4)}</span>
-            )}
-          </Button>
-        ))}
-        {canEditSettings && (
-          <Button
-            type="button"
-            size="sm"
-            variant={selected === 'new' ? 'default' : 'ghost'}
-            onClick={() => {
-              setSelected('new');
-              setLabelDraft('');
-            }}
-          >
-            <Plus />
-            {t('addNumber')}
-          </Button>
+    <div className="mb-6 space-y-4 rounded-lg border border-border p-4">
+      {/* Main number */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Star className="size-4 fill-current text-primary" />
+          <span className="text-sm font-medium">{t('mainTitle')}</span>
+        </div>
+        {mainChannel ? (
+          <div className="flex flex-wrap items-center gap-2">{chip(mainChannel)}</div>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('mainEmpty')}</p>
         )}
+        <p className="text-xs text-muted-foreground">{t('mainHint')}</p>
       </div>
 
-      {canEditSettings && adding && accountKind && selected === 'new' && (
-        <p className="text-sm text-muted-foreground">
-          {accountKind === 'meta' ? t('kindLockedMeta') : t('kindLockedEvolution')}
-        </p>
-      )}
-
-      {canEditSettings && adding && !accountKind && qrAvailable && (
-        <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t('connectHow')}>
-          <span className="text-sm">{t('connectHow')}</span>
-          <Button
-            type="button"
-            size="sm"
-            variant={newKind === 'evolution' ? 'default' : 'outline'}
-            aria-pressed={newKind === 'evolution'}
-            onClick={() => setNewKind('evolution')}
-          >
-            <QrCode />
-            {t('kindQr')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={newKind === 'meta' ? 'default' : 'outline'}
-            aria-pressed={newKind === 'meta'}
-            onClick={() => setNewKind('meta')}
-          >
-            {t('kindMeta')}
-          </Button>
-          <span className="w-full text-xs text-muted-foreground">{t('kindOnce')}</span>
-        </div>
-      )}
-
-      {canEditSettings && (adding || current) && (
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="min-w-48 flex-1 space-y-1">
-            <Label htmlFor="channel-label">{t('labelLabel')}</Label>
-            <Input
-              id="channel-label"
-              value={labelDraft}
-              maxLength={60}
-              placeholder={t('labelPlaceholder')}
-              onChange={(e) => setLabelDraft(e.target.value)}
-            />
-          </div>
-          {current && (
-            <>
+      {/* Sector numbers (optional) */}
+      {mainChannel && (
+        <div className="space-y-2 border-t border-border pt-4">
+          <span className="text-sm font-medium">{t('sectorNumbersTitle')}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            {sectorChannels.map(chip)}
+            {canEditSettings && (
               <Button
                 type="button"
-                variant="outline"
-                disabled={busy || labelDraft.trim() === (current.label ?? '')}
-                onClick={() => patchChannel({ label: labelDraft }, t('labelSaved'))}
+                size="sm"
+                variant={selected === 'new' ? 'default' : 'ghost'}
+                onClick={() => {
+                  setSelected('new');
+                  setLabelDraft('');
+                  setNewSectorId('');
+                }}
               >
-                {t('saveLabel')}
+                <Plus />
+                {t('addSectorNumber')}
               </Button>
-              {!current.is_default && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => patchChannel({ is_default: true }, t('defaultChanged'))}
-                >
-                  <Star />
-                  {t('makeDefault')}
-                </Button>
-              )}
-            </>
+            )}
+          </div>
+          {sectorChannels.length === 0 && selected !== 'new' && (
+            <p className="text-xs text-muted-foreground">{t('sectorNumbersEmpty')}</p>
           )}
         </div>
       )}
 
-      {canEditSettings && current && (
-        <div className="space-y-1 border-t border-border pt-3">
-          <Label htmlFor="channel-sector">{t('defaultSector')}</Label>
-          <select
-            id="channel-sector"
-            value={current.default_sector_id ?? ''}
-            onChange={(e) => setDefaultSector(e.target.value)}
-            className="block h-8 rounded-md border border-input bg-transparent px-2 text-sm"
-          >
-            <option value="">{t('noSector')}</option>
-            {sectors.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-muted-foreground">{t('defaultSectorHint')}</p>
+      {/* Editing / adding */}
+      {canEditSettings && (adding || current) && (
+        <div className="space-y-3 border-t border-border pt-4">
+          <p className="text-sm font-medium">
+            {addingMain
+              ? t('addingMain')
+              : addingSector
+                ? t('addingSector')
+                : current?.id === mainChannel?.id
+                  ? t('editingMain')
+                  : t('editingSector')}
+          </p>
+
+          {adding && accountKind && selected === 'new' && (
+            <p className="text-sm text-muted-foreground">
+              {accountKind === 'meta' ? t('kindSameMeta') : t('kindSameQr')}
+            </p>
+          )}
+
+          {adding && !accountKind && qrAvailable && (
+            <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t('connectHow')}>
+              <span className="text-sm">{t('connectHow')}</span>
+              <Button
+                type="button"
+                size="sm"
+                variant={newKind === 'evolution' ? 'default' : 'outline'}
+                aria-pressed={newKind === 'evolution'}
+                onClick={() => setNewKind('evolution')}
+              >
+                <QrCode />
+                {t('kindQr')}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={newKind === 'meta' ? 'default' : 'outline'}
+                aria-pressed={newKind === 'meta'}
+                onClick={() => setNewKind('meta')}
+              >
+                {t('kindMeta')}
+              </Button>
+              <span className="w-full text-xs text-muted-foreground">{t('kindOnce')}</span>
+            </div>
+          )}
+
+          {/* Which sector a sector number serves — chosen before connecting. */}
+          {(addingSector || (current && current.id !== mainChannel?.id)) && (
+            <div className="space-y-1">
+              <Label htmlFor="channel-sector">{t('sectorOfNumber')}</Label>
+              <select
+                id="channel-sector"
+                value={addingSector ? newSectorId : (current?.default_sector_id ?? '')}
+                onChange={(e) => {
+                  if (addingSector) {
+                    setNewSectorId(e.target.value);
+                    setLabelDraft(sectorName(e.target.value) ?? '');
+                  } else {
+                    void setDefaultSector(e.target.value);
+                  }
+                }}
+                className="block h-8 rounded-md border border-input bg-transparent px-2 text-sm"
+              >
+                <option value="">{addingSector ? t('chooseSector') : t('noSector')}</option>
+                {sectors.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.name}
+                  </option>
+                ))}
+              </select>
+              {sectors.length === 0 && <p className="text-xs text-amber-500">{t('noSectorsYet')}</p>}
+              <p className="text-xs text-muted-foreground">{t('sectorOfNumberHint')}</p>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="min-w-48 flex-1 space-y-1">
+              <Label htmlFor="channel-label">{t('numberName')}</Label>
+              <Input
+                id="channel-label"
+                value={labelDraft}
+                maxLength={60}
+                placeholder={addingMain || current?.id === mainChannel?.id ? t('mainNamePlaceholder') : t('labelPlaceholder')}
+                onChange={(e) => setLabelDraft(e.target.value)}
+              />
+            </div>
+            {current && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy || labelDraft.trim() === (current.label ?? '')}
+                  onClick={() => patchChannel({ label: labelDraft }, t('labelSaved'))}
+                >
+                  {t('saveLabel')}
+                </Button>
+                {current.id !== mainChannel?.id && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => patchChannel({ is_default: true }, t('defaultChanged'))}
+                  >
+                    <Star />
+                    {t('makeMain')}
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+
+          {(addingMain || current?.id === mainChannel?.id) && (
+            <p className="text-xs text-muted-foreground">{t('mainRouting')}</p>
+          )}
+          {addingSector && !newSectorId && (
+            <p className="text-xs text-amber-500">{t('chooseSectorFirst')}</p>
+          )}
         </div>
       )}
-
-      <p className="text-xs text-muted-foreground">
-        {adding ? (addKind === 'evolution' ? t('newQrHint') : t('newHint')) : t('defaultHint')}
-      </p>
     </div>
   ) : null;
+
+  // A sector number is connected only after its sector is chosen.
+  if (!canAddSector) {
+    return (
+      <section className="animate-in fade-in-50 duration-200">
+        <SettingsPanelHead title={tw('title')} description={t('sectorNumbersIntro')} />
+        {bar}
+      </section>
+    );
+  }
 
   const useQr = adding ? addKind === 'evolution' : current?.provider === 'evolution';
   if (useQr) {
@@ -293,7 +382,7 @@ export function WhatsAppChannels() {
         key={adding ? 'new' : selected}
         channelId={adding ? null : selected}
         newLabel={labelDraft}
-        onChanged={(savedId) => loadChannels(savedId ?? null)}
+        onChanged={(savedId) => void afterSaved(savedId)}
         channelBar={bar}
       />
     );
@@ -305,7 +394,7 @@ export function WhatsAppChannels() {
       channelId={selected === 'new' ? null : selected}
       isNew={adding}
       newLabel={labelDraft}
-      onChanged={(savedId) => loadChannels(savedId ?? null)}
+      onChanged={(savedId) => void afterSaved(savedId)}
       channelBar={bar}
     />
   );

@@ -12,6 +12,7 @@ import { ProfileForm } from '@/components/settings/profile-form';
 import { SecurityPanel } from '@/components/settings/security-panel';
 import { AppearancePanel } from '@/components/settings/appearance-panel';
 import { WhatsAppChannels } from '@/components/settings/whatsapp-channels';
+import { SectorsSettings } from '@/components/settings/sectors-settings';
 import { TemplateManager } from '@/components/settings/template-manager';
 import { QuickRepliesManager } from '@/components/settings/quick-replies-manager';
 import { FieldsAndTagsPanel } from '@/components/settings/fields-and-tags-panel';
@@ -82,6 +83,7 @@ function SettingsPageInner() {
     inbox: <InboxSettings />,
     deals: <DealsSettings />,
     members: <MembersTab />,
+    sectors: <SectorsSettings />,
     api: <ApiKeysSettings />,
   };
 

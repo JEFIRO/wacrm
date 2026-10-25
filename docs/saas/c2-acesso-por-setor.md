@@ -1,6 +1,8 @@
 # C2 — Acesso por setor
 
-Status: **aceita** · Item do roteiro: C2 · Depende de: C1 · Branch: `feat/c1-canais`
+Status: **substituída** — ver `docs/saas/setores-e-distribuicao.md`
+
+> ⚠️ Este desenho (setor = equipe de um número, `whatsapp_config_members`) foi substituído antes do merge por setores próprios da conta (`sectors`, `sector_members`, `can_access_sector`). Mantido só como histórico da decisão.
 
 ## Problema
 

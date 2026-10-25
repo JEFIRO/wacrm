@@ -138,8 +138,8 @@ não depende de código: comece já, porque a aprovação leva semanas e trava a
 | ID | Item | Depende de | Estimativa | Status |
 |---|---|---|---|---|
 | C1 | Vários números por conta: tabela de canais (nome do setor, provedor), `channel_id` na conversa, envio pelo número certo, webhook roteando por canal. Sai o `UNIQUE(account_id)` do `whatsapp_config`. Spec: `docs/saas/c1-canais.md`. | — | 6–8 | 🟨 implementado na branch `feat/c1-canais`, falta revisar e fazer merge |
-| C2 | Acesso por setor: atendente vinculado a canais e só vê a inbox deles; dono/admin veem tudo. **No banco (RLS)**, não só na tela. | C1 | 3–4 | 🟨 implementado na branch `feat/c1-canais` (spec `docs/saas/c2-acesso-por-setor.md`), falta revisar e fazer merge |
-| C3 | Transferir conversa entre setores | C2 | 1–2 | 🟨 implementado na branch `feat/c1-canais` (spec `docs/saas/c3-transferencia.md`), falta revisar e fazer merge |
+| C2 | Acesso por setor: atendente vinculado a canais e só vê a inbox deles; dono/admin veem tudo. **No banco (RLS)**, não só na tela. | C1 | 3–4 | 🟨 refeito com setores próprios (`docs/saas/setores-e-distribuicao.md`), na branch, sem merge |
+| C3 | Transferir conversa entre setores | C2 | 1–2 | 🟨 refeito sobre setores (`transfer_conversation(conv, setor)`), na branch, sem merge |
 | W1 | Camada de provedor: interface única (`sendText`, `sendMedia`, `sendReaction`, `sendTyping`, `getMedia`, `health`); Meta passa a ser uma implementação dela | C1 | 2–3 | ⬜ |
 | W2 | Evolution v2: rota de webhook que traduz `messages.upsert`/`messages.update` para o fluxo existente (`processMessage`), envio de texto/mídia, ignora grupos | W1 | 3–4 | ⬜ |
 | W3 | Criar a instância Evolution automaticamente ao adicionar um número + tela de QR code + status de conexão | W2 | 2 | ⬜ |
@@ -167,7 +167,7 @@ não depende de código: comece já, porque a aprovação leva semanas e trava a
 
 | ID | Item | Depende de | Estimativa | Status |
 |---|---|---|---|---|
-| P1 | Distribuição automática de leads (rodízio por setor) | C2 | 2–3 | ⬜ |
+| P1 | Distribuição automática de leads (rodízio por setor) | C2 | 2–3 | 🟨 commitado na branch `feat/c1-canais` (`docs/saas/setores-e-distribuicao.md`), sem merge |
 | P2 | Relatórios por atendente e por etapa + exportação | — | 3 | ⬜ |
 | P3 | Cota mensal de requisições da API por plano | B1 | 1 | ⬜ |
 | P4 | IA incluída no plano, com a chave do SaaS e limite de uso | B1 | 2 | ⬜ |

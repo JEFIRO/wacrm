@@ -58,7 +58,16 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
-    "menuSignOut": "Sair"
+    "menuSignOut": "Sair",
+    "availability": {
+      "online": "Online",
+      "offline": "Offline",
+      "hint": "Online = você está atendendo agora e recebe leads do seu setor.",
+      "nowOnline": "Você está online e pode receber leads.",
+      "nowOffline": "Você está offline.",
+      "offlineRequeued": "Você está offline. {count, plural, one {# lead não iniciado voltou} other {# leads não iniciados voltaram}} para a fila.",
+      "failed": "Não foi possível mudar seu status."
+    }
   },
   "ModeToggle": {
     "switchMode": "Mudar para o modo {mode}"
@@ -388,7 +397,6 @@
       "you": "Você",
       "transferred": "Conversa transferida para {sector}.",
       "transferFailed": "Não foi possível transferir a conversa. Tente novamente.",
-      "unnamedSector": "Número sem nome",
       "transferTo": "Transferir para o setor"
     },
     "sessionTimer": {
@@ -1497,7 +1505,19 @@
         "uploadFailed": "Falha no upload.",
         "fileTooLarge": "O arquivo tem {size} MB — o limite é 16 MB.",
         "defaultOptionTitle": "Opção",
-        "optionN": "Opção {n}"
+        "optionN": "Opção {n}",
+        "handoff": {
+          "routeTo": "Encaminhar para",
+          "modeNone": "Só marcar como pendente (sem setor)",
+          "modeFixed": "Setor fixo",
+          "modeVariable": "Setor escolhido pelo cliente (variável)",
+          "sector": "Setor",
+          "noSectors": "Crie setores em Configurações → Setores.",
+          "variable": "Variável com o nome do setor (ex.: setor)",
+          "queueMessage": "Mensagem quando não houver atendente disponível",
+          "queueMessageHint": "Enviada uma vez por lead. Use '{proximo_horario}' para o próximo horário de atendimento do setor. Vazio = mensagem padrão.",
+          "distributionHint": "O lead vai para o atendente do setor online, dentro da escala e com menos leads ativos; sem ninguém, entra na fila do setor."
+        }
       },
       "categories": {
         "messaging": "Mensagens",
@@ -1970,10 +1990,10 @@
         "actionFailed": "Não foi possível atualizar o número. Tente novamente.",
         "newHint": "Preencha abaixo as credenciais do novo número e salve.",
         "defaultHint": "O número padrão envia campanhas, templates e mensagens da API.",
-        "whoHandles": "Quem atende este número",
-        "noAgents": "Ainda não há atendentes na conta — convide em Membros da equipe.",
-        "openToAll": "Ninguém marcado: todos os atendentes da conta veem as conversas deste número.",
-        "restricted": "Só os marcados (além de donos e admins) veem as conversas deste número."
+        "defaultSector": "Setor padrão deste número",
+        "noSector": "Sem setor (visível para todos)",
+        "defaultSectorHint": "Conversas novas neste número começam neste setor. Gerencie os setores em Configurações → Setores.",
+        "defaultSectorSaved": "Setor padrão salvo."
       }
     },
     "sections": {
@@ -1988,7 +2008,8 @@
       "deals": "Negócios e moeda",
       "inbox": "Caixa de entrada",
       "members": "Membros da equipe",
-      "api": "Chaves de API"
+      "api": "Chaves de API",
+      "sectors": "Setores"
     },
     "groups": {
       "account": "Conta",
@@ -2246,6 +2267,63 @@
       "textPlaceholder": "O texto da mensagem a inserir",
       "cancel": "Cancelar",
       "save": "Salvar"
+    },
+    "sectors": {
+      "title": "Setores e distribuição",
+      "description": "Setores da conta, quem atende cada um e como os leads são distribuídos entre os atendentes.",
+      "agentDescription": "Ligue quando estiver atendendo: os leads do seu setor só chegam para você enquanto estiver online.",
+      "myStatus": "Meu status",
+      "onlineHint": "Online = estou atendendo agora. Desligue em imprevistos (reunião, saída).",
+      "nowOnline": "Você está online.",
+      "nowOffline": "Você está offline.",
+      "timezone": "Fuso horário da conta",
+      "timezoneHint": "As escalas dos atendentes usam este fuso.",
+      "timezoneSaved": "Fuso horário salvo.",
+      "sectors": "Setores",
+      "sectorsHint": "Cada setor recebe os leads encaminhados pelo fluxo e precisa de pelo menos uma pessoa. Só entra em setor quem já tem escala.",
+      "noSectors": "Nenhum setor ainda.",
+      "sectorName": "Nome do setor",
+      "deleteSector": "Excluir setor",
+      "deleteConfirm": "Excluir o setor \"{name}\"? As conversas dele ficam sem setor.",
+      "newSectorPlaceholder": "Novo setor (ex.: Vendas)",
+      "addSector": "Adicionar setor",
+      "sectorExists": "Já existe um setor com esse nome.",
+      "agents": "Atendentes",
+      "agentsHint": "Status, limite de leads simultâneos e escala semanal de cada pessoa.",
+      "online": "Online",
+      "offline": "Offline",
+      "cap": "Limite",
+      "capSaved": "Limite salvo.",
+      "schedule": "Escala",
+      "noSchedule": "Sem escala: não pode entrar em setor nem receber leads",
+      "scheduleSummary": "{count, plural, one {# faixa de horário} other {# faixas de horário}}",
+      "scheduleHint": "Horários no fuso {tz}.",
+      "start": "Início",
+      "end": "Fim",
+      "addRange": "Faixa",
+      "removeRange": "Remover faixa",
+      "saveSchedule": "Salvar escala",
+      "scheduleSaved": "Escala salva.",
+      "cancel": "Cancelar",
+      "startedWhileOffline": "{count, plural, one {# lead já iniciado continua com este atendente offline} other {# leads já iniciados continuam com este atendente offline}} — transfira manualmente se precisar.",
+      "wentOfflineRequeued": "{count, plural, one {# lead não iniciado voltou para a fila} other {# leads não iniciados voltaram para a fila}}.",
+      "saveFailed": "Não foi possível salvar. Tente novamente.",
+      "distributionRule": "Recebe o lead quem está no setor, online, dentro da escala e abaixo do limite — o de menos leads ativos; empate é sorteado. Sem ninguém, o lead vai para a fila do setor.",
+      "weekdays": {
+        "0": "Domingo",
+        "1": "Segunda",
+        "2": "Terça",
+        "3": "Quarta",
+        "4": "Quinta",
+        "5": "Sexta",
+        "6": "Sábado"
+      },
+      "newSectorMembers": "Quem atende o novo setor (pelo menos uma pessoa com escala):",
+      "needsMember": "O setor precisa de pelo menos uma pessoa. Para tirá-la, coloque outra antes ou exclua o setor.",
+      "needsSchedule": "Cadastre a escala da pessoa antes de colocá-la em um setor.",
+      "withoutSchedule": "sem escala",
+      "scheduleRequired": "Esta pessoa está em um setor: a escala precisa de pelo menos uma faixa.",
+      "failedNotices": "{count, plural, one {# lead na fila não recebeu} other {# leads na fila não receberam}} o aviso de \"sem atendente disponível\" depois de 5 tentativas. Veja na Caixa de entrada (conversas pendentes) e responda manualmente."
     }
   },
   "SignupPage": {
@@ -2793,7 +2871,8 @@
         "loadFailed": "Falha ao carregar os membros",
         "updateFailed": "Falha ao atualizar o membro",
         "roleInvalid": "A função deve ser owner, admin, agent ou viewer",
-        "useTransferOwnership": "Use POST /api/account/transfer-ownership para promover um membro a proprietário"
+        "useTransferOwnership": "Use POST /api/account/transfer-ownership para promover um membro a proprietário",
+        "lastInSector": "Essa pessoa é a única de um setor. Coloque outra pessoa no setor ou exclua-o antes de removê-la."
       },
       "nameMustBeString": "O nome deve ser um texto",
       "nameEmpty": "O nome da conta não pode ficar vazio",
@@ -2948,6 +3027,17 @@
       "submitFailed": "Falha ao enviar o modelo.",
       "metaApiStatus": "Erro da API da Meta: {status}",
       "syncFailed": "Falha ao sincronizar os modelos"
+    },
+    "agents": {
+      "notMember": "Essa pessoa não é membro desta conta.",
+      "invalidCap": "O limite de leads deve ser um número inteiro entre 1 e 100.",
+      "invalidSchedule": "Cada faixa precisa de um dia da semana e de um início antes do fim (HH:MM).",
+      "saveFailed": "Não foi possível salvar as configurações do atendente. Tente novamente.",
+      "scheduleRequired": "Quem está em um setor precisa de pelo menos uma faixa de horário."
     }
+  },
+  "Distribution": {
+    "nextSlotPattern": "'{weekday}' às '{time}'",
+    "defaultQueueMessage": "Não há atendentes disponíveis no momento. Nosso próximo atendimento é '{proximo_horario}'."
   }
 }

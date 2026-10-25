@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { requestDistribution } from "@/lib/distribution/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePresence } from "@/hooks/use-presence";
 import { PresenceDot } from "@/components/presence/presence-dot";
@@ -772,6 +773,8 @@ export function MessageThread({
         .eq("id", conversation.id);
 
       onStatusChange(conversation.id, status);
+      // Closing or reopening changes an agent's load (lead distribution).
+      requestDistribution();
     },
     [conversation, onStatusChange]
   );
@@ -950,16 +953,16 @@ export function MessageThread({
     [conversation, user?.id, t],
   );
 
-  // Numbers of the account — each one's team is a sector a thread can be
-  // transferred to (C3). Fetched once; RLS lets every member read them.
-  const [sectors, setSectors] = useState<{ id: string; label: string | null }[]>([]);
+  // Sectors of the account — where a thread can be transferred to (C3).
+  // Fetched once; RLS lets every member read them.
+  const [sectors, setSectors] = useState<{ id: string; name: string }[]>([]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await createClient()
-        .from("whatsapp_config")
-        .select("id, label")
-        .order("created_at", { ascending: true });
+        .from("sectors")
+        .select("id, name")
+        .order("name", { ascending: true });
       if (!cancelled) setSectors(data ?? []);
     })();
     return () => {
@@ -972,9 +975,7 @@ export function MessageThread({
       if (!conversation) return;
       const { data, error } = await createClient().rpc("transfer_conversation", {
         p_conversation_id: conversation.id,
-        // Back to the conversation's own number = no override.
-        p_sector_channel_id:
-          targetId === conversation.whatsapp_config_id ? null : targetId,
+        p_sector_id: targetId,
       });
       if (error) {
         console.error("Failed to transfer conversation:", error);
@@ -982,12 +983,9 @@ export function MessageThread({
         return;
       }
       const target = sectors.find((s) => s.id === targetId);
-      toast.success(t("transferred", { sector: target?.label || t("unnamedSector") }));
-      onTransfer?.(
-        conversation.id,
-        targetId === conversation.whatsapp_config_id ? null : targetId,
-        data === true,
-      );
+      toast.success(t("transferred", { sector: target?.name ?? "" }));
+      onTransfer?.(conversation.id, targetId, data === true);
+      requestDistribution();
     },
     [conversation, sectors, onTransfer, t],
   );
@@ -1009,6 +1007,7 @@ export function MessageThread({
       }
 
       onAssignChange(conversation.id, agentId);
+      requestDistribution();
     },
     [conversation, onAssignChange, t],
   );
@@ -1229,11 +1228,11 @@ export function MessageThread({
                   </DropdownMenuItem>
                 </>
               )}
-              {/* Transfer to another sector's team (C3) — only with 2+ numbers.
-                  Lives in this menu (who handles the thread) rather than a
-                  header button: the header has no room left at md widths.
-                  The thread keeps replying from its own number. */}
-              {sectors.length > 1 && (
+              {/* Transfer to another sector (C3). Lives in this menu (who
+                  handles the thread) rather than a header button: the header
+                  has no room left at md widths. The thread keeps replying
+                  from its own number. */}
+              {sectors.length > 0 && (
                 <>
                   <DropdownMenuSeparator className="bg-border" />
                   <DropdownMenuGroup>
@@ -1241,8 +1240,7 @@ export function MessageThread({
                       {t("transferTo")}
                     </DropdownMenuLabel>
                     {sectors.map((s) => {
-                      const isCurrent =
-                        s.id === (conversation.sector_channel_id ?? conversation.whatsapp_config_id);
+                      const isCurrent = s.id === conversation.sector_id;
                       return (
                         <DropdownMenuItem
                           key={s.id}
@@ -1251,7 +1249,7 @@ export function MessageThread({
                           className="text-sm text-popover-foreground"
                         >
                           <ArrowRightLeft className="mr-2 h-3 w-3" />
-                          <span className="flex-1">{s.label || t("unnamedSector")}</span>
+                          <span className="flex-1">{s.name}</span>
                           {isCurrent && <Check className="ml-2 h-3 w-3" />}
                         </DropdownMenuItem>
                       );

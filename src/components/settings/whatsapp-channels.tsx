@@ -16,7 +16,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { WhatsAppConfig } from './whatsapp-config';
 
 interface ChannelRow {
@@ -25,12 +24,7 @@ interface ChannelRow {
   phone_number_id: string;
   is_default: boolean;
   status: string;
-}
-
-interface MemberRow {
-  user_id: string;
-  full_name: string | null;
-  email: string | null;
+  default_sector_id: string | null;
 }
 
 /** `'new'` = the blank form that adds a number; null = no number yet. */
@@ -45,17 +39,15 @@ export function WhatsAppChannels() {
   const [selected, setSelected] = useState<Selection>(null);
   const [labelDraft, setLabelDraft] = useState('');
   const [busy, setBusy] = useState(false);
-  // Sector access (C2, migration 061): agents/viewers who handle the
-  // selected number. Owners and admins always see every number.
-  const [members, setMembers] = useState<MemberRow[]>([]);
-  const [assigned, setAssigned] = useState<Set<string>>(new Set());
+  // Sectors (061): new conversations of a number start in its default.
+  const [sectors, setSectors] = useState<{ id: string; name: string }[]>([]);
 
   const loadChannels = useCallback(
     async (prefer?: string | null) => {
       if (!accountId) return;
       const { data, error } = await supabase
         .from('whatsapp_config')
-        .select('id, label, phone_number_id, is_default, status')
+        .select('id, label, phone_number_id, is_default, status, default_sector_id')
         .eq('account_id', accountId)
         .order('created_at', { ascending: true });
       if (error) {
@@ -83,50 +75,30 @@ export function WhatsAppChannels() {
   const current = channels.find((c) => c.id === selected) ?? null;
 
   useEffect(() => {
-    if (!accountId || !canEditSettings) return;
+    if (!accountId) return;
     (async () => {
       const { data } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email')
+        .from('sectors')
+        .select('id, name')
         .eq('account_id', accountId)
-        .in('account_role', ['agent', 'viewer'])
-        .order('full_name', { ascending: true });
-      setMembers((data ?? []) as MemberRow[]);
+        .order('name', { ascending: true });
+      setSectors(data ?? []);
     })();
-  }, [accountId, canEditSettings, supabase]);
+  }, [accountId, supabase]);
 
-  const loadAssigned = useCallback(
-    async (channelId: string) => {
-      const { data } = await supabase
-        .from('whatsapp_config_members')
-        .select('user_id')
-        .eq('whatsapp_config_id', channelId);
-      setAssigned(new Set((data ?? []).map((r: { user_id: string }) => r.user_id)));
-    },
-    [supabase],
-  );
-
-  useEffect(() => {
-    if (current?.id && canEditSettings) loadAssigned(current.id);
-    else setAssigned(new Set());
-  }, [current?.id, canEditSettings, loadAssigned]);
-
-  async function toggleMember(userId: string, on: boolean) {
+  async function setDefaultSector(sectorId: string) {
     if (!current) return;
-    const { error } = on
-      ? await supabase
-          .from('whatsapp_config_members')
-          .insert({ whatsapp_config_id: current.id, user_id: userId })
-      : await supabase
-          .from('whatsapp_config_members')
-          .delete()
-          .eq('whatsapp_config_id', current.id)
-          .eq('user_id', userId);
+    const { error } = await supabase
+      .from('whatsapp_config')
+      .update({ default_sector_id: sectorId || null })
+      .eq('id', current.id);
     if (error) {
-      console.error('Sector access update failed:', error.message);
+      console.error('Default sector update failed:', error.message);
       toast.error(t('actionFailed'));
+      return;
     }
-    await loadAssigned(current.id);
+    toast.success(t('defaultSectorSaved'));
+    await loadChannels();
   }
 
   useEffect(() => {
@@ -231,26 +203,22 @@ export function WhatsAppChannels() {
       )}
 
       {canEditSettings && current && (
-        <div className="space-y-2 border-t border-border pt-3">
-          <p className="text-sm font-medium">{t('whoHandles')}</p>
-          {members.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{t('noAgents')}</p>
-          ) : (
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {members.map((m) => (
-                <label key={m.user_id} className="flex cursor-pointer items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={assigned.has(m.user_id)}
-                    onCheckedChange={(checked) => toggleMember(m.user_id, checked === true)}
-                  />
-                  {m.full_name || m.email}
-                </label>
-              ))}
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground">
-            {assigned.size === 0 ? t('openToAll') : t('restricted')}
-          </p>
+        <div className="space-y-1 border-t border-border pt-3">
+          <Label htmlFor="channel-sector">{t('defaultSector')}</Label>
+          <select
+            id="channel-sector"
+            value={current.default_sector_id ?? ''}
+            onChange={(e) => setDefaultSector(e.target.value)}
+            className="block h-8 rounded-md border border-input bg-transparent px-2 text-sm"
+          >
+            <option value="">{t('noSector')}</option>
+            {sectors.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground">{t('defaultSectorHint')}</p>
         </div>
       )}
 

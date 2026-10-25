@@ -40,6 +40,7 @@ import {
   engineSendText,
 } from "./meta-send";
 import { decideFallback, resolveFallbackPolicy } from "./fallback";
+import { handoffToSector, resolveHandoffSector } from "./handoff-sector";
 import { addContactTagAndDispatch } from "@/lib/contacts/tag-events";
 import { removeContactTag } from "@/lib/contacts/tag-write";
 import { checkRunTimeout, markRunTimedOut, type RunTimeoutCheck } from "./timeout";
@@ -52,6 +53,7 @@ import {
   type FlowRow,
   type FlowRunRow,
   type ParsedInbound,
+  type HandoffNodeConfig,
   type SendButtonsNodeConfig,
   type SendListNodeConfig,
   type SendMediaNodeConfig,
@@ -506,7 +508,25 @@ async function executeHandoff(
   run: FlowRunRow,
   node: FlowNodeRow,
 ): Promise<void> {
-  const cfg = node.config as { assign_to?: string; note?: string };
+  const cfg = node.config as HandoffNodeConfig;
+  // Sector routing (fork): distribute among the sector's agents or queue.
+  const sectorId = run.conversation_id
+    ? await resolveHandoffSector(db, run, cfg)
+    : null;
+  if (sectorId) {
+    const outcome = await handoffToSector(db, run, cfg, sectorId);
+    await logEvent(db, run.id, "handoff", node.node_key, {
+      note: cfg.note ?? null,
+      sector_id: sectorId,
+      assigned_to: outcome.assignedTo,
+      queued: outcome.queued,
+      queue_notice: outcome.notice,
+      queue_notice_sent: outcome.noticeSent,
+      queue_notice_retry_at: outcome.noticeRetryAt,
+    });
+    await endRun(db, run.id, "handed_off", "handoff_node");
+    return;
+  }
   const convUpdate: Record<string, unknown> = {
     status: "pending",
     updated_at: new Date().toISOString(),

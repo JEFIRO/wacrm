@@ -5,11 +5,10 @@ import type { Conversation, Contact, Tag } from "@/types";
  * can filter conversations by contact tag without a second round-trip.
  * `contact_tags(tags(*))` returns the join rows; {@link normalizeConversation}
  * flattens them onto `contact.tags`. `channel` is the number the thread
- * belongs to (migration 060); `sector` the team it was transferred to, if
- * any (062). Both point at whatsapp_config, so each names its foreign key.
+ * belongs to (migration 060); `sector` the team handling it (061).
  */
 export const CONVERSATION_SELECT =
-  "*, contact:contacts(*, contact_tags(tags(*))), channel:whatsapp_config!conversations_whatsapp_config_id_fkey(id, label, phone_number_id), sector:whatsapp_config!conversations_sector_channel_id_fkey(id, label)";
+  "*, contact:contacts(*, contact_tags(tags(*))), channel:whatsapp_config!conversations_whatsapp_config_id_fkey(id, label, phone_number_id), sector:sectors!conversations_sector_id_fkey(id, name)";
 
 /** Raw shape returned by {@link CONVERSATION_SELECT} before flattening. */
 type RawContact = Contact & { contact_tags?: { tags: Tag | null }[] };

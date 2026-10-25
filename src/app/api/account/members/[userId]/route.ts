@@ -35,6 +35,13 @@ function rpcErrorToResponse(err: PostgrestError): NextResponse {
   if (err.code === "42501") {
     return NextResponse.json({ error: err.message }, { status: 403 });
   }
+  // Migration 064: the member is a sector's only person.
+  if (err.message === "sector_needs_member") {
+    return NextResponse.json(
+      { error: t('account.members.lastInSector') },
+      { status: 400 },
+    );
+  }
   if (err.code === "22023") {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }

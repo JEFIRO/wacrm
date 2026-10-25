@@ -185,10 +185,14 @@ export interface Conversation {
   whatsapp_config_id?: string | null;
   /** Embedded channel (number) of the thread, when selected. */
   channel?: { id: string; label: string | null; phone_number_id: string } | null;
-  /** Team the thread was transferred to (migration 062); null = its own number's. */
-  sector_channel_id?: string | null;
-  /** Embedded transfer target, when selected. */
-  sector?: { id: string; label: string | null } | null;
+  /** Sector handling the thread (migration 061); starts as the number's default. */
+  sector_id?: string | null;
+  /** Embedded sector, when selected. */
+  sector?: { id: string; name: string } | null;
+  /** Lead distribution state (migration 063). */
+  assigned_at?: string | null;
+  started_at?: string | null;
+  queued_at?: string | null;
   created_at: string;
   updated_at: string;
   contact?: Contact;

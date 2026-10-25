@@ -121,7 +121,7 @@ function InboxPageInner() {
    * realtime channel). The ref is kept in sync via the effect below.
    */
   const knownConvIdsRef = useRef<Set<string>>(new Set());
-  // Same idea for each thread's transfer target (062): a realtime UPDATE
+  // Same idea for each thread's transfer target (061): a realtime UPDATE
   // that changes it needs a re-fetch of the sector label.
   const knownSectorRef = useRef<Map<string, string | null>>(new Map());
   useEffect(() => {
@@ -129,7 +129,7 @@ function InboxPageInner() {
     const sectors = new Map<string, string | null>();
     for (const c of conversations) {
       next.add(c.id);
-      sectors.set(c.id, c.sector_channel_id ?? null);
+      sectors.set(c.id, c.sector_id ?? null);
     }
     knownConvIdsRef.current = next;
     knownSectorRef.current = sectors;
@@ -174,7 +174,7 @@ function InboxPageInner() {
           // last_message_text / unread_count to fresher values than
           // the row we just read). Only backfill the joins, which the
           // realtime payloads never carry: `contact`, plus the number
-          // and transfer target (migrations 060/062) — those two always
+          // and transfer target (migrations 060/061) — those two always
           // from the fetch, since a transfer is what triggers a re-hydrate.
           return prev.map((c) =>
             c.id === fetched.id
@@ -323,11 +323,11 @@ function InboxPageInner() {
           // back on for the ~100ms it takes for the reset effect's server
           // UPDATE to round-trip. Non-active convs take the value as-is.
           const isActive = activeConversation?.id === conv.id;
-          // Transferred by someone else (062): the payload has the new
+          // Transferred by someone else (061): the payload has the new
           // sector id but not its label — re-fetch the joins.
           if (
-            conv.sector_channel_id !== undefined &&
-            knownSectorRef.current.get(conv.id) !== (conv.sector_channel_id ?? null)
+            conv.sector_id !== undefined &&
+            knownSectorRef.current.get(conv.id) !== (conv.sector_id ?? null)
           ) {
             hydrateConversation(conv.id);
           }
@@ -567,14 +567,14 @@ function InboxPageInner() {
   // their inbox (RLS hides it from now on); otherwise update it in place.
   // Either way the assignment was cleared by transfer_conversation().
   const handleTransfer = useCallback(
-    (conversationId: string, sectorChannelId: string | null, stillVisible: boolean) => {
+    (conversationId: string, sectorId: string | null, stillVisible: boolean) => {
       if (!stillVisible) {
         setConversations((prev) => prev.filter((c) => c.id !== conversationId));
         if (activeConversation?.id === conversationId) handleCloseConversation();
         return;
       }
       setResyncToken((n) => n + 1);
-      const patch = { sector_channel_id: sectorChannelId, assigned_agent_id: undefined };
+      const patch = { sector_id: sectorId, assigned_agent_id: undefined };
       setConversations((prev) =>
         prev.map((c) => (c.id === conversationId ? { ...c, ...patch } : c))
       );

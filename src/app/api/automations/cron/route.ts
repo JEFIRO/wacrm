@@ -8,6 +8,8 @@ import {
   resumePendingExecution,
 } from '@/lib/automations/engine'
 import type { AutomationContext } from '@/lib/automations/engine'
+import { distributePending, retryQueueNotices } from '@/lib/distribution/distribute'
+import { engineSendText } from '@/lib/flows/meta-send'
 
 /**
  * Drain due `automation_pending_executions` rows. Meant to be hit
@@ -40,6 +42,11 @@ export async function GET(request: Request) {
   // status and explains the outcome on the log.
   const expired = await expireAwaitingReplies()
   const requeued = await requeueStalledExecutions()
+  // Lead distribution (fork): catches an agent schedule starting. Acts only
+  // when eligibility changed — nothing moves by idle time.
+  const distribution = await distributePending(supabaseAdmin())
+  // Queue notices whose send failed get another try (fork).
+  const queueNotices = await retryQueueNotices(supabaseAdmin(), engineSendText)
 
   const admin = supabaseAdmin()
   const { data: due, error } = await admin
@@ -51,7 +58,7 @@ export async function GET(request: Request) {
     .limit(50)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (!due || due.length === 0) return NextResponse.json({ processed: 0, expired, requeued })
+  if (!due || due.length === 0) return NextResponse.json({ processed: 0, expired, requeued, distribution, queueNotices })
 
   let processed = 0
   for (const row of due) {
@@ -75,5 +82,5 @@ export async function GET(request: Request) {
     processed++
   }
 
-  return NextResponse.json({ processed, expired, requeued })
+  return NextResponse.json({ processed, expired, requeued, distribution, queueNotices })
 }

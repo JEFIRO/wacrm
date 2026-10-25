@@ -78,8 +78,10 @@ resultado real (comando, contagem, falhas); sem evidência não está concluído
   lê ou altera dados de outra, sem erro nem teste vermelho.
 - ⚠️ Conta tem vários números (060): nunca `whatsapp_config` por `account_id` com `.single()`;
   use `loadChannel` / `findOrCreateChannelConversation` (`src/lib/whatsapp/channels.ts`).
-- ⚠️ Acesso por setor (061) vive no RLS. Rota com client service role e ID de conversa vindo
-  do usuário ignora o setor: confira `can_access_channel` ou use o client do usuário.
+- ⚠️ Setor ≠ número: setor é da conta (`sectors`), número tem setor padrão. Acesso vive no RLS
+  (`can_access_sector`); rota service role com ID vindo do usuário ignora o setor — use o client do usuário.
+- ⚠️ Atribuição automática só por `claim_lead()` (trava o atendente); nunca `update assigned_agent_id`
+  direto no distribuidor. Lógica em `src/lib/distribution/` (pura, testada).
 - ⚠️ `supabase start` pode subir o banco "from backup" **sem migrations**: o app abre, mas
   tudo que toca o banco falha. Rode `migration up --local` e confira.
 - ⚠️ A máquina está em pt-BR: sem `LC_ALL=en_US.UTF-8`, testes de formatação de moeda falham
@@ -102,19 +104,17 @@ resultado real (comando, contagem, falhas); sem evidência não está concluído
 
 ## Grafo do código (Graphify)
 
-- Se `graphify-out/graph.json` existir, consulte-o com `/graphify query "<pergunta>"` antes
-  de varrer arquivos. Se não existir, gere com `/graphify .` ou siga com busca normal.
-- Após mudança grande de estrutura: `graphify update .` e
-  `graphify export obsidian --dir docs/grafo`. `docs/grafo/` é gerado: não leia nem edite.
+- Se `graphify-out/graph.json` existir, use `/graphify query "<pergunta>"` antes de varrer arquivos;
+  se não, busque normalmente. `docs/grafo/` é gerado: não leia nem edite.
 
 ## Ao terminar uma implementação
 
-Atualize o status em `docs/saas/roteiro.md` e o estado em `docs/CLAUDE_HANDOFF.md`. Se
-mudou arquitetura, banco, autenticação, cobrança ou camada WhatsApp, crie ou atualize o
-documento da área em `docs/saas/`. Erro que custou caro vira uma linha em "Não faça".
+Atualize o status em `docs/saas/roteiro.md` e o estado em `docs/CLAUDE_HANDOFF.md`; toda
+pendência (o que não testou, decisão tomada sem o usuário, bug visto e não corrigido) vai na
+seção "Pendências e riscos" do handoff, nunca só no Histórico ou no chat. Se mudou
+arquitetura, banco, autenticação, cobrança ou WhatsApp, atualize o doc da área em `docs/saas/`.
 
 ---
 
-**Estas regras funcionam se:** os diffs ficam restritos ao pedido, nenhuma consulta
-service role sai sem `account_id`, e cada sessão começa sabendo o estado pelo handoff
-em vez de perguntar.
+**Estas regras funcionam se:** os diffs ficam no pedido, nenhuma consulta service role sai
+sem `account_id`, e cada sessão começa pelo handoff (estado e pendências) sem perguntar.

@@ -7,8 +7,13 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 
 - Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm`, branch `main`,
   sem alterações de código em relação ao upstream (último commit upstream `34bce1a`).
-- Branch `feat/c1-canais` (sem commit): **C1 implementado** — vários números por conta,
-  ver `docs/saas/c1-canais.md`. Demais itens do roadmap ainda são plano.
+- Branch `feat/c1-canais` (sem push/merge):
+  - commitados: C1 vários números (`f6ef137`), C2 e C3 na versão antiga (`b63bd43`, `ab699e9`);
+  - commitados depois: setores próprios (061/062 reescritas), distribuição de leads (063),
+    regras de cadastro (064) e nova tentativa do aviso de fila (065) —
+    `docs/saas/setores-e-distribuicao.md`. Falta revisar e fazer merge na `main`.
+- Status de cada item do roadmap: `docs/saas/roteiro.md`. Pendências abertas: seção
+  "Pendências e riscos" abaixo.
 - Ambiente local funcionando (verificado em 2026-10-25): cadastro, login e dashboard
   carregando dados do Supabase local sem erros no console.
 
@@ -27,18 +32,18 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
 - `.env.local` (ignorado pelo git) já tem as chaves do Supabase local, `ENCRYPTION_KEY`
   gerada, `NEXT_PUBLIC_APP_LOCALE=pt`, `WHATSAPP_TEMPLATES_DRY_RUN=true` e
   `META_APP_SECRET` **provisório** (webhooks da Meta não validam com ele).
-- Conta de teste local: `teste@wacrm.test`; a senha está comentada no fim do `.env.local`.
-  Tem dois números falsos ("Vendas" …0001 e "Suporte" …0002) com token cifrado inválido:
-  servem para testar roteamento, mas toda chamada real à Meta falha (esperado).
-- Atendentes de teste (C2): `jefferson@wacrm.test` marcado em Vendas e `jennifer@wacrm.test`
-  em Suporte; senha em `TEST_AGENT_PASSWORD` no `.env.local`. Usuário criado direto em
-  `auth.users` precisa dos campos de token como `''` (não NULL) e de uma linha em
-  `auth.identities`, senão o login dá 500.
+- **Dados de teste** (banco local refeito em 2026-10-25): `node --env-file=.env.local
+  --no-warnings scripts/dev/seed-local.mts` recria dono `teste@wacrm.test`
+  (`TEST_USER_PASSWORD`), atendentes `jefferson@`/`jennifer@wacrm.test` (`TEST_AGENT_PASSWORD`),
+  números falsos "Vendas" …0001 / "Suporte" …0002 e setores Vendas (Jefferson) / Suporte
+  (Jennifer). Idempotente; recusa rodar fora do Supabase local. Tokens falsos: toda chamada
+  real à Meta falha (esperado).
 - Simular mensagem recebida (assinada como a Meta, com `META_APP_SECRET`), app rodando:
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: 54 aplicadas (001–059 com buracos). Se o banco subir "from backup" sem
+- Migrations: a última é a `064` (aplicada com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+  em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
 ## Linha de base de validação (2026-10-25, código igual ao upstream)
@@ -48,7 +53,9 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   idioma da máquina (`LANG=pt_BR.UTF-8` formata `1.234` em vez de `1,234`), não bug do app:
   com `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 npx vitest run src/lib/currency.test.ts`
   os 10 testes passam. Rode a suíte com `LC_ALL=en_US.UTF-8` para comparar com o CI.
-- `npm run lint` e `npm run build` ainda não foram rodados localmente.
+- `npm run lint`: 0 erros e 40 avisos, todos do upstream — compare a contagem, não espere zero.
+- Última rodada completa (2026-10-25, com setores + distribuição): 1541 testes, typecheck,
+  lint e build verdes; `supabase/ci/verify-schema.sql` ok.
 
 ## O que o wacrm já tem (relevante para o SaaS)
 
@@ -67,8 +74,6 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   deixa escolher o número de saída).
 - **Só Meta Cloud API.** Sem Evolution/Baileys, sem Embedded Signup, sem coexistência
   (nenhum tratamento de `smb_message_echoes`). Configuração da Meta é manual (IDs + token).
-- Acesso por setor (C2) vale no RLS; rotas service role com ID de conversa vindo do usuário
-  (ex.: disparo manual de automação) só checam a conta, não o setor.
 - Campanhas rodam dentro da requisição (`maxDuration` 60–300 s), sem fila.
 - Rate limit em memória (`src/lib/rate-limit.ts`) — válido só com uma instância.
 - Automações/flows dependem de cron externo chamando `/api/automations/cron` e
@@ -106,15 +111,35 @@ Roteiro detalhado, com grafo de dependências, IDs, estimativas e status: `docs/
 2. **Fase 1:** cobrança (Asaas) + planos/limites/assentos; vários números por conta com
    acesso por setor; Evolution com instância automática e QR code.
 3. **Fase 2:** coexistência Meta (Embedded Signup, echoes, sincronização de histórico).
-4. **Fase 3:** fila de campanhas (Redis/BullMQ, intervalo anti-ban), distribuição automática
-   de leads, relatórios por atendente, IA incluída no plano, exclusão de conta (LGPD).
+4. **Fase 3:** fila de campanhas (Redis/BullMQ, intervalo anti-ban), relatórios por atendente,
+   IA incluída no plano, exclusão de conta (LGPD). (Distribuição de leads foi adiantada e
+   está implementada — ver Estado atual.)
 5. **Produção:** VPS com monitoramento e backup, Supabase na nuvem, SMTP próprio,
    cron externo, termos de uso/privacidade, nota fiscal.
 
 ## Pendências e riscos
 
-- Itens da tabela de planos que o sistema não faz: limite de números por plano, distribuição de leads,
-  cota mensal de API, recursos por plano, relatórios por atendente/exportação.
+Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre no Histórico).
+
+### Setores e distribuição
+- [ ] Botão Online/Offline do topo (`availability-toggle.tsx`) não foi visto na tela logado
+      como atendente; a rota `/api/agents/settings` foi testada pela tela de Setores.
+- [ ] Só o nó do fluxo coloca lead na distribuição; conversa nova que não passa por fluxo
+      não é distribuída (decisão a confirmar com o usuário).
+- [ ] Passo "Atribuir conversa" das automações segue no round-robin do upstream (devolve o
+      primeiro membro) — não usa a distribuição.
+- [ ] Decisão tomada sem o usuário, a confirmar: início de escala pego pelo
+      cron de 1 min. Detalhes na spec.
+
+### Inbox e acesso
+- [ ] Conversa **nova** chega pelo tempo real como "Nenhuma mensagem ainda" até recarregar —
+      corrida na hidratação de `src/app/(dashboard)/inbox/page.tsx` (código do upstream).
+- [ ] Rotas com client service role e ID de conversa vindo do usuário (ex.: disparo manual de
+      automação, `/api/automations/engine`) checam a conta, mas não o setor.
+
+### Produto e plataforma
+- Itens da tabela de planos que o sistema não faz: limite de números por plano, cota mensal
+  de API, recursos por plano, relatórios por atendente/exportação.
 - Coexistência: requisitos e limites da Meta mudam com frequência — confirmar na
   documentação oficial antes de prometer a clientes.
 - Evolution: risco de banimento em campanhas; deixar claro nos termos de uso.
@@ -132,8 +157,8 @@ Roteiro detalhado, com grafo de dependências, IDs, estimativas e status: `docs/
 - **2026-10-25** — C1 implementado na branch (migration 060, `channels.ts`, ~25 pontos de
   leitura de config, API de config multi-número, barra de números e etiqueta na inbox).
   Verificado: suíte 1517 testes, schema check do CI, webhook simulado (1 contato → 2
-  conversas, uma por número) e tela de configuração no navegador. Pendente: `supabase db
-  reset` do zero (apaga o banco local — pedir antes), revisão e merge.
+  conversas, uma por número) e tela de configuração no navegador. (`db reset` do zero feito
+  depois, junto com a distribuição.)
 - **2026-10-25** — C2 implementado na branch (migration 061: `whatsapp_config_members`,
   `can_access_channel`, RLS de conversas/mensagens/reações, `dashboard_overview` como
   INVOKER; "Quem atende este número" nas configurações). Verificado: matriz de acesso como
@@ -145,3 +170,25 @@ Roteiro detalhado, com grafo de dependências, IDs, estimativas e status: `docs/
   Pendência vista no teste: conversa **nova** chega pelo tempo real como "Nenhuma mensagem
   ainda" até recarregar — corrida na hidratação de `inbox/page.tsx` (código do upstream, não
   ligado a setores; não corrigido).
+- **2026-10-25** — Setores próprios + distribuição de leads (spec
+  `docs/saas/setores-e-distribuicao.md`): 061/062 **reescritas** antes do merge (setor deixou de
+  ser "equipe do número"), 063 nova (escala, online/offline, limite, fila, `claim_lead` com
+  trava). Banco local refeito com `supabase db reset` (todas as 63 migrations do zero, OK) e
+  `scripts/dev/seed-local.mts`. Verificado: 22 testes de regras + 2 de catálogo, fluxo real
+  (3 leads ao Jefferson, 4º na fila com "segunda-feira às 12:00"), rebalanceamento ao abrir
+  vaga, offline devolvendo não iniciados, online puxando a fila, `started_at` por gatilho,
+  corrida de duas atribuições com trava (só uma ganha), gate verde. **Sem commit** (pedido).
+  Pendências abertas → seção "Pendências e riscos".
+- **2026-10-25** — Regras de cadastro pedidas pelo usuário (migration **064**):
+  setor só existe com pelo menos 1 funcionário (`create_sector`, último membro não sai) e
+  funcionário só entra em setor com escala (`replace_agent_schedule` atômico; sem escala =
+  nunca elegível). Remover da equipe a única pessoa de um setor é recusado. Tela de Setores
+  trava as caixas e pede membros ao criar. Verificado: 13 casos SQL (inclusive COMMIT real
+  e remoção de membro), API recusando escala vazia, criação de setor pela tela, gate verde
+  (1541 testes, typecheck, lint 0 erros, build) e schema check. Seed cria escala 24h × 7.
+- **2026-10-25** — Aviso de fila com nova tentativa (migration **065**): envio que falha fica
+  guardado e o cron tenta de novo (1/5/15/60 min, 5 envios); lead que saiu da fila descarta o
+  aviso; ao desistir, alerta em Configurações → Setores. Verificado ao vivo (fluxo real →
+  falha → cron reagenda → 5ª falha → alerta na tela) e em testes com banco simulado (sucesso,
+  falha, lead fora da fila, autor ausente). Caminho de envio com sucesso só nos testes (token
+  local é falso). Gate verde (1546 testes). Commit de C2/C3 com setores, P1, 064 e 065.

@@ -1,6 +1,8 @@
 # C3 — Transferir conversa entre setores
 
-Status: **aceita** · Item do roteiro: C3 · Depende de: C2 · Branch: `feat/c1-canais`
+Status: **substituída** — ver `docs/saas/setores-e-distribuicao.md`
+
+> ⚠️ A transferência agora troca `conversations.sector_id` (setor da conta), não `sector_channel_id`. A regra de manter o número de envio continua igual. Mantido como histórico.
 
 ## Problema
 

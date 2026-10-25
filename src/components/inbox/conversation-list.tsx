@@ -484,8 +484,10 @@ function ConversationItem({
             {/* Which number (sector) the thread is on — only shown once
                 the number has a sector name (migration 060). */}
             {conversation.channel?.label && (
-              <span className="max-w-24 truncate rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span className="max-w-32 truncate rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                 {conversation.channel.label}
+                {/* Transferred to another sector's team (062). */}
+                {conversation.sector?.label ? ` → ${conversation.sector.label}` : ""}
               </span>
             )}
             <span className="text-[10px] text-muted-foreground">{timeAgo}</span>

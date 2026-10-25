@@ -385,7 +385,11 @@
       "assignmentUpdateFailed": "담당자 변경에 실패했습니다",
       "networkError": "네트워크 오류",
       "documentFallback": "문서",
-      "you": "나"
+      "you": "나",
+      "transferred": "대화가 {sector}(으)로 이관되었습니다.",
+      "transferFailed": "대화를 이관할 수 없습니다. 다시 시도하세요.",
+      "unnamedSector": "이름 없는 번호",
+      "transferTo": "부서로 이관"
     },
     "sessionTimer": {
       "expired": "만료됨",

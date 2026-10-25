@@ -27,6 +27,7 @@ import {
   RefreshCw,
   PanelRightOpen,
   PanelRightClose,
+  ArrowRightLeft,
 } from "lucide-react";
 import { format, isToday, isYesterday, differenceInHours } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -35,6 +36,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -93,6 +96,16 @@ interface MessageThreadProps {
   onAssignChange: (
     conversationId: string,
     assignedAgentId: string | null,
+  ) => void;
+  /**
+   * After a transfer to another sector's team (migration 062).
+   * `stillVisible` is false when the caller is not in the new sector —
+   * the page drops the thread from the list.
+   */
+  onTransfer?: (
+    conversationId: string,
+    sectorChannelId: string | null,
+    stillVisible: boolean,
   ) => void;
   /**
    * On mobile, the thread is shown full-screen with the conversation list
@@ -180,6 +193,7 @@ export function MessageThread({
   onUpdateMessage,
   onStatusChange,
   onAssignChange,
+  onTransfer,
   onBack,
   resyncToken = 0,
   onRefresh,
@@ -936,6 +950,48 @@ export function MessageThread({
     [conversation, user?.id, t],
   );
 
+  // Numbers of the account — each one's team is a sector a thread can be
+  // transferred to (C3). Fetched once; RLS lets every member read them.
+  const [sectors, setSectors] = useState<{ id: string; label: string | null }[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await createClient()
+        .from("whatsapp_config")
+        .select("id, label")
+        .order("created_at", { ascending: true });
+      if (!cancelled) setSectors(data ?? []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleTransfer = useCallback(
+    async (targetId: string) => {
+      if (!conversation) return;
+      const { data, error } = await createClient().rpc("transfer_conversation", {
+        p_conversation_id: conversation.id,
+        // Back to the conversation's own number = no override.
+        p_sector_channel_id:
+          targetId === conversation.whatsapp_config_id ? null : targetId,
+      });
+      if (error) {
+        console.error("Failed to transfer conversation:", error);
+        toast.error(t("transferFailed"));
+        return;
+      }
+      const target = sectors.find((s) => s.id === targetId);
+      toast.success(t("transferred", { sector: target?.label || t("unnamedSector") }));
+      onTransfer?.(
+        conversation.id,
+        targetId === conversation.whatsapp_config_id ? null : targetId,
+        data === true,
+      );
+    },
+    [conversation, sectors, onTransfer, t],
+  );
+
   const handleAssignChange = useCallback(
     async (agentId: string | null) => {
       if (!conversation) return;
@@ -1173,8 +1229,39 @@ export function MessageThread({
                   </DropdownMenuItem>
                 </>
               )}
+              {/* Transfer to another sector's team (C3) — only with 2+ numbers.
+                  Lives in this menu (who handles the thread) rather than a
+                  header button: the header has no room left at md widths.
+                  The thread keeps replying from its own number. */}
+              {sectors.length > 1 && (
+                <>
+                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">
+                      {t("transferTo")}
+                    </DropdownMenuLabel>
+                    {sectors.map((s) => {
+                      const isCurrent =
+                        s.id === (conversation.sector_channel_id ?? conversation.whatsapp_config_id);
+                      return (
+                        <DropdownMenuItem
+                          key={s.id}
+                          disabled={isCurrent}
+                          onClick={() => handleTransfer(s.id)}
+                          className="text-sm text-popover-foreground"
+                        >
+                          <ArrowRightLeft className="mr-2 h-3 w-3" />
+                          <span className="flex-1">{s.label || t("unnamedSector")}</span>
+                          {isCurrent && <Check className="ml-2 h-3 w-3" />}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuGroup>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
+
         </div>
       </div>
 

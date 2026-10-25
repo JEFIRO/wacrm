@@ -385,7 +385,11 @@
       "assignmentUpdateFailed": "Error al actualizar la asignación",
       "networkError": "error de red",
       "documentFallback": "Documento",
-      "you": "Tú"
+      "you": "Tú",
+      "transferred": "Conversación transferida a {sector}.",
+      "transferFailed": "No se pudo transferir la conversación. Inténtalo de nuevo.",
+      "unnamedSector": "Número sin nombre",
+      "transferTo": "Transferir al sector"
     },
     "sessionTimer": {
       "expired": "Expirada",

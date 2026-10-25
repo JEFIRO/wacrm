@@ -121,10 +121,18 @@ function InboxPageInner() {
    * realtime channel). The ref is kept in sync via the effect below.
    */
   const knownConvIdsRef = useRef<Set<string>>(new Set());
+  // Same idea for each thread's transfer target (062): a realtime UPDATE
+  // that changes it needs a re-fetch of the sector label.
+  const knownSectorRef = useRef<Map<string, string | null>>(new Map());
   useEffect(() => {
     const next = new Set<string>();
-    for (const c of conversations) next.add(c.id);
+    const sectors = new Map<string, string | null>();
+    for (const c of conversations) {
+      next.add(c.id);
+      sectors.set(c.id, c.sector_channel_id ?? null);
+    }
     knownConvIdsRef.current = next;
+    knownSectorRef.current = sectors;
   }, [conversations]);
 
   // Pull the conversation row with its `contact` joined and merge it
@@ -164,11 +172,18 @@ function InboxPageInner() {
           // Already in state — keep its fields (a realtime UPDATE may
           // have landed while the fetch was in flight and patched
           // last_message_text / unread_count to fresher values than
-          // the row we just read). Only backfill `contact`, which the
-          // realtime payloads never carry.
+          // the row we just read). Only backfill the joins, which the
+          // realtime payloads never carry: `contact`, plus the number
+          // and transfer target (migrations 060/062) — those two always
+          // from the fetch, since a transfer is what triggers a re-hydrate.
           return prev.map((c) =>
             c.id === fetched.id
-              ? { ...c, contact: c.contact ?? fetched.contact }
+              ? {
+                  ...c,
+                  contact: c.contact ?? fetched.contact,
+                  channel: fetched.channel,
+                  sector: fetched.sector,
+                }
               : c,
           );
         }
@@ -308,6 +323,14 @@ function InboxPageInner() {
           // back on for the ~100ms it takes for the reset effect's server
           // UPDATE to round-trip. Non-active convs take the value as-is.
           const isActive = activeConversation?.id === conv.id;
+          // Transferred by someone else (062): the payload has the new
+          // sector id but not its label — re-fetch the joins.
+          if (
+            conv.sector_channel_id !== undefined &&
+            knownSectorRef.current.get(conv.id) !== (conv.sector_channel_id ?? null)
+          ) {
+            hydrateConversation(conv.id);
+          }
           setConversations((prev) =>
             prev.map((c) =>
               c.id === conv.id
@@ -540,6 +563,28 @@ function InboxPageInner() {
     [activeConversation]
   );
 
+  // A transfer to a sector the user is not in removes the thread from
+  // their inbox (RLS hides it from now on); otherwise update it in place.
+  // Either way the assignment was cleared by transfer_conversation().
+  const handleTransfer = useCallback(
+    (conversationId: string, sectorChannelId: string | null, stillVisible: boolean) => {
+      if (!stillVisible) {
+        setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+        if (activeConversation?.id === conversationId) handleCloseConversation();
+        return;
+      }
+      setResyncToken((n) => n + 1);
+      const patch = { sector_channel_id: sectorChannelId, assigned_agent_id: undefined };
+      setConversations((prev) =>
+        prev.map((c) => (c.id === conversationId ? { ...c, ...patch } : c))
+      );
+      if (activeConversation?.id === conversationId) {
+        setActiveConversation((prev) => (prev ? { ...prev, ...patch } : prev));
+      }
+    },
+    [activeConversation, handleCloseConversation]
+  );
+
   const handleAssignChange = useCallback(
     (conversationId: string, assignedAgentId: string | null) => {
       setConversations((prev) =>
@@ -626,6 +671,7 @@ function InboxPageInner() {
             onUpdateMessage={handleUpdateMessage}
             onStatusChange={handleStatusChange}
             onAssignChange={handleAssignChange}
+            onTransfer={handleTransfer}
             onBack={handleCloseConversation}
             resyncToken={resyncToken}
             onRefresh={handleManualRefresh}

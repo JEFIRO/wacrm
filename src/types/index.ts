@@ -185,6 +185,10 @@ export interface Conversation {
   whatsapp_config_id?: string | null;
   /** Embedded channel (number) of the thread, when selected. */
   channel?: { id: string; label: string | null; phone_number_id: string } | null;
+  /** Team the thread was transferred to (migration 062); null = its own number's. */
+  sector_channel_id?: string | null;
+  /** Embedded transfer target, when selected. */
+  sector?: { id: string; label: string | null } | null;
   created_at: string;
   updated_at: string;
   contact?: Contact;

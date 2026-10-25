@@ -139,3 +139,9 @@ Roteiro detalhado, com grafo de dependências, IDs, estimativas e status: `docs/
   INVOKER; "Quem atende este número" nas configurações). Verificado: matriz de acesso como
   cada usuário com RLS, 6 tentativas de burla bloqueadas, painel do dono inalterado, login
   como atendente mostrando só o setor, tempo real sem vazamento, gate verde.
+- **2026-10-25** — C3 implementado na branch (migration 062: `sector_channel_id`,
+  `transfer_conversation()`, gatilho que impede trocar o número de envio; menu Atribuir →
+  "Transferir para o setor"; etiqueta "Suporte → Vendas" na inbox, inclusive em tempo real).
+  Pendência vista no teste: conversa **nova** chega pelo tempo real como "Nenhuma mensagem
+  ainda" até recarregar — corrida na hidratação de `inbox/page.tsx` (código do upstream, não
+  ligado a setores; não corrigido).

@@ -385,7 +385,11 @@
       "assignmentUpdateFailed": "Failed to update assignment",
       "networkError": "network error",
       "documentFallback": "Document",
-      "you": "You"
+      "you": "You",
+      "transferred": "Conversation transferred to {sector}.",
+      "transferFailed": "Could not transfer the conversation. Try again.",
+      "unnamedSector": "Unnamed number",
+      "transferTo": "Transfer to sector"
     },
     "sessionTimer": {
       "expired": "Expired",

@@ -181,6 +181,14 @@ BEGIN
     RAISE EXCEPTION 'dashboard_overview is SECURITY DEFINER and bypasses sector access — migration 061 did not apply';
   END IF;
 
+  -- 062: transfer between sectors. Without the guard trigger an agent
+  -- could repoint the number a conversation replies from.
+  IF to_regprocedure('public.transfer_conversation(uuid,uuid)') IS NULL
+     OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'conversations_channel_guard')
+     OR has_function_privilege('anon', 'public.transfer_conversation(uuid,uuid)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'sector transfer is incomplete or exposed to anon — migration 062 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

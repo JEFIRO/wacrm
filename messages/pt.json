@@ -385,7 +385,11 @@
       "assignmentUpdateFailed": "Falha ao atualizar a atribuição",
       "networkError": "erro de rede",
       "documentFallback": "Documento",
-      "you": "Você"
+      "you": "Você",
+      "transferred": "Conversa transferida para {sector}.",
+      "transferFailed": "Não foi possível transferir a conversa. Tente novamente.",
+      "unnamedSector": "Número sem nome",
+      "transferTo": "Transferir para o setor"
     },
     "sessionTimer": {
       "expired": "Expirada",

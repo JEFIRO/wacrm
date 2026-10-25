@@ -964,7 +964,10 @@
       "toastResumeStartedCapped": "Sending {count} recipients in the background. {remaining} more will need another run.",
       "toastResumeFailed": "Could not resume: {error}",
       "unknownError": "Unknown error",
-      "unknownContact": "Unknown"
+      "unknownContact": "Unknown",
+      "textMessage": "Message: {text}",
+      "queueTitle": "Queued: {count, plural, one {# message left} other {# messages left}}",
+      "queueHint": "One message at a time, {min}–{max} s apart. Next one around {next}. You can close this screen."
     },
     "new": {
       "title": "New Broadcast",
@@ -1108,6 +1111,38 @@
       "apiRequestFailed": "Broadcast API request failed",
       "noPhoneOnContact": "No phone number on contact",
       "unknownError": "Unknown error"
+    },
+    "text": {
+      "title": "New text broadcast",
+      "subtitle": "Free text for QR-code numbers, sent gradually from a queue.",
+      "stepMessage": "Message",
+      "stepAudience": "Audience",
+      "stepConfirm": "Confirm",
+      "name": "Broadcast name",
+      "message": "Message",
+      "messagePlaceholder": "Hi '{{primeiro_nome}}'! We have news for you…",
+      "variables": "Variables:",
+      "unknownVariables": "Unknown variables: {list}. Use only the ones listed.",
+      "preview": "Preview (sample contact):",
+      "interval": "Pause between messages",
+      "intervalMin": "Minimum in seconds",
+      "intervalMax": "Maximum in seconds",
+      "to": "to",
+      "seconds": "seconds",
+      "intervalHint": "Each message goes out at a random moment within this range, to look like a person sending and lower the risk of a block.",
+      "intervalInvalid": "The minimum must be at least 5 s and the maximum at least the minimum (up to 3600 s).",
+      "cancel": "Cancel",
+      "next": "Next",
+      "back": "Back",
+      "recipients": "Recipients",
+      "duration": "Estimated duration",
+      "aboutMinutes": "about {minutes} min",
+      "banWarning": "QR-code numbers are not the official API: bulk messages to people who don't expect them can get the number blocked. Only send to contacts who know your business.",
+      "start": "Start broadcast",
+      "preparing": "Preparing… {progress}%",
+      "queued": "Broadcast queued. Messages go out gradually — you can close this screen.",
+      "queueFailed": "Could not create the broadcast.",
+      "underMinute": "under 1 min"
     }
   },
   "Automations": {
@@ -1993,7 +2028,45 @@
         "defaultSector": "Default sector of this number",
         "noSector": "No sector (visible to everyone)",
         "defaultSectorHint": "New conversations on this number start in this sector. Manage sectors under Settings → Sectors.",
-        "defaultSectorSaved": "Default sector saved."
+        "defaultSectorSaved": "Default sector saved.",
+        "qrNumber": "QR-code number",
+        "connectHow": "How to connect:",
+        "kindQr": "QR code (phone's WhatsApp)",
+        "kindMeta": "Official Meta API",
+        "newQrHint": "Name the sector and generate the QR code, then scan it with the phone.",
+        "kindLockedMeta": "This account uses the official Meta API. QR-code numbers can't be mixed in — to switch, remove every Meta number.",
+        "kindLockedEvolution": "This account uses QR-code numbers. The official Meta API can't be mixed in — to switch, remove every QR-code number.",
+        "kindOnce": "Choose once: the whole account uses the same kind of connection."
+      },
+      "evolution": {
+        "title": "WhatsApp by QR code",
+        "description": "Connect the phone's WhatsApp by scanning a QR code, without Meta's official API.",
+        "newTitle": "New QR-code number",
+        "newHint": "We'll create the connection and show the QR code for you to scan with the phone.",
+        "generate": "Generate QR code",
+        "created": "Connection created. Scan the QR code with the phone.",
+        "createFailed": "Could not create the connection.",
+        "pairTitle": "Scan the QR code",
+        "pairHint": "The code refreshes by itself while this screen is open.",
+        "step1": "Open WhatsApp on the phone.",
+        "step2": "Tap More options (⋮) or Settings → Linked devices → Link a device.",
+        "step3": "Point the camera at the QR code.",
+        "waitingQr": "Generating QR code…",
+        "qrAlt": "QR code to connect WhatsApp",
+        "newQr": "Show the QR code again",
+        "loading": "Loading",
+        "checkFailed": "Could not check the connection.",
+        "connectedTitle": "Connected",
+        "connectedHint": "Messages to this number now arrive in the Inbox.",
+        "connectedAs": "Connected as {number} ({name}).",
+        "remove": "Disconnect and remove number",
+        "removeHint": "Logs the phone out and deletes the connection. Conversations stay in the history.",
+        "removeConfirm": "Disconnect this number and remove the connection? Conversations stay in the history.",
+        "removed": "Number removed.",
+        "removeFailed": "Could not remove the number.",
+        "connectedAsNumber": "Connected as {number}.",
+        "missing": "This connection no longer exists on the WhatsApp server (it was deleted outside the app). Remove the number below and add it again to get a QR code.",
+        "missingTitle": "Connection not found"
       }
     },
     "sections": {
@@ -2960,7 +3033,8 @@
       "recipientsRequired": "Provide either `recipients` (preferred) or `phone_numbers` — must be a non-empty array",
       "templateNameRequired": "template_name is required",
       "templateMalformed": "Template row is malformed locally — run \"Sync from Meta\" in Settings to repair it before broadcasting.",
-      "invalidPhoneFormat": "Invalid phone number format"
+      "invalidPhoneFormat": "Invalid phone number format",
+      "textQueued": "Text broadcasts are sent by the server queue and can't be resumed here."
     },
     "whatsappConfig": {
       "fetchFailed": "Failed to fetch configuration",
@@ -2983,7 +3057,8 @@
       "wabaCheckFailed": "WABA subscription check failed: {message}",
       "noWabaId": "No WABA ID on file — webhooks can't be wired without it. Add it in the form and re-save.",
       "channelNotFound": "That WhatsApp number was not found in this account.",
-      "numberAlreadyInAccount": "This number is already connected to this account."
+      "numberAlreadyInAccount": "This number is already connected to this account.",
+      "providerMismatch": "This account uses QR-code numbers. To use the official Meta API, remove every QR-code number first."
     },
     "media": {
       "idRequired": "Media ID is required",
@@ -3034,10 +3109,30 @@
       "invalidSchedule": "Each range needs a weekday and a start time before its end time (HH:MM).",
       "saveFailed": "Could not save the agent settings. Try again.",
       "scheduleRequired": "A sector member needs at least one schedule range."
+    },
+    "evolution": {
+      "notConfigured": "QR-code numbers are not available on this server (Evolution is not configured).",
+      "createFailed": "Could not create the QR-code connection. Please try again.",
+      "unreachable": "Could not check the number's connection. Try again in a moment.",
+      "deleteFailed": "Could not disconnect the number on the server. Please try again.",
+      "providerMismatch": "This account uses the official Meta API. To use QR-code numbers, remove every Meta number first."
     }
   },
   "Distribution": {
     "nextSlotPattern": "'{weekday}' at '{time}'",
     "defaultQueueMessage": "No agents are available right now. Our next service window is '{proximo_horario}'."
+  },
+  "WhatsAppMenu": {
+    "hint": "Reply with the option number."
+  },
+  "QrAccountNotice": {
+    "templates": {
+      "title": "Templates belong to the official Meta API",
+      "body": "This account uses QR-code numbers, which don't need approved templates: you can send free text at any time, with no 24-hour window."
+    },
+    "broadcasts": {
+      "title": "QR-code broadcasts go out from a queue",
+      "body": "On accounts with QR-code numbers, broadcasts are free text and go out one message at a time with a random pause in between, to lower the risk of the number being blocked. You can close the screen: the queue keeps running on the server."
+    }
   }
 }

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireRole, toErrorResponse } from '@/lib/auth/account';
-import { sendReactionMessage } from '@/lib/whatsapp/meta-api';
-import { decrypt } from '@/lib/whatsapp/encryption';
-import { loadChannel } from '@/lib/whatsapp/channels';
+import { loadChannelProvider } from '@/lib/whatsapp/provider';
 import { resolveContactSendTarget } from '@/lib/whatsapp/wa-identity';
 import {
   checkRateLimit,
@@ -55,7 +53,7 @@ export async function POST(request: Request) {
     // Resolve target message + its conversation; verify ownership.
     const { data: targetMessage, error: msgError } = await supabase
       .from('messages')
-      .select('id, message_id, conversation_id')
+      .select('id, message_id, conversation_id, sender_type')
       .eq('id', message_id)
       .maybeSingle();
 
@@ -101,28 +99,20 @@ export async function POST(request: Request) {
 
     // The conversation's channel — the reaction must come from the
     // number the customer is talking to.
-    const config = await loadChannel<{ phone_number_id: string; access_token: string }>(
-      supabase,
-      accountId,
-      conversation.whatsapp_config_id,
-      'phone_number_id, access_token',
-    );
+    const loaded = await loadChannelProvider(supabase, accountId, conversation.whatsapp_config_id);
 
-    if (!config) {
+    if (!loaded) {
       return NextResponse.json(
         { error: t('common.whatsappNotConfiguredDot') },
         { status: 400 },
       );
     }
 
-    const accessToken = decrypt(config.access_token);
-
     try {
-      await sendReactionMessage({
-        phoneNumberId: config.phone_number_id,
-        accessToken,
+      await loaded.provider.sendReaction({
         to: sendTarget.target,
         targetMessageId: targetMessage.message_id,
+        targetFromMe: targetMessage.sender_type !== 'customer',
         emoji,
       });
     } catch (err) {

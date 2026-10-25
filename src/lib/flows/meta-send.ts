@@ -1,21 +1,16 @@
 import {
-  sendInteractiveButtons,
-  sendInteractiveList,
-  sendMediaMessage,
-  sendTextMessage,
   type InteractiveButton,
   type InteractiveListSection,
   type MediaKind,
 } from '@/lib/whatsapp/meta-api'
 import type { InteractiveMessagePayload } from '@/lib/whatsapp/interactive'
-import { decrypt } from '@/lib/whatsapp/encryption'
 import {
   phoneVariants,
   isRecipientNotAllowedError,
 } from '@/lib/whatsapp/phone-utils'
 import { resolveContactSendTarget } from '@/lib/whatsapp/wa-identity'
 import { assertConversationInAccount } from '@/lib/whatsapp/conversation-scope'
-import { loadChannel } from '@/lib/whatsapp/channels'
+import { loadChannelProvider, type WhatsAppProvider } from '@/lib/whatsapp/provider'
 import { supabaseAdmin } from './admin-client'
 import { getT } from '@/lib/i18n/translate'
 
@@ -37,30 +32,21 @@ const t = getT('LibErrors')
 // ------------------------------------------------------------
 
 /**
- * Resolve the account's Meta sending credentials: the phone number id
- * plus the DECRYPTED access token from `whatsapp_config`. The single
- * home for that decrypt step — callers outside this file (the AI
- * auto-reply's typing indicator) reuse it rather than growing a copy.
- * `channelId` picks the conversation's number; omitted, the default.
+ * The WhatsApp provider of a number (docs/saas/w1-provedor.md): the
+ * conversation's channel, or the account's default when `channelId` is
+ * omitted. The single home for that lookup — callers outside this file
+ * (the AI auto-reply's typing indicator) reuse it rather than growing a copy.
  */
-export async function loadAccountMetaCredentials(
+export async function loadAccountProvider(
   db: ReturnType<typeof supabaseAdmin>,
   accountId: string,
   channelId?: string | null,
-): Promise<{ phoneNumberId: string; accessToken: string }> {
-  const config = await loadChannel<{ phone_number_id: string; access_token: string }>(
-    db,
-    accountId,
-    channelId,
-    'phone_number_id, access_token',
-  )
-  if (!config) {
+): Promise<WhatsAppProvider> {
+  const loaded = await loadChannelProvider(db, accountId, channelId)
+  if (!loaded) {
     throw new Error(t('send.notConfigured'))
   }
-  return {
-    phoneNumberId: config.phone_number_id,
-    accessToken: decrypt(config.access_token),
-  }
+  return loaded.provider
 }
 
 interface SendTextEngineArgs {
@@ -126,16 +112,14 @@ export async function engineSendText(
   }
   const sanitized = sendTarget.target
 
-  const { phoneNumberId, accessToken } = await loadAccountMetaCredentials(
+  const provider = await loadAccountProvider(
     db,
     args.accountId,
     channelId,
   )
 
   const attempt = async (phone: string): Promise<string> => {
-    const r = await sendTextMessage({
-      phoneNumberId,
-      accessToken,
+    const r = await provider.sendText({
       to: phone,
       text: args.text,
     })
@@ -245,16 +229,14 @@ export async function engineSendMedia(
   }
   const sanitized = sendTarget.target
 
-  const { phoneNumberId, accessToken } = await loadAccountMetaCredentials(
+  const provider = await loadAccountProvider(
     db,
     args.accountId,
     channelId,
   )
 
   const attempt = async (phone: string): Promise<string> => {
-    const r = await sendMediaMessage({
-      phoneNumberId,
-      accessToken,
+    const r = await provider.sendMedia({
       to: phone,
       kind: args.kind,
       link: args.link,
@@ -406,7 +388,7 @@ async function sendInteractiveViaMeta(
   }
   const sanitized = sendTarget.target
 
-  const { phoneNumberId, accessToken } = await loadAccountMetaCredentials(
+  const provider = await loadAccountProvider(
     db,
     input.accountId,
     channelId,
@@ -414,9 +396,7 @@ async function sendInteractiveViaMeta(
 
   const attempt = async (phone: string): Promise<string> => {
     if (input.kind === 'buttons') {
-      const r = await sendInteractiveButtons({
-        phoneNumberId,
-        accessToken,
+      const r = await provider.sendButtons({
         to: phone,
         bodyText: input.bodyText,
         buttons: input.buttons,
@@ -425,9 +405,7 @@ async function sendInteractiveViaMeta(
       })
       return r.messageId
     }
-    const r = await sendInteractiveList({
-      phoneNumberId,
-      accessToken,
+    const r = await provider.sendList({
       to: phone,
       bodyText: input.bodyText,
       buttonLabel: input.buttonLabel,

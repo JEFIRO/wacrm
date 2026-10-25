@@ -8,7 +8,7 @@ const h = vi.hoisted(() => ({
   retrieveKnowledge: vi.fn(),
   generateReply: vi.fn(),
   engineSendText: vi.fn(),
-  loadAccountMetaCredentials: vi.fn(),
+  loadAccountProvider: vi.fn(),
   sendTypingIndicator: vi.fn(),
   state: {
     conv: null as Record<string, unknown> | null,
@@ -26,10 +26,7 @@ vi.mock('./knowledge', () => ({ retrieveKnowledge: h.retrieveKnowledge }))
 vi.mock('./generate', () => ({ generateReply: h.generateReply }))
 vi.mock('@/lib/flows/meta-send', () => ({
   engineSendText: h.engineSendText,
-  loadAccountMetaCredentials: h.loadAccountMetaCredentials,
-}))
-vi.mock('@/lib/whatsapp/meta-api', () => ({
-  sendTypingIndicator: h.sendTypingIndicator,
+  loadAccountProvider: h.loadAccountProvider,
 }))
 vi.mock('./admin-client', () => ({
   supabaseAdmin: () => ({
@@ -119,10 +116,7 @@ beforeEach(() => {
   h.retrieveKnowledge.mockResolvedValue([])
   h.generateReply.mockResolvedValue({ text: 'Hello!', handoff: false })
   h.engineSendText.mockResolvedValue({ whatsapp_message_id: 'm1' })
-  h.loadAccountMetaCredentials.mockResolvedValue({
-    phoneNumberId: 'pn-1',
-    accessToken: 'tok',
-  })
+  h.loadAccountProvider.mockResolvedValue({ sendTyping: h.sendTypingIndicator })
   h.sendTypingIndicator.mockResolvedValue(undefined)
 })
 
@@ -242,15 +236,13 @@ describe('dispatchInboundToAiReply — typing indicator (#527)', () => {
   it('shows "typing…" on the inbound wamid before calling the LLM', async () => {
     await dispatchInboundToAiReply(ARGS)
     // Typing shows on the number the customer wrote to (C1).
-    expect(h.loadAccountMetaCredentials).toHaveBeenCalledWith(
+    expect(h.loadAccountProvider).toHaveBeenCalledWith(
       expect.anything(),
       'acct-1',
       'ch-sales',
     )
     expect(h.sendTypingIndicator).toHaveBeenCalledTimes(1)
     expect(h.sendTypingIndicator).toHaveBeenCalledWith({
-      phoneNumberId: 'pn-1',
-      accessToken: 'tok',
       messageId: 'wamid.inbound-1',
     })
     // Ordering: the indicator goes out while the customer waits on the
@@ -278,7 +270,7 @@ describe('dispatchInboundToAiReply — typing indicator (#527)', () => {
 
   it('still sends the reply when the WhatsApp credentials cannot be loaded', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    h.loadAccountMetaCredentials.mockRejectedValue(
+    h.loadAccountProvider.mockRejectedValue(
       new Error('WhatsApp not configured for this account'),
     )
     await dispatchInboundToAiReply(ARGS)
@@ -292,7 +284,7 @@ describe('dispatchInboundToAiReply — typing indicator (#527)', () => {
     void _omit
     await dispatchInboundToAiReply(legacyArgs)
     expect(h.sendTypingIndicator).not.toHaveBeenCalled()
-    expect(h.loadAccountMetaCredentials).not.toHaveBeenCalled()
+    expect(h.loadAccountProvider).not.toHaveBeenCalled()
     expect(h.engineSendText).toHaveBeenCalledTimes(1)
   })
 
@@ -300,7 +292,7 @@ describe('dispatchInboundToAiReply — typing indicator (#527)', () => {
     h.loadAiConfig.mockResolvedValue(aiConfig({ autoReplyEnabled: false }))
     await dispatchInboundToAiReply(ARGS)
     expect(h.sendTypingIndicator).not.toHaveBeenCalled()
-    expect(h.loadAccountMetaCredentials).not.toHaveBeenCalled()
+    expect(h.loadAccountProvider).not.toHaveBeenCalled()
   })
 })
 

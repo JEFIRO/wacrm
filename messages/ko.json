@@ -964,7 +964,10 @@
       "toastResumeStartedCapped": "{count}명에게 백그라운드로 발송 중입니다. 나머지 {remaining}명은 한 번 더 실행해야 합니다.",
       "toastResumeFailed": "이어서 발송할 수 없습니다: {error}",
       "unknownError": "알 수 없는 오류",
-      "unknownContact": "알 수 없음"
+      "unknownContact": "알 수 없음",
+      "textMessage": "메시지: {text}",
+      "queueTitle": "대기 중: 남은 메시지 {count}건",
+      "queueHint": "{min}–{max}초 간격으로 한 번에 하나씩 발송됩니다. 다음 발송은 {next}경입니다. 이 화면을 닫아도 됩니다."
     },
     "new": {
       "title": "새 브로드캐스트",
@@ -1108,6 +1111,38 @@
       "apiRequestFailed": "브로드캐스트 API 요청 실패",
       "noPhoneOnContact": "연락처에 전화번호가 없습니다",
       "unknownError": "알 수 없는 오류"
+    },
+    "text": {
+      "title": "새 텍스트 대량 발송",
+      "subtitle": "QR 코드 번호용 자유 텍스트, 대기열에서 천천히 발송됩니다.",
+      "stepMessage": "메시지",
+      "stepAudience": "대상",
+      "stepConfirm": "확인",
+      "name": "발송 이름",
+      "message": "메시지",
+      "messagePlaceholder": "안녕하세요 '{{primeiro_nome}}'님! 새 소식이 있어요…",
+      "variables": "변수:",
+      "unknownVariables": "알 수 없는 변수: {list}. 목록의 변수만 사용하세요.",
+      "preview": "미리보기 (예시 연락처):",
+      "interval": "메시지 간 간격",
+      "intervalMin": "최소(초)",
+      "intervalMax": "최대(초)",
+      "to": "~",
+      "seconds": "초",
+      "intervalHint": "각 메시지는 이 범위 안의 임의 시점에 발송되어 사람이 보내는 것처럼 보이고 차단 위험을 줄입니다.",
+      "intervalInvalid": "최소는 5초 이상, 최대는 최소 이상이어야 합니다(최대 3600초).",
+      "cancel": "취소",
+      "next": "다음",
+      "back": "뒤로",
+      "recipients": "수신자",
+      "duration": "예상 소요 시간",
+      "aboutMinutes": "약 {minutes}분",
+      "banWarning": "QR 코드 번호는 공식 API가 아닙니다. 메시지를 기대하지 않는 사람에게 대량 발송하면 번호가 차단될 수 있습니다. 회사를 아는 연락처에만 보내세요.",
+      "start": "발송 시작",
+      "preparing": "준비 중… {progress}%",
+      "queued": "발송이 대기열에 등록되었습니다. 메시지는 천천히 발송되며 이 화면을 닫아도 됩니다.",
+      "queueFailed": "발송을 만들 수 없습니다.",
+      "underMinute": "1분 미만"
     }
   },
   "Automations": {
@@ -1993,7 +2028,45 @@
         "defaultSector": "이 번호의 기본 부서",
         "noSector": "부서 없음 (모두에게 보임)",
         "defaultSectorHint": "이 번호의 새 대화는 이 부서에서 시작합니다. 설정 → 부서에서 관리하세요.",
-        "defaultSectorSaved": "기본 부서가 저장되었습니다."
+        "defaultSectorSaved": "기본 부서가 저장되었습니다.",
+        "qrNumber": "QR 코드 번호",
+        "connectHow": "연결 방법:",
+        "kindQr": "QR 코드 (휴대폰 WhatsApp)",
+        "kindMeta": "Meta 공식 API",
+        "newQrHint": "부서 이름을 정하고 QR 코드를 만든 뒤 휴대폰으로 스캔하세요.",
+        "kindLockedMeta": "이 계정은 Meta 공식 API를 사용합니다. QR 코드 번호와 섞어 쓸 수 없습니다 — 바꾸려면 모든 Meta 번호를 삭제하세요.",
+        "kindLockedEvolution": "이 계정은 QR 코드 번호를 사용합니다. Meta 공식 API와 섞어 쓸 수 없습니다 — 바꾸려면 모든 QR 코드 번호를 삭제하세요.",
+        "kindOnce": "한 번만 선택하세요: 계정 전체가 같은 연결 방식을 사용합니다."
+      },
+      "evolution": {
+        "title": "QR 코드로 WhatsApp 연결",
+        "description": "Meta 공식 API 없이 QR 코드를 스캔해 휴대폰의 WhatsApp을 연결합니다.",
+        "newTitle": "새 QR 코드 번호",
+        "newHint": "연결을 만들고 휴대폰으로 스캔할 QR 코드를 보여드립니다.",
+        "generate": "QR 코드 만들기",
+        "created": "연결이 생성되었습니다. 휴대폰으로 QR 코드를 스캔하세요.",
+        "createFailed": "연결을 만들 수 없습니다.",
+        "pairTitle": "QR 코드 스캔",
+        "pairHint": "이 화면이 열려 있는 동안 코드가 자동으로 갱신됩니다.",
+        "step1": "휴대폰에서 WhatsApp을 엽니다.",
+        "step2": "더보기(⋮) 또는 설정 → 연결된 기기 → 기기 연결을 누릅니다.",
+        "step3": "카메라를 QR 코드에 맞춥니다.",
+        "waitingQr": "QR 코드 생성 중…",
+        "qrAlt": "WhatsApp 연결용 QR 코드",
+        "newQr": "QR 코드 다시 보기",
+        "loading": "불러오는 중",
+        "checkFailed": "연결 상태를 확인할 수 없습니다.",
+        "connectedTitle": "연결됨",
+        "connectedHint": "이 번호의 메시지가 이제 받은편지함에 도착합니다.",
+        "connectedAs": "{number} ({name})(으)로 연결됨.",
+        "remove": "연결 해제 및 번호 삭제",
+        "removeHint": "휴대폰 로그아웃 후 연결을 삭제합니다. 대화는 기록에 남습니다.",
+        "removeConfirm": "이 번호의 연결을 해제하고 삭제할까요? 대화는 기록에 남습니다.",
+        "removed": "번호가 삭제되었습니다.",
+        "removeFailed": "번호를 삭제할 수 없습니다.",
+        "connectedAsNumber": "{number}(으)로 연결됨.",
+        "missing": "이 연결은 WhatsApp 서버에 더 이상 없습니다(앱 밖에서 삭제됨). 아래에서 번호를 삭제한 뒤 다시 추가해 QR 코드를 만드세요.",
+        "missingTitle": "연결을 찾을 수 없음"
       }
     },
     "sections": {
@@ -2960,7 +3033,8 @@
       "recipientsRequired": "`recipients`(권장) 또는 `phone_numbers`를 제공하세요 — 비어 있지 않은 배열이어야 합니다",
       "templateNameRequired": "템플릿 이름은 필수입니다",
       "templateMalformed": "로컬 템플릿 데이터가 손상되었습니다 — 브로드캐스트 전에 설정에서 \"Meta에서 동기화\"를 실행해 복구하세요.",
-      "invalidPhoneFormat": "전화번호 형식이 올바르지 않습니다"
+      "invalidPhoneFormat": "전화번호 형식이 올바르지 않습니다",
+      "textQueued": "텍스트 대량 발송은 서버 대기열에서 발송되며 여기서 재개할 수 없습니다."
     },
     "whatsappConfig": {
       "fetchFailed": "설정을 가져오지 못했습니다",
@@ -2983,7 +3057,8 @@
       "wabaCheckFailed": "WABA 구독 확인 실패: {message}",
       "noWabaId": "등록된 WABA ID가 없습니다 — WABA ID 없이는 웹훅을 연결할 수 없습니다. 양식에 추가한 후 다시 저장하세요.",
       "channelNotFound": "이 계정에서 해당 WhatsApp 번호를 찾을 수 없습니다.",
-      "numberAlreadyInAccount": "이 번호는 이미 이 계정에 연결되어 있습니다."
+      "numberAlreadyInAccount": "이 번호는 이미 이 계정에 연결되어 있습니다.",
+      "providerMismatch": "이 계정은 QR 코드 번호를 사용합니다. Meta 공식 API를 쓰려면 먼저 모든 QR 코드 번호를 삭제하세요."
     },
     "media": {
       "idRequired": "미디어 ID는 필수입니다",
@@ -3034,10 +3109,30 @@
       "invalidSchedule": "각 시간대에는 요일과 종료 전 시작 시간(HH:MM)이 필요합니다.",
       "saveFailed": "상담원 설정을 저장할 수 없습니다. 다시 시도하세요.",
       "scheduleRequired": "부서 구성원은 최소 한 개의 근무 시간대가 필요합니다."
+    },
+    "evolution": {
+      "notConfigured": "이 서버에서는 QR 코드 번호를 사용할 수 없습니다 (Evolution 미설정).",
+      "createFailed": "QR 코드 연결을 만들 수 없습니다. 다시 시도하세요.",
+      "unreachable": "번호 연결 상태를 확인할 수 없습니다. 잠시 후 다시 시도하세요.",
+      "deleteFailed": "서버에서 번호 연결을 해제할 수 없습니다. 다시 시도하세요.",
+      "providerMismatch": "이 계정은 Meta 공식 API를 사용합니다. QR 코드 번호를 쓰려면 먼저 모든 Meta 번호를 삭제하세요."
     }
   },
   "Distribution": {
     "nextSlotPattern": "'{weekday}' '{time}'",
     "defaultQueueMessage": "지금은 상담 가능한 상담원이 없습니다. 다음 상담 시간은 '{proximo_horario}'입니다."
+  },
+  "WhatsAppMenu": {
+    "hint": "옵션 번호로 답장해 주세요."
+  },
+  "QrAccountNotice": {
+    "templates": {
+      "title": "템플릿은 Meta 공식 API 기능입니다",
+      "body": "이 계정은 QR 코드 번호를 사용하므로 승인된 템플릿이 필요 없습니다. 24시간 제한 없이 언제든 자유롭게 메시지를 보낼 수 있습니다."
+    },
+    "broadcasts": {
+      "title": "QR 코드 대량 발송은 대기열로 나갑니다",
+      "body": "QR 코드 번호 계정의 대량 발송은 자유 텍스트이며, 번호 차단 위험을 줄이기 위해 메시지 사이에 임의의 간격을 두고 하나씩 발송됩니다. 화면을 닫아도 서버에서 대기열이 계속 진행됩니다."
+    }
   }
 }

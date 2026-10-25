@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
-import { decrypt } from '@/lib/whatsapp/encryption'
-import { getPhoneNumberHealth } from '@/lib/whatsapp/meta-api'
 import {
   parseMessagingLimit,
   parseQualityRating,
@@ -9,6 +7,7 @@ import {
 } from '@/lib/whatsapp/phone-health'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { loadChannel } from '@/lib/whatsapp/channels'
+import { PROVIDER_COLUMNS, providerForChannel, type ProviderChannel } from '@/lib/whatsapp/provider'
 
 const CACHE_HEADERS = { 'Cache-Control': 'private, max-age=300' }
 
@@ -29,11 +28,11 @@ export async function GET() {
     const limit = checkRateLimit(`whatsapp-health:${userId}`, RATE_LIMITS.whatsappHealth)
     if (!limit.success) return rateLimitResponse(limit)
 
-    const config = await loadChannel<{ phone_number_id: string; access_token: string; status: string }>(
+    const config = await loadChannel<ProviderChannel & { status: string }>(
       supabase,
       accountId,
       null,
-      'phone_number_id, access_token, status',
+      `${PROVIDER_COLUMNS}, status`,
     )
 
     if (!config || config.status !== 'connected' || !config.phone_number_id) {
@@ -41,10 +40,7 @@ export async function GET() {
     }
 
     try {
-      const info = await getPhoneNumberHealth({
-        phoneNumberId: config.phone_number_id,
-        accessToken: decrypt(config.access_token),
-      })
+      const info = await providerForChannel(config).health()
       return reply({
         state: 'connected',
         displayPhoneNumber: info.display_phone_number ?? null,

@@ -5,13 +5,23 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 
 ## Estado atual
 
-- Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm`, branch `main`,
-  sem alterações de código em relação ao upstream (último commit upstream `34bce1a`).
-- Branch `feat/c1-canais` (sem push/merge):
-  - commitados: C1 vários números (`f6ef137`), C2 e C3 na versão antiga (`b63bd43`, `ab699e9`);
-  - commitados depois: setores próprios (061/062 reescritas), distribuição de leads (063),
-    regras de cadastro (064) e nova tentativa do aviso de fila (065) —
-    `docs/saas/setores-e-distribuicao.md`. Falta revisar e fazer merge na `main`.
+- Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm` (último commit
+  upstream `34bce1a`).
+- `main` **local** (sem push) tem o merge `752ffab` de `feat/c1-canais`: C1 vários números,
+  setores próprios + transferência (C2/C3), distribuição de leads (P1), regras de cadastro
+  (064) e nova tentativa do aviso de fila (065).
+- Branch `feat/w1-provedor` (a partir da `main`, sem push): W1 camada de provedor
+  (`7e2570e`, migration 066) e W2 Evolution webhook + envio (`d134241`).
+- Branch `feat/w3-instancia` (a partir da `feat/w1-provedor`, sem push): W3 número por QR code
+  + nono dígito (`26c9d78`) e um tipo de conexão por conta (`9cae7f6`) — `docs/saas/w3-instancia.md`.
+- Branch `feat/w4-regras` (a partir da `feat/w3-instancia`, sem push): W4 regras por
+  provedor (`697c9a3`).
+- Branch `feat/w5-fila` (a partir da `feat/w4-regras`, sem push): eco de mensagens
+  enviadas pelo celular (`docs/saas/w4-regras.md`) e W5 fila de disparos de texto
+  (`docs/saas/w5-fila.md`, migration 068). Novo cron: `GET /api/broadcasts/cron`.
+- **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
+  `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
+  `n8n` é do usuário — não tocar.
 - Status de cada item do roadmap: `docs/saas/roteiro.md`. Pendências abertas: seção
   "Pendências e riscos" abaixo.
 - Ambiente local funcionando (verificado em 2026-10-25): cadastro, login e dashboard
@@ -42,7 +52,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `064` (aplicada com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `069` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -100,7 +110,8 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   Atendimento/Jennifer), com atendente vendo só o próprio setor e transferência entre setores.
 - **WhatsApp oficial por coexistência** (app WhatsApp Business + Cloud API no mesmo número,
   via Embedded Signup). Exige empresa verificada + Tech Provider na Meta — processo de semanas.
-- **Evolution API em conjunto** para números não oficiais, instância criada automaticamente.
+- **Evolution API** para números não oficiais, instância criada automaticamente. **Revisado em
+  2026-10-25: cada conta usa UM tipo — Meta OU Evolution, nunca os dois** (migration 067).
 - **Cobrança:** preferência por Asaas (Pix/boleto/cartão recorrente + NFS-e).
 
 ## Roadmap sugerido
@@ -136,6 +147,23 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       corrida na hidratação de `src/app/(dashboard)/inbox/page.tsx` (código do upstream).
 - [ ] Rotas com client service role e ID de conversa vindo do usuário (ex.: disparo manual de
       automação, `/api/automations/engine`) checam a conta, mas não o setor.
+
+### WhatsApp / provedores
+- [ ] W5 sem limite diário por número, horário comercial nem pausar/cancelar pela tela.
+- [ ] Evolution validado com WhatsApp real (texto, foto, vídeo, áudio, citação, reação,
+      status) **exceto** chat endereçado por LID e envio citando (`quoted` só com `key.id`).
+- [ ] O número "Evolution" do seed (`wacrm-dev-evolution`) só existe no servidor falso; com a
+      Evolution real, a tela dele mostra erro 502 (instância inexistente). Esperado.
+- [ ] Eventos da Evolution que chegam entre criar a instância e gravar o número caem no log
+      "matched 0 numbers" (só o estado "conectando"; inofensivo).
+- [ ] Contas de teste locais: `qr@wacrm.test` (conta só QR, número do servidor falso) e
+      `novo@wacrm.test` (sem número), senha `TEST_USER_PASSWORD`.
+- [ ] Evolution: template lança `EvolutionUnsupportedError` (nó de template num fluxo de conta QR
+      falha). Botões/lista viraram menu numerado (W4).
+- [ ] Evolution: "digitando…" não faz nada; mensagens enviadas pelo próprio celular (`fromMe`)
+      aparecem pelo eco (testado com WhatsApp real); `connection.update` tratado no W3.
+- [ ] Campanhas, templates, registro e webhook seguem falando direto com `meta-api.ts`
+      (só existem na Meta); campanha via Evolution é o W5.
 
 ### Produto e plataforma
 - Itens da tabela de planos que o sistema não faz: limite de números por plano, cota mensal
@@ -192,3 +220,52 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   falha → cron reagenda → 5ª falha → alerta na tela) e em testes com banco simulado (sucesso,
   falha, lead fora da fila, autor ausente). Caminho de envio com sucesso só nos testes (token
   local é falso). Gate verde (1546 testes). Commit de C2/C3 com setores, P1, 064 e 065.
+- **2026-10-25** — Merge local de `feat/c1-canais` na `main` (`752ffab`, sem push).
+- **2026-10-25** — W1 camada de provedor (branch `feat/w1-provedor`, sem commit): migration
+  066 (`whatsapp_config.provider`), interface `WhatsAppProvider` + implementação Meta +
+  `loadChannelProvider`; composer, fluxos, automações, reação, "digitando" da IA, proxy de
+  mídia e saúde do número passaram a usar o provedor. Verificado: 6 testes do provedor,
+  suíte inteira (1552) sem mudar testes antigos além do mock da IA, envio real local chegando
+  à Meta (token inválido, esperado), número `evolution` recusado com erro claro no log, gate
+  verde e schema check.
+- **2026-10-25** — Commit do W1 (`7e2570e`). W2 Evolution (sem commit): pipeline de entrada
+  extraído do webhook da Meta para `src/lib/whatsapp/inbound.ts` (testes do webhook verdes sem
+  mudança), provedor Evolution, tradução pura do payload e `POST /api/whatsapp/evolution/webhook`
+  com segredo em cabeçalho. Ferramentas: `scripts/dev/fake-evolution.mts`,
+  `scripts/dev/simulate-evolution.mts`, número "Evolution" no seed. Verificado local com o
+  servidor falso: texto e imagem na inbox (imagem espelhada), resposta citando, reação,
+  status até "lido", 401 com segredo errado; 24 testes novos; gate verde (1570).
+- **2026-10-25** — Commit do W2 (`d134241`). W3 número por QR code: `evolution/admin.ts`,
+  rotas `/api/whatsapp/evolution/instances[/:id]`, tela `EvolutionConnect`, `connection.update`
+  no webhook. Proxy local `wacrm-evo-proxy` para a Evolution do usuário. Teste com WhatsApp
+  real (número pessoal do usuário, envio só para o número que ele autorizou): QR → conectado,
+  envio + status entregue, recebidos texto/foto/vídeo/áudio (espelhados), resposta citando,
+  reação. Corrigidos na hora: nono dígito (contato duplicado — `phone-utils.ts`, vale p/ Meta)
+  e envelope `albumMessage`.
+- **2026-10-25** — Commit do W3 (`26c9d78`). Botões/lista testados na Evolution real: não
+  aparecem (botões) / erro do servidor (lista) → W4 com menu numerado. **Um tipo de conexão por
+  conta** (migration 067 + 409 nas rotas + escolha só na conta sem número). Seed: número
+  Evolution movido para a conta `qr@wacrm.test`. Verificado: regra no banco (3 casos), 409 na
+  API, aviso na conta Meta, escolha na conta nova; gate verde (1577) e schema check.
+- **2026-10-25** — Commit da regra um-tipo-por-conta (`9cae7f6`). W4 (sem commit): menu numerado
+  no lugar de botões/lista no provedor Evolution, resposta "1"/título → toque com o id da opção,
+  conta QR sem janela de 24h / sem template / avisos em Modelos e Disparos. Testado com WhatsApp
+  real (menu + resposta "1" → `btn_sim`) e na conta `qr@wacrm.test`. Gate verde (1582).
+- **2026-10-25** — Commit do W4 (`697c9a3`). Eco de mensagens `fromMe` (celular/Web) na inbox,
+  sem duplicar as do app (verificado). W5: fila de campanhas de texto no banco + cron
+  (`/api/broadcasts/cron`), intervalo aleatório, assistente na conta QR, detalhe com estado da
+  fila. Campanha real: 2 envios ao número autorizado com 21 s de intervalo. Corrigidos no teste:
+  cursor ao inserir variável, `{{…}}` no texto de exemplo (ICU), aviso "Retomar" em campanha de
+  texto, erro da Evolution prefixado como "Meta API error". Gate verde (1590).
+- **2026-10-25** — Eco testado com dois números reais conectados (um em cada conta): mesma
+  mensagem gravada como eco num e recebida no outro. Corrigido: checagem do eco escopada por
+  número (o id da mensagem é igual nos dois lados). Tela de número QR mostra "Conexão não
+  encontrada" quando a instância foi apagada no servidor (antes: erro repetido a cada 3 s).
+- **2026-10-25** — Commit do W5 + eco (`4a347da`). **Bug de remoção de número** (vinha da 062, já
+  na `main`): remover número com conversas falhava com "the sending number of a conversation
+  cannot be changed" — o FK zera o número das conversas e a trava achava que era troca. Migration
+  069 libera só esse caso (número de fato removido); trocar ou forçar órfã segue bloqueado
+  (testado no banco). Afetava Meta e QR. Branch `fix/remover-numero`. Os dois números reais do
+  usuário foram removidos pela tela (instâncias `wacrm-` apagadas; `n8n` intocada; histórico
+  local mantido).
+

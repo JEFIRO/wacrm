@@ -9,9 +9,8 @@ import { logAiUsage } from './usage'
 import { latestUserMessage } from './query'
 import {
   engineSendText,
-  loadAccountMetaCredentials,
+  loadAccountProvider,
 } from '@/lib/flows/meta-send'
-import { sendTypingIndicator } from '@/lib/whatsapp/meta-api'
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 interface DispatchArgs {
@@ -256,16 +255,8 @@ async function showTypingIndicator(
   channelId: string | null,
 ): Promise<void> {
   try {
-    const { phoneNumberId, accessToken } = await loadAccountMetaCredentials(
-      db,
-      accountId,
-      channelId,
-    )
-    await sendTypingIndicator({
-      phoneNumberId,
-      accessToken,
-      messageId: inboundMessageId,
-    })
+    const provider = await loadAccountProvider(db, accountId, channelId)
+    await provider.sendTyping({ messageId: inboundMessageId })
   } catch (err) {
     console.warn('[ai auto-reply] typing indicator failed (continuing):', err)
   }

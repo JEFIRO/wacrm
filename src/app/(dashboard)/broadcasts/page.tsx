@@ -18,6 +18,8 @@ import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { getBroadcastStatus } from '@/lib/broadcast-status';
 import { useTranslations } from 'next-intl';
+import { useAccountProvider } from '@/hooks/use-account-provider';
+import { QrAccountNotice } from '@/components/whatsapp/qr-account-notice';
 
 /**
  * Poll cadence while any broadcast is sending. Kept modest so we don't
@@ -58,6 +60,7 @@ function RateCell({
 }
 
 export default function BroadcastsPage() {
+  const providerKind = useAccountProvider();
   const router = useRouter();
   const t = useTranslations('Broadcasts.page');
   const tStatus = useTranslations('Broadcasts.status');
@@ -153,6 +156,8 @@ export default function BroadcastsPage() {
 
   return (
     <div className="space-y-6">
+      {/* QR-code accounts: text campaigns from the paced queue (W5). */}
+      {providerKind === 'evolution' && <QrAccountNotice feature="broadcasts" />}
       {/* Top indeterminate progress bar: only visible while a broadcast
           is mid-send. Pure CSS animation so no extra deps. */}
       {anySending && (

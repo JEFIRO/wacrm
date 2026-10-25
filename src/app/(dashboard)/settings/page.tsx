@@ -14,6 +14,8 @@ import { AppearancePanel } from '@/components/settings/appearance-panel';
 import { WhatsAppChannels } from '@/components/settings/whatsapp-channels';
 import { SectorsSettings } from '@/components/settings/sectors-settings';
 import { TemplateManager } from '@/components/settings/template-manager';
+import { QrAccountNotice } from '@/components/whatsapp/qr-account-notice';
+import { useAccountProvider } from '@/hooks/use-account-provider';
 import { QuickRepliesManager } from '@/components/settings/quick-replies-manager';
 import { FieldsAndTagsPanel } from '@/components/settings/fields-and-tags-panel';
 import { DealsSettings } from '@/components/settings/deals-settings';
@@ -71,13 +73,16 @@ function SettingsPageInner() {
     [mode, defaultCurrency],
   );
 
+  // QR-code (Evolution) accounts have no templates (docs/saas/w4-regras.md).
+  const providerKind = useAccountProvider();
+
   const panel: Record<SettingsSection, ReactNode> = {
     overview: <SettingsOverview onSelect={go} />,
     profile: <ProfileForm />,
     security: <SecurityPanel />,
     appearance: <AppearancePanel />,
     whatsapp: <WhatsAppChannels />,
-    templates: <TemplateManager />,
+    templates: providerKind === 'evolution' ? <QrAccountNotice feature="templates" /> : <TemplateManager />,
     'quick-replies': <QuickRepliesManager />,
     fields: <FieldsAndTagsPanel />,
     inbox: <InboxSettings />,

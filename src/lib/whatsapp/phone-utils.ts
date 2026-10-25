@@ -25,7 +25,22 @@ export function phonesMatch(phone1: string, phone2: string): boolean {
   const n1 = normalizePhone(phone1)
   const n2 = normalizePhone(phone2)
   if (n1 === n2) return true
-  return isTrunkZeroVariant(n1, n2)
+  return isTrunkZeroVariant(n1, n2) || brazilMobileVariant(n1) === n2
+}
+
+/**
+ * Brazil's mobile "nono dígito" (fork, docs/saas/w3-instancia.md):
+ * WhatsApp identifies many Brazilian mobiles WITHOUT the leading 9 of
+ * the subscriber number (55 11 8765-4321) while people write it WITH
+ * it (55 11 98765-4321). Returns the other spelling, or null when the
+ * number isn't a Brazilian mobile in either form.
+ */
+export function brazilMobileVariant(normalized: string): string | null {
+  const withNine = /^55(\d{2})9(\d{8})$/.exec(normalized)
+  if (withNine) return `55${withNine[1]}${withNine[2]}`
+  const withoutNine = /^55(\d{2})([6-9]\d{7})$/.exec(normalized)
+  if (withoutNine) return `55${withoutNine[1]}9${withoutNine[2]}`
+  return null
 }
 
 const MIN_TRUNK_MATCH_DIGITS = 8
@@ -125,6 +140,10 @@ export function phoneVariants(sanitized: string): string[] {
       push(cc + '0' + rest)
     }
   }
+
+  // Brazilian mobile with / without the 9 (fork) — see brazilMobileVariant.
+  const br = brazilMobileVariant(sanitized)
+  if (br) push(br)
 
   // 3. Remove a leading 0 after each plausible country-code length
   for (const ccLen of [1, 2, 3]) {

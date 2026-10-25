@@ -68,6 +68,18 @@ export async function POST(
       ? body.scope
       : 'pending';
 
+    // Text campaigns (fork, W5) are sent by the server queue, never here:
+    // resuming would push them through the template path.
+    const { data: kindRow } = await supabase
+      .from('broadcasts')
+      .select('kind')
+      .eq('id', id)
+      .eq('account_id', accountId)
+      .maybeSingle();
+    if (kindRow?.kind === 'text') {
+      return NextResponse.json({ error: t('broadcast.textQueued') }, { status: 400 });
+    }
+
     // Claim BEFORE planning. Two clicks on Resume, or a click while an
     // earlier pass is still running, would otherwise both build a plan
     // from the same 'pending' rows and message everyone twice — and a

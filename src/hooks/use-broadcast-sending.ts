@@ -48,8 +48,19 @@ interface BroadcastPayload {
   headerMediaUrl?: string;
 }
 
+/** Text campaign of a QR-code account (fork, docs/saas/w5-fila.md). */
+export interface TextBroadcastPayload {
+  name: string;
+  /** Free text with {{nome}}-style placeholders, filled per contact. */
+  messageText: string;
+  audience: AudienceConfig;
+  minIntervalSeconds: number;
+  maxIntervalSeconds: number;
+}
+
 interface UseBroadcastSendingReturn {
   createAndSendBroadcast: (payload: BroadcastPayload) => Promise<string>;
+  queueTextBroadcast: (payload: TextBroadcastPayload) => Promise<string>;
   isProcessing: boolean;
   progress: number;
 }
@@ -551,5 +562,87 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
     }
   }
 
-  return { createAndSendBroadcast, isProcessing, progress };
+  /**
+   * Text campaign (fork, docs/saas/w5-fila.md): only creates the rows.
+   * The server queue (/api/broadcasts/cron) sends one recipient at a time
+   * with a random pause, so closing the tab doesn't stop it. Created as
+   * 'draft' and flipped to 'sending' after every recipient is inserted —
+   * the worker would otherwise close a half-inserted campaign.
+   */
+  async function queueTextBroadcast(payload: TextBroadcastPayload): Promise<string> {
+    setIsProcessing(true);
+    setProgress(0);
+    const supabase = createClient();
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) throw new Error(t('notSignedIn'));
+      if (!accountId) throw new Error(t('notLinkedToAccount'));
+
+      setProgress(10);
+      const contacts = await resolveAudience(payload.audience);
+      if (contacts.length === 0) throw new Error(t('noContactsForAudience'));
+
+      setProgress(30);
+      const { data: broadcast, error: broadcastError } = await supabase
+        .from('broadcasts')
+        .insert({
+          user_id: user.id,
+          account_id: accountId,
+          name: payload.name,
+          kind: 'text',
+          message_text: payload.messageText,
+          min_interval_seconds: payload.minIntervalSeconds,
+          max_interval_seconds: payload.maxIntervalSeconds,
+          audience_filter: {
+            type: payload.audience.type,
+            tagIds: payload.audience.tagIds,
+            customField: payload.audience.customField,
+            excludeTagIds: payload.audience.excludeTagIds,
+          },
+          status: 'draft',
+          total_recipients: contacts.length,
+          sent_count: 0,
+          delivered_count: 0,
+          read_count: 0,
+          replied_count: 0,
+          failed_count: 0,
+        })
+        .select('id')
+        .single();
+      if (broadcastError || !broadcast) {
+        throw new Error(
+          t('createBroadcastFailed', { error: broadcastError?.message ?? t('unknownErrorLower') }),
+        );
+      }
+
+      const rows = contacts.map((contact) => ({
+        broadcast_id: broadcast.id,
+        contact_id: contact.id,
+        status: 'pending' as const,
+      }));
+      for (let i = 0; i < rows.length; i += INSERT_BATCH_SIZE) {
+        const { error } = await supabase
+          .from('broadcast_recipients')
+          .insert(rows.slice(i, i + INSERT_BATCH_SIZE));
+        if (error) throw new Error(t('createBroadcastFailed', { error: error.message }));
+        setProgress(30 + Math.round((60 * (i + INSERT_BATCH_SIZE)) / rows.length));
+      }
+
+      const { error: startError } = await supabase
+        .from('broadcasts')
+        .update({ status: 'sending', next_send_at: new Date().toISOString() })
+        .eq('id', broadcast.id);
+      if (startError) throw new Error(t('createBroadcastFailed', { error: startError.message }));
+
+      setProgress(100);
+      return broadcast.id;
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  return { createAndSendBroadcast, queueTextBroadcast, isProcessing, progress };
 }

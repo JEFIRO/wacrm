@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getMediaUrl, downloadMedia } from '@/lib/whatsapp/meta-api'
-import { decrypt } from '@/lib/whatsapp/encryption'
 import { loadChannel } from '@/lib/whatsapp/channels'
+import { PROVIDER_COLUMNS, providerForChannel, type ProviderChannel } from '@/lib/whatsapp/provider'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/translate'
 import { mediaProxyHeaders } from '@/lib/media/proxy-response-headers'
@@ -62,8 +61,8 @@ export async function GET(
     // a channel since disconnected — fall back to the default number.
     const channelId = new URL(request.url).searchParams.get('channel')
     const config =
-      (await loadChannel<{ access_token: string }>(supabase, accountId, channelId, 'access_token')) ??
-      (channelId ? await loadChannel<{ access_token: string }>(supabase, accountId, null, 'access_token') : null)
+      (await loadChannel<ProviderChannel>(supabase, accountId, channelId, PROVIDER_COLUMNS)) ??
+      (channelId ? await loadChannel<ProviderChannel>(supabase, accountId, null, PROVIDER_COLUMNS) : null)
 
     if (!config) {
       return NextResponse.json(
@@ -72,16 +71,13 @@ export async function GET(
       )
     }
 
-    const accessToken = decrypt(config.access_token)
+    const provider = providerForChannel(config)
 
-    // Get the download URL from Meta
-    const mediaInfo = await getMediaUrl({ mediaId, accessToken })
+    // Get the download URL from the provider
+    const mediaInfo = await provider.getMedia(mediaId)
 
     // Download the binary data
-    const { buffer, contentType } = await downloadMedia({
-      downloadUrl: mediaInfo.url,
-      accessToken,
-    })
+    const { buffer, contentType } = await provider.downloadMedia(mediaInfo.url)
 
     return new Response(new Uint8Array(buffer), {
       status: 200,

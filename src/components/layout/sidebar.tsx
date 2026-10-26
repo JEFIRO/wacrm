@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useTotalUnread } from "@/hooks/use-total-unread";
@@ -10,6 +10,7 @@ import { useUnreadNotifications } from "@/hooks/use-unread-notifications";
 import {
   Bell,
   Bot,
+  Building2,
   Crown,
   GitBranch,
   LayoutDashboard,
@@ -115,6 +116,14 @@ import { useTranslations } from "next-intl";
 
 export function Sidebar({ open = false, onClose }: SidebarProps) {
   const t = useTranslations("Sidebar");
+  // Fork (B6): the SaaS owner's panel link, for platform admins only.
+  const [platformAdmin, setPlatformAdmin] = useState(false);
+  useEffect(() => {
+    fetch("/api/platform/me")
+      .then((res) => (res.ok ? res.json() : { admin: false }))
+      .then((data) => setPlatformAdmin(data.admin === true))
+      .catch(() => setPlatformAdmin(false));
+  }, []);
   const pathname = usePathname();
   const { profile, profileLoading, account, accountRole, signOut } = useAuth();
   const totalUnread = useTotalUnread();
@@ -271,7 +280,10 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
           <div className="my-4 border-t border-border" />
 
           <ul className="flex flex-col gap-1">
-            {bottomNavItems.map((item) => {
+            {[
+              ...(platformAdmin ? [{ href: "/admin", labelKey: "platform", icon: Building2 }] : []),
+              ...bottomNavItems,
+            ].map((item) => {
               const isActive = pathname.startsWith(item.href);
               return (
                 <li key={item.href}>

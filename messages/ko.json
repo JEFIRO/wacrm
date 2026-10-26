@@ -41,7 +41,8 @@
     "defaultAvatar": "아바타",
     "menuProfile": "프로필",
     "menuSettings": "설정",
-    "menuSignOut": "로그아웃"
+    "menuSignOut": "로그아웃",
+    "platform": "SaaS 패널"
   },
   "Header": {
     "dashboard": "대시보드",
@@ -3236,5 +3237,49 @@
     "blockedTitle": "계정 차단됨",
     "blockedBody": "체험 또는 결제가 만료되고 유예 기간이 끝났습니다. 고객 메시지는 계속 수신·저장됩니다. 앱을 다시 사용하려면 구독하세요.",
     "subscribe": "요금제 보기 및 구독"
+  },
+  "PlatformAdmin": {
+    "title": "SaaS 패널",
+    "forbidden": "이 패널은 플랫폼 관리자 전용입니다.",
+    "search": "계정 또는 소유자 이메일 검색…",
+    "since": "{date}부터",
+    "trialUntil": "{date}까지 체험",
+    "paidUntil": "{date}까지 결제됨",
+    "lastMessage": "마지막: {date}",
+    "suspend": "정지",
+    "reactivate": "재활성화",
+    "extend": "+{days}일",
+    "suspendConfirm": "\"{name}\"을(를) 정지할까요? 재활성화 전까지 계정이 차단됩니다(수신 메시지는 계속 저장됨).",
+    "actionDone": "완료.",
+    "actionFailed": "작업을 완료할 수 없습니다.",
+    "suspendedByPanel": "패널에서 정지됨",
+    "empty": "이 필터에 해당하는 계정이 없습니다.",
+    "auditHint": "이 패널의 모든 작업은 기록됩니다(누가, 언제, 무엇을).",
+    "kpi": {
+      "total": "계정",
+      "trial": "체험 중",
+      "active": "활성",
+      "limited": "연체 / 제한",
+      "blocked": "차단",
+      "mrr": "월 매출"
+    },
+    "situation": {
+      "trial": "체험",
+      "active": "활성",
+      "limited": "제한",
+      "blocked": "차단",
+      "none": "요금제 없음"
+    },
+    "col": {
+      "account": "계정",
+      "plan": "요금제",
+      "situation": "상태",
+      "until": "유효 기간",
+      "seats": "상담원",
+      "numbers": "번호",
+      "messages": "30일 메시지",
+      "revenue": "월 매출",
+      "actions": "작업"
+    }
   }
 }

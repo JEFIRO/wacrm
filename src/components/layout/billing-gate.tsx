@@ -12,9 +12,12 @@ import { usePathname } from 'next/navigation';
 import { AlertTriangle, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useBillingAccess } from '@/hooks/use-billing-access';
+import { Info } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 
 const PLAN_URL = '/settings?tab=plan';
+/** Remind the account in the last days of its trial (B5). */
+const TRIAL_REMINDER_DAYS = 7;
 
 export function BillingGate({ children }: { children: ReactNode }) {
   const t = useTranslations('Billing');
@@ -36,6 +39,15 @@ export function BillingGate({ children }: { children: ReactNode }) {
 
   return (
     <>
+      {access?.level === 'full' && access.trialDaysLeft !== undefined && access.trialDaysLeft <= TRIAL_REMINDER_DAYS && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-sky-500/40 bg-sky-500/10 p-3 text-sm">
+          <Info className="size-4 shrink-0 text-sky-400" />
+          <p className="flex-1">{t('trialEnding', { days: access.trialDaysLeft })}</p>
+          <Link href={PLAN_URL} className={buttonVariants({ size: 'sm' })}>
+            {t('subscribe')}
+          </Link>
+        </div>
+      )}
       {access?.level === 'limited' && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
           <AlertTriangle className="size-4 shrink-0 text-amber-500" />

@@ -2477,7 +2477,10 @@
       "recommended": "Recomendado",
       "perAttendant": "por agente/mes",
       "minimumSeats": "Contratación mínima de {count} agentes ({total}/mes)",
-      "yearlyIncluded": "{count} agentes incluidos · 12 cuotas mensuales"
+      "yearlyIncluded": "{count} agentes incluidos · 12 cuotas mensuales",
+      "tryPlan": "Probar este plan",
+      "trialPlanChanged": "Tu prueba ahora es en el plan {plan}.",
+      "trialPlanFailed": "No se pudo cambiar el plan de la prueba."
     }
   },
   "SignupPage": {
@@ -2501,7 +2504,15 @@
     "creating": "Creando cuenta...",
     "submit": "Crear cuenta",
     "haveAccount": "¿Ya tienes una cuenta?",
-    "signIn": "Iniciar sesión"
+    "signIn": "Iniciar sesión",
+    "planLegend": "Elige el plan de tu prueba gratis",
+    "recommended": "recomendado",
+    "trialNote": "30 días gratis, sin tarjeta. Después de la prueba te suscribes en Configuración → Plan y uso.",
+    "payNow": "Quiero suscribirme ahora (ir directo al pago tras confirmar el e-mail)",
+    "pricePerSeat": "{price}/agente · mín. {min}",
+    "priceMonthly": "{price}/mes",
+    "priceYearly": "12× de {price}",
+    "priceTbd": "precio por definir"
   },
   "ForgotPasswordPage": {
     "checkEmailTitle": "Revisa tu correo",
@@ -3211,7 +3222,8 @@
       "providerFailed": "No se pudo crear la suscripción en Asaas. Inténtalo en unos instantes.",
       "invalidSeats": "Cantidad de usuarios adicionales inválida.",
       "seatsUnavailable": "La compra de usuarios adicionales aún no está disponible para este plan.",
-      "seatsBelowUsage": "La cuenta ya usa {used} usuarios: quita miembros antes de reducir."
+      "seatsBelowUsage": "La cuenta ya usa {used} usuarios: quita miembros antes de reducir.",
+      "trialPlanLocked": "El plan de la prueba solo se puede cambiar antes de suscribirse. Después, usa Elegir este plan."
     }
   },
   "Distribution": {
@@ -3236,7 +3248,8 @@
     "limitedPastDue": "Hay un pago pendiente. La cuenta funciona con límites (envíos más lentos, sin campañas, IA ni nuevos números/usuarios) hasta el {date}; después será bloqueada.",
     "blockedTitle": "Cuenta bloqueada",
     "blockedBody": "La prueba o el pago venció y terminó el plazo. Los mensajes de tus clientes se siguen recibiendo y guardando: suscríbete para volver a usar la app.",
-    "subscribe": "Ver planes y suscribirse"
+    "subscribe": "Ver planes y suscribirse",
+    "trialEnding": "Tu prueba gratis termina en {days, plural, one {# día} other {# días}}. Suscríbete para seguir sin límites."
   },
   "PlatformAdmin": {
     "title": "Panel del SaaS",

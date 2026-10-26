@@ -7,9 +7,10 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 
 - Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm` (último commit
   upstream `34bce1a`).
-- `main` **local** (sem push): C1–C3 + P1 (merge `752ffab`) e W1–W5 + correção da remoção de
+- `main`: C1–C3 + P1 (merge `752ffab`) e W1–W5 + correção da remoção de
   número (merge `11464fc`), tela de números (`e917abc`), B1/B4 planos, fim do teste, B2 Asaas
-  B3 atendentes com a tabela de preços por atendente e B6 painel do SaaS (migrations até 075).
+  B3 atendentes com a tabela de preços por atendente, B6 painel do SaaS e B5 cadastro no plano
+  (migrations até 076). **Enviada ao GitHub** (`JEFIRO/wacrm`, público).
   Todas as branches `feat/*` e `fix/*` já estão contidas na `main`.
 - **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
   `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
@@ -44,7 +45,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `075` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `076` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -299,4 +300,8 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
 - **2026-10-25** — Merge do B3 + preços (`18cfbad`). B6 painel do SaaS (na `main`): `/admin` para `PLATFORM_ADMIN_EMAILS` (local: `teste@wacrm.test`), resumo e tabela
   de clientes, suspender/reativar/estender teste com `platform_audit`. Testado com as contas
   locais e com conta não admin (403).
+- **2026-10-26** — Merge do B6 e **push da `main` para o GitHub** (repositório público). Antes do
+  push, o histórico local foi reescrito para trocar os números de WhatsApp reais do usuário
+  (testes/docs/comentário do nono dígito) por fictícios (11 98765-4321 / 9123-4567); ids dos
+  commits a partir do W3 mudaram e o handoff foi atualizado. B5 (na `main`): plano no cadastro, assinar agora, trocar plano do teste, aviso dos 7 dias.
 

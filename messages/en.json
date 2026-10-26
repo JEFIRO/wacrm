@@ -2477,7 +2477,10 @@
       "recommended": "Recommended",
       "perAttendant": "per attendant/month",
       "minimumSeats": "Minimum {count} attendants ({total}/month)",
-      "yearlyIncluded": "{count} attendants included · 12 monthly instalments"
+      "yearlyIncluded": "{count} attendants included · 12 monthly instalments",
+      "tryPlan": "Try this plan",
+      "trialPlanChanged": "Your trial is now on the {plan} plan.",
+      "trialPlanFailed": "Could not change the trial's plan."
     }
   },
   "SignupPage": {
@@ -2501,7 +2504,15 @@
     "creating": "Creating account...",
     "submit": "Create account",
     "haveAccount": "Already have an account?",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "planLegend": "Choose your free-trial plan",
+    "recommended": "recommended",
+    "trialNote": "30 days free, no card. After the trial, subscribe in Settings → Plan & usage.",
+    "payNow": "I want to subscribe now (go straight to payment after confirming the e-mail)",
+    "pricePerSeat": "{price}/attendant · min. {min}",
+    "priceMonthly": "{price}/month",
+    "priceYearly": "12× {price}",
+    "priceTbd": "price to be defined"
   },
   "ForgotPasswordPage": {
     "checkEmailTitle": "Check your email",
@@ -3211,7 +3222,8 @@
       "providerFailed": "Could not create the subscription on Asaas. Try again in a moment.",
       "invalidSeats": "Invalid number of extra users.",
       "seatsUnavailable": "Buying extra users isn't available for this plan yet.",
-      "seatsBelowUsage": "The account already uses {used} users: remove members before reducing."
+      "seatsBelowUsage": "The account already uses {used} users: remove members before reducing.",
+      "trialPlanLocked": "The trial's plan can only change before subscribing. After that, use Choose this plan."
     }
   },
   "Distribution": {
@@ -3236,7 +3248,8 @@
     "limitedPastDue": "A payment is overdue. The account works with limits (slower sending, no campaigns, AI or new numbers/users) until {date}; after that it will be blocked.",
     "blockedTitle": "Account blocked",
     "blockedBody": "The trial or payment expired and the grace period is over. Your customers' messages are still received and stored — subscribe to use the app again.",
-    "subscribe": "See plans and subscribe"
+    "subscribe": "See plans and subscribe",
+    "trialEnding": "Your free trial ends in {days, plural, one {# day} other {# days}}. Subscribe to keep going without limits."
   },
   "PlatformAdmin": {
     "title": "SaaS panel",

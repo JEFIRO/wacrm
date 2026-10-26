@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -45,6 +45,21 @@ function SignupPageInner() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const supabase = createClient();
+  // Fork (B5, docs/saas/b5-cadastro.md): the plan the 30-day trial starts
+  // on — preselected from ?plano= (links from the website) — and whether
+  // to go straight to payment after confirming the e-mail.
+  const [plans, setPlans] = useState<SignupPlan[]>([]);
+  const [plan, setPlan] = useState(searchParams.get("plano") ?? "impulso");
+  const [payNow, setPayNow] = useState(false);
+
+  useEffect(() => {
+    if (inviteToken) return;
+    supabase
+      .from("plans")
+      .select("id, name, pricing, billing_cycle, monthly_price_cents, extra_user_price_cents, included_users, highlight")
+      .order("sort_order")
+      .then(({ data }) => setPlans((data ?? []) as SignupPlan[]));
+  }, [inviteToken, supabase]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +89,9 @@ function SignupPageInner() {
     // → Redirect URLs; see docs/auth-emails.md.
     const next = inviteToken
       ? `/join/${encodeURIComponent(inviteToken)}`
-      : "/dashboard";
+      : payNow
+        ? `/settings?tab=plan&assinar=${encodeURIComponent(plan)}`
+        : "/dashboard";
     const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 
     const { error } = await supabase.auth.signUp({
@@ -83,6 +100,8 @@ function SignupPageInner() {
       options: {
         data: {
           full_name: fullName,
+          // Read by the trial trigger (migration 076); ignored for invites.
+          ...(inviteToken ? {} : { plan }),
         },
         emailRedirectTo,
       },
@@ -225,6 +244,42 @@ function SignupPageInner() {
               />
             </div>
 
+            {!inviteToken && plans.length > 0 && (
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-sm text-muted-foreground">{t("planLegend")}</legend>
+                {plans.map((p) => (
+                  <label
+                    key={p.id}
+                    className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm ${plan === p.id ? "border-primary bg-primary/5" : "border-border"}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="plan"
+                        value={p.id}
+                        checked={plan === p.id}
+                        onChange={() => setPlan(p.id)}
+                        className="accent-primary"
+                      />
+                      <span className="font-medium text-foreground">{p.name}</span>
+                      {p.highlight && <span className="text-[10px] uppercase text-primary">{t("recommended")}</span>}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{planPrice(p, t)}</span>
+                  </label>
+                ))}
+                <p className="text-xs text-muted-foreground">{t("trialNote")}</p>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={payNow}
+                    onChange={(e) => setPayNow(e.target.checked)}
+                    className="accent-primary"
+                  />
+                  {t("payNow")}
+                </label>
+              </fieldset>
+            )}
+
             <Button
               type="submit"
               disabled={loading}
@@ -252,3 +307,28 @@ function SignupPageInner() {
     </div>
   );
 }
+
+interface SignupPlan {
+  id: string;
+  name: string;
+  pricing: "flat" | "per_seat";
+  billing_cycle: "monthly" | "yearly";
+  monthly_price_cents: number | null;
+  extra_user_price_cents: number | null;
+  included_users: number;
+  highlight: boolean;
+}
+
+const brl = (cents: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
+
+function planPrice(p: SignupPlan, t: (key: string, values?: Record<string, string | number>) => string) {
+  if (p.pricing === "per_seat" && p.extra_user_price_cents !== null) {
+    return t("pricePerSeat", { price: brl(p.extra_user_price_cents), min: p.included_users });
+  }
+  if (p.monthly_price_cents === null) return t("priceTbd");
+  return p.billing_cycle === "yearly"
+    ? t("priceYearly", { price: brl(p.monthly_price_cents) })
+    : t("priceMonthly", { price: brl(p.monthly_price_cents) });
+}
+

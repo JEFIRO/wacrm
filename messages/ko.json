@@ -2477,7 +2477,10 @@
       "recommended": "추천",
       "perAttendant": "상담원당/월",
       "minimumSeats": "최소 {count}명 계약 ({total}/월)",
-      "yearlyIncluded": "상담원 {count}명 포함 · 12개월 분할"
+      "yearlyIncluded": "상담원 {count}명 포함 · 12개월 분할",
+      "tryPlan": "이 요금제 체험",
+      "trialPlanChanged": "이제 {plan} 요금제로 체험 중입니다.",
+      "trialPlanFailed": "체험 요금제를 변경할 수 없습니다."
     }
   },
   "SignupPage": {
@@ -2501,7 +2504,15 @@
     "creating": "계정 만드는 중...",
     "submit": "계정 만들기",
     "haveAccount": "이미 계정이 있으신가요?",
-    "signIn": "로그인"
+    "signIn": "로그인",
+    "planLegend": "무료 체험 요금제 선택",
+    "recommended": "추천",
+    "trialNote": "카드 없이 30일 무료. 체험 후 설정 → 요금제 및 사용량에서 구독하세요.",
+    "payNow": "지금 구독할래요 (이메일 확인 후 바로 결제)",
+    "pricePerSeat": "{price}/상담원 · 최소 {min}명",
+    "priceMonthly": "{price}/월",
+    "priceYearly": "12× {price}",
+    "priceTbd": "가격 미정"
   },
   "ForgotPasswordPage": {
     "checkEmailTitle": "이메일을 확인하세요",
@@ -3211,7 +3222,8 @@
       "providerFailed": "Asaas에서 구독을 만들 수 없습니다. 잠시 후 다시 시도하세요.",
       "invalidSeats": "추가 사용자 수가 올바르지 않습니다.",
       "seatsUnavailable": "이 요금제에서는 아직 추가 사용자를 구매할 수 없습니다.",
-      "seatsBelowUsage": "계정이 이미 {used}명을 사용 중입니다. 줄이기 전에 멤버를 제거하세요."
+      "seatsBelowUsage": "계정이 이미 {used}명을 사용 중입니다. 줄이기 전에 멤버를 제거하세요.",
+      "trialPlanLocked": "체험 요금제는 구독 전에만 변경할 수 있습니다. 이후에는 이 요금제 선택을 사용하세요."
     }
   },
   "Distribution": {
@@ -3236,7 +3248,8 @@
     "limitedPastDue": "연체된 결제가 있습니다. {date}까지 제한된 상태(느린 발송, 캠페인·AI·새 번호/사용자 불가)로 사용할 수 있으며, 그 후 계정이 차단됩니다.",
     "blockedTitle": "계정 차단됨",
     "blockedBody": "체험 또는 결제가 만료되고 유예 기간이 끝났습니다. 고객 메시지는 계속 수신·저장됩니다. 앱을 다시 사용하려면 구독하세요.",
-    "subscribe": "요금제 보기 및 구독"
+    "subscribe": "요금제 보기 및 구독",
+    "trialEnding": "무료 체험이 {days}일 후 종료됩니다. 제한 없이 계속하려면 구독하세요."
   },
   "PlatformAdmin": {
     "title": "SaaS 패널",

@@ -2477,7 +2477,10 @@
       "recommended": "Recomendado",
       "perAttendant": "por atendente/mês",
       "minimumSeats": "Contratação mínima de {count} atendentes ({total}/mês)",
-      "yearlyIncluded": "{count} atendentes inclusos · 12 parcelas mensais"
+      "yearlyIncluded": "{count} atendentes inclusos · 12 parcelas mensais",
+      "tryPlan": "Testar este plano",
+      "trialPlanChanged": "Seu teste agora é no plano {plan}.",
+      "trialPlanFailed": "Não foi possível trocar o plano do teste."
     }
   },
   "SignupPage": {
@@ -2501,7 +2504,15 @@
     "creating": "Criando conta...",
     "submit": "Criar conta",
     "haveAccount": "Já tem uma conta?",
-    "signIn": "Entrar"
+    "signIn": "Entrar",
+    "planLegend": "Escolha o plano do seu teste grátis",
+    "recommended": "recomendado",
+    "trialNote": "30 dias grátis, sem cartão. Depois do teste você assina em Configurações → Plano e uso.",
+    "payNow": "Quero assinar agora (vai direto para o pagamento após confirmar o e-mail)",
+    "pricePerSeat": "{price}/atendente · mín. {min}",
+    "priceMonthly": "{price}/mês",
+    "priceYearly": "12× de {price}",
+    "priceTbd": "valor a definir"
   },
   "ForgotPasswordPage": {
     "checkEmailTitle": "Verifique seu e-mail",
@@ -3211,7 +3222,8 @@
       "providerFailed": "Não foi possível criar a assinatura no Asaas. Tente novamente em instantes.",
       "invalidSeats": "Quantidade de usuários adicionais inválida.",
       "seatsUnavailable": "A compra de usuários adicionais ainda não está disponível para este plano.",
-      "seatsBelowUsage": "A conta já usa {used} usuários: remova membros antes de reduzir."
+      "seatsBelowUsage": "A conta já usa {used} usuários: remova membros antes de reduzir.",
+      "trialPlanLocked": "O plano do teste só pode ser trocado antes de assinar. Depois, troque pelo botão Escolher este plano."
     }
   },
   "Distribution": {
@@ -3236,7 +3248,8 @@
     "limitedPastDue": "Há um pagamento pendente. A conta funciona com limites (envios mais lentos, sem campanhas, IA e novos números/usuários) até {date}; depois disso ela será bloqueada.",
     "blockedTitle": "Conta bloqueada",
     "blockedBody": "O teste ou o pagamento venceu e o prazo terminou. As mensagens dos seus clientes continuam sendo recebidas e guardadas — assine um plano para voltar a usar o app.",
-    "subscribe": "Ver planos e assinar"
+    "subscribe": "Ver planos e assinar",
+    "trialEnding": "Seu teste grátis termina em {days, plural, one {# dia} other {# dias}}. Assine para continuar sem limites."
   },
   "PlatformAdmin": {
     "title": "Painel do SaaS",

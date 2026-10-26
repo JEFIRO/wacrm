@@ -74,6 +74,8 @@ export interface BillingAccess {
   reason?: 'trial_expired' | 'past_due' | 'suspended' | 'canceled'
   /** When a limited account becomes blocked. */
   blocksAt?: Date
+  /** Days left of a running trial (counting today). */
+  trialDaysLeft?: number
 }
 
 const plusDays = (iso: string | null, days: number, fallback: Date) =>
@@ -91,7 +93,8 @@ export function billingAccess(sub: Subscription | null, now: Date): BillingAcces
     case 'active':
       return { level: 'full' }
     case 'trialing': {
-      if (!sub.trial_ends_at || new Date(sub.trial_ends_at) > now) return { level: 'full' }
+      if (!sub.trial_ends_at) return { level: 'full' }
+      if (new Date(sub.trial_ends_at) > now) return { level: 'full', trialDaysLeft: trialDaysLeft(sub, now) }
       const blocksAt = plusDays(sub.trial_ends_at, GRACE_DAYS, now)
       return blocksAt > now
         ? { level: 'limited', reason: 'trial_expired', blocksAt }

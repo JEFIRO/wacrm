@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Check, CreditCard, ExternalLink, Loader2, Minus, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +42,35 @@ export function PlanSettings() {
   const [reload, setReload] = useState(0);
 
   const refresh = useCallback(() => setReload((n) => n + 1), []);
+  // B5: "subscribe now" at signup lands here with ?assinar=<plan>.
+  const searchParams = useSearchParams();
+  const wantedPlan = searchParams.get('assinar');
+
+  useEffect(() => {
+    if (!wantedPlan || !isOwner || choosing) return;
+    const p = plans.find((x) => x.id === wantedPlan && x.active && x.monthly_price_cents !== null);
+    // Open the subscribe form once the plans are loaded.
+    if (p) setChoosing(p);
+  }, [wantedPlan, isOwner, plans, choosing]);
+
+  async function tryPlan(p: Plan) {
+    setBusy(true);
+    try {
+      const res = await fetch('/api/billing/trial-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_id: p.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t('trialPlanFailed'));
+      toast.success(t('trialPlanChanged', { plan: p.name }));
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('trialPlanFailed'));
+    } finally {
+      setBusy(false);
+    }
+  }
   // Extra users to buy (B3); null = unchanged from the subscription.
   const [extraDraft, setExtraDraft] = useState<number | null>(null);
 
@@ -263,6 +293,12 @@ export function PlanSettings() {
                 >
                   {isCurrent ? (sub?.external_subscription_id ? t('currentPlan') : t('subscribeCurrent')) : t('choose')}
                 </Button>
+                {/* B5: switch the trial's plan without paying. */}
+                {!isCurrent && isOwner && sub?.status === 'trialing' && !sub.external_subscription_id && (
+                  <Button type="button" className="w-full" variant="ghost" size="sm" disabled={busy} onClick={() => tryPlan(p)}>
+                    {t('tryPlan')}
+                  </Button>
+                )}
                 <ul className="space-y-1.5">
                   {(p.features.length ? p.features : [t('maxNumbers', { count: p.max_numbers })]).map((f) => (
                     <li key={f} className="flex gap-2">

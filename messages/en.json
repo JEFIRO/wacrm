@@ -41,7 +41,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Profile",
     "menuSettings": "Settings",
-    "menuSignOut": "Sign out"
+    "menuSignOut": "Sign out",
+    "platform": "SaaS panel"
   },
   "Header": {
     "dashboard": "Dashboard",
@@ -3236,5 +3237,49 @@
     "blockedTitle": "Account blocked",
     "blockedBody": "The trial or payment expired and the grace period is over. Your customers' messages are still received and stored — subscribe to use the app again.",
     "subscribe": "See plans and subscribe"
+  },
+  "PlatformAdmin": {
+    "title": "SaaS panel",
+    "forbidden": "This panel is for platform admins only.",
+    "search": "Search account or owner e-mail…",
+    "since": "since {date}",
+    "trialUntil": "trial until {date}",
+    "paidUntil": "paid until {date}",
+    "lastMessage": "last: {date}",
+    "suspend": "Suspend",
+    "reactivate": "Reactivate",
+    "extend": "+{days} days",
+    "suspendConfirm": "Suspend \"{name}\"? The account stays blocked until reactivated (inbound messages are still stored).",
+    "actionDone": "Done.",
+    "actionFailed": "Could not complete the action.",
+    "suspendedByPanel": "suspended from the panel",
+    "empty": "No account in this filter.",
+    "auditHint": "Every action in this panel is recorded (who, when and what).",
+    "kpi": {
+      "total": "Accounts",
+      "trial": "On trial",
+      "active": "Active",
+      "limited": "Overdue / limited",
+      "blocked": "Blocked",
+      "mrr": "Monthly revenue"
+    },
+    "situation": {
+      "trial": "Trial",
+      "active": "Active",
+      "limited": "Limited",
+      "blocked": "Blocked",
+      "none": "No plan"
+    },
+    "col": {
+      "account": "Account",
+      "plan": "Plan",
+      "situation": "Situation",
+      "until": "Valid until",
+      "seats": "Attendants",
+      "numbers": "Numbers",
+      "messages": "Msgs 30 days",
+      "revenue": "Revenue/month",
+      "actions": "Actions"
+    }
   }
 }

@@ -24,6 +24,9 @@ const tablesWithoutDomainData = new Set([
   // Migration 070: every account is born with a trial subscription row;
   // it is billing state, not customer data, and cascades with the account.
   "account_subscriptions",
+  // Migration 075: the SaaS panel's audit trail — platform records about
+  // the account, not its data (account_id is SET NULL on delete).
+  "platform_audit",
 ]);
 
 function accountScopedTables(): Set<string> {

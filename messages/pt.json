@@ -41,7 +41,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
-    "menuSignOut": "Sair"
+    "menuSignOut": "Sair",
+    "platform": "Painel SaaS"
   },
   "Header": {
     "dashboard": "Painel",
@@ -3236,5 +3237,49 @@
     "blockedTitle": "Conta bloqueada",
     "blockedBody": "O teste ou o pagamento venceu e o prazo terminou. As mensagens dos seus clientes continuam sendo recebidas e guardadas — assine um plano para voltar a usar o app.",
     "subscribe": "Ver planos e assinar"
+  },
+  "PlatformAdmin": {
+    "title": "Painel do SaaS",
+    "forbidden": "Este painel é só para os administradores da plataforma.",
+    "search": "Buscar conta ou e-mail do dono…",
+    "since": "desde {date}",
+    "trialUntil": "teste até {date}",
+    "paidUntil": "pago até {date}",
+    "lastMessage": "última: {date}",
+    "suspend": "Suspender",
+    "reactivate": "Reativar",
+    "extend": "+{days} dias",
+    "suspendConfirm": "Suspender \"{name}\"? A conta fica bloqueada até ser reativada (as mensagens recebidas continuam sendo guardadas).",
+    "actionDone": "Feito.",
+    "actionFailed": "Não foi possível concluir a ação.",
+    "suspendedByPanel": "suspensa pelo painel",
+    "empty": "Nenhuma conta neste filtro.",
+    "auditHint": "Toda ação deste painel fica registrada (quem fez, quando e o quê).",
+    "kpi": {
+      "total": "Contas",
+      "trial": "Em teste",
+      "active": "Ativas",
+      "limited": "Em atraso / limitadas",
+      "blocked": "Bloqueadas",
+      "mrr": "Receita mensal"
+    },
+    "situation": {
+      "trial": "Em teste",
+      "active": "Ativa",
+      "limited": "Limitada",
+      "blocked": "Bloqueada",
+      "none": "Sem plano"
+    },
+    "col": {
+      "account": "Conta",
+      "plan": "Plano",
+      "situation": "Situação",
+      "until": "Validade",
+      "seats": "Atendentes",
+      "numbers": "Números",
+      "messages": "Msgs 30 dias",
+      "revenue": "Receita/mês",
+      "actions": "Ações"
+    }
   }
 }

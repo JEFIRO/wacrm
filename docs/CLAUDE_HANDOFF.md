@@ -9,7 +9,7 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
   upstream `34bce1a`).
 - `main` **local** (sem push): C1–C3 + P1 (merge `752ffab`) e W1–W5 + correção da remoção de
   número (merge `a4a022e`), tela de números (`6f71c55`), B1/B4 planos, fim do teste, B2 Asaas
-  e B3 atendentes com a tabela de preços por atendente (migrations até 074).
+  B3 atendentes com a tabela de preços por atendente e B6 painel do SaaS (migrations até 075).
   Todas as branches `feat/*` e `fix/*` já estão contidas na `main`.
 - **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
   `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
@@ -44,7 +44,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `074` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `075` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -296,4 +296,7 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   (mín. 2, 2 números), Impulso R$ 149,90/atendente (mín. 3, 3 números, recomendado, usado no
   teste), Anual Completo R$ 180/mês para a conta em 12× (3 atendentes, 5 números). Planos antigos
   desativados. Cartões com preço por atendente, mínimo, recursos e selo Recomendado.
+- **2026-10-25** — Merge do B3 + preços (`6cf05bf`). B6 painel do SaaS (na `main`): `/admin` para `PLATFORM_ADMIN_EMAILS` (local: `teste@wacrm.test`), resumo e tabela
+  de clientes, suspender/reativar/estender teste com `platform_audit`. Testado com as contas
+  locais e com conta não admin (403).
 

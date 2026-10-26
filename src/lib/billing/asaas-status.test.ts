@@ -21,7 +21,7 @@ describe('Asaas payments → status', () => {
   it('is active for a month after the last paid charge', () => {
     const s = statusFromPayments([pay('2026-11-24', 'RECEIVED'), pay('2026-12-24', 'PENDING')], true);
     expect(s.status).toBe('active');
-    expect(s.currentPeriodEnd).toBe('2026-12-24T00:00:00.000Z');
+    expect(s.currentPeriodEnd).toBe('2026-12-24T12:00:00.000Z');
     expect(s.invoiceUrl).toBe('https://inv/2026-12-24');
     expect(statusFromPayments([pay('2026-11-24', 'CONFIRMED')], true).status).toBe('active');
   });
@@ -31,7 +31,7 @@ describe('Asaas payments → status', () => {
       [pay('2026-11-24', 'RECEIVED'), pay('2026-12-24', 'OVERDUE'), pay('2027-01-24', 'PENDING')],
       true,
     );
-    expect(s).toMatchObject({ status: 'past_due', currentPeriodEnd: '2026-12-24T00:00:00.000Z' });
+    expect(s).toMatchObject({ status: 'past_due', currentPeriodEnd: '2026-12-24T12:00:00.000Z' });
   });
 
   it('is canceled when the subscription was removed', () => {

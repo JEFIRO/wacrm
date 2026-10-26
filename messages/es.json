@@ -41,7 +41,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configuración",
-    "menuSignOut": "Cerrar sesión"
+    "menuSignOut": "Cerrar sesión",
+    "platform": "Panel SaaS"
   },
   "Header": {
     "dashboard": "Panel",
@@ -3236,5 +3237,49 @@
     "blockedTitle": "Cuenta bloqueada",
     "blockedBody": "La prueba o el pago venció y terminó el plazo. Los mensajes de tus clientes se siguen recibiendo y guardando: suscríbete para volver a usar la app.",
     "subscribe": "Ver planes y suscribirse"
+  },
+  "PlatformAdmin": {
+    "title": "Panel del SaaS",
+    "forbidden": "Este panel es solo para los administradores de la plataforma.",
+    "search": "Buscar cuenta o e-mail del dueño…",
+    "since": "desde {date}",
+    "trialUntil": "prueba hasta {date}",
+    "paidUntil": "pagado hasta {date}",
+    "lastMessage": "último: {date}",
+    "suspend": "Suspender",
+    "reactivate": "Reactivar",
+    "extend": "+{days} días",
+    "suspendConfirm": "¿Suspender \"{name}\"? La cuenta queda bloqueada hasta reactivarla (los mensajes recibidos se siguen guardando).",
+    "actionDone": "Listo.",
+    "actionFailed": "No se pudo completar la acción.",
+    "suspendedByPanel": "suspendida desde el panel",
+    "empty": "Ninguna cuenta en este filtro.",
+    "auditHint": "Toda acción de este panel queda registrada (quién, cuándo y qué).",
+    "kpi": {
+      "total": "Cuentas",
+      "trial": "En prueba",
+      "active": "Activas",
+      "limited": "Atrasadas / limitadas",
+      "blocked": "Bloqueadas",
+      "mrr": "Ingreso mensual"
+    },
+    "situation": {
+      "trial": "En prueba",
+      "active": "Activa",
+      "limited": "Limitada",
+      "blocked": "Bloqueada",
+      "none": "Sin plan"
+    },
+    "col": {
+      "account": "Cuenta",
+      "plan": "Plan",
+      "situation": "Situación",
+      "until": "Vigencia",
+      "seats": "Agentes",
+      "numbers": "Números",
+      "messages": "Msgs 30 días",
+      "revenue": "Ingreso/mes",
+      "actions": "Acciones"
+    }
   }
 }

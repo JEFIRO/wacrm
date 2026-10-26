@@ -253,6 +253,13 @@ BEGIN
     RAISE EXCEPTION 'seat limit is missing — migration 073 did not apply';
   END IF;
 
+  -- 075: platform overview (service role only) and audit.
+  IF to_regprocedure('public.platform_accounts_overview()') IS NULL
+     OR has_function_privilege('authenticated', 'public.platform_accounts_overview()', 'EXECUTE')
+     OR to_regclass('public.platform_audit') IS NULL THEN
+    RAISE EXCEPTION 'platform panel is incomplete or exposed — migration 075 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

@@ -17,8 +17,12 @@ export interface SyncedStatus {
   invoiceUrl: string | null
 }
 
+// Asaas dates are calendar days; noon UTC keeps the same day in
+// Brazilian time zones when shown.
+const noonUtc = (isoDate: string) => `${isoDate}T12:00:00.000Z`
+
 const addMonth = (isoDate: string): string => {
-  const d = new Date(`${isoDate}T00:00:00Z`)
+  const d = new Date(noonUtc(isoDate))
   d.setUTCMonth(d.getUTCMonth() + 1)
   return d.toISOString()
 }
@@ -38,7 +42,7 @@ export function statusFromPayments(
     return { status: 'canceled', currentPeriodEnd: lastPaid ? addMonth(lastPaid.dueDate) : null, invoiceUrl: null }
   }
   if (overdue) {
-    return { status: 'past_due', currentPeriodEnd: `${overdue.dueDate}T00:00:00.000Z`, invoiceUrl }
+    return { status: 'past_due', currentPeriodEnd: noonUtc(overdue.dueDate), invoiceUrl }
   }
   if (lastPaid) {
     return { status: 'active', currentPeriodEnd: addMonth(lastPaid.dueDate), invoiceUrl }

@@ -2430,13 +2430,13 @@
       "trialDays": "Teste grátis — {days, plural, one {# dia restante} other {# dias restantes}}",
       "trialHint": "Teste grátis com os recursos do plano até {date}.",
       "pricePerMonth": "{price}/mês",
-      "users": "Usuários",
-      "usersHint": "Leitores (somente visualização) não ocupam usuário.",
+      "users": "Atendentes",
+      "usersHint": "Leitores (somente visualização) não ocupam vaga de atendente.",
       "numbers": "Números de WhatsApp",
       "includedUsers": "{count, plural, one {# usuário incluso} other {# usuários inclusos}}",
       "maxNumbers": "{count, plural, one {# número de WhatsApp} other {até # números de WhatsApp}}",
-      "extraUserTbd": "Usuário adicional: valor a definir",
-      "extraUser": "Usuário adicional: {price}/mês",
+      "extraUserTbd": "Atendente adicional: valor a definir",
+      "extraUser": "Atendente adicional: {price}/mês",
       "currentPlan": "Plano atual",
       "choose": "Escolher este plano",
       "paymentSoon": "A assinatura e a troca de plano pelo app chegam com o pagamento online.",
@@ -2463,7 +2463,20 @@
       "openInvoice": "Abrir fatura a pagar",
       "refreshStatus": "Atualizar status",
       "statusUpdated": "Status atualizado.",
-      "paymentHint": "Pagamentos processados pelo Asaas. Depois de pagar, o status muda sozinho em alguns minutos — ou clique em Atualizar status."
+      "paymentHint": "Pagamentos processados pelo Asaas. Depois de pagar, o status muda sozinho em alguns minutos — ou clique em Atualizar status.",
+      "extraUsers": "Atendentes adicionais:",
+      "fewerUsers": "Menos um usuário",
+      "moreUsers": "Mais um usuário",
+      "extraUserEach": "{price}/mês cada",
+      "saveSeats": "Salvar — novo total {total}/mês",
+      "seatsSaved": "Usuários adicionais atualizados. O novo valor vale a partir da próxima cobrança.",
+      "seatsFailed": "Não foi possível atualizar os usuários adicionais.",
+      "extraUserTbdShort": "valor do atendente adicional ainda a definir",
+      "extraUserAfterSubscribe": "disponível depois de assinar",
+      "recommended": "Recomendado",
+      "perAttendant": "por atendente/mês",
+      "minimumSeats": "Contratação mínima de {count} atendentes ({total}/mês)",
+      "yearlyIncluded": "{count} atendentes inclusos · 12 parcelas mensais"
     }
   },
   "SignupPage": {
@@ -3005,7 +3018,8 @@
         "loadFailed": "Falha ao carregar os convites",
         "roleInvalid": "A função deve ser admin, agent ou viewer",
         "labelTooLong": "O rótulo deve ter no máximo {max} caracteres",
-        "createFailed": "Falha ao criar o convite"
+        "createFailed": "Falha ao criar o convite",
+        "planSeatLimit": "Seu plano permite {limit} usuários (contando convites pendentes). Compre usuários adicionais em Plano e uso, convide como Leitor (não ocupa vaga) ou troque de plano."
       },
       "members": {
         "loadFailed": "Falha ao carregar os membros",
@@ -3023,7 +3037,8 @@
     },
     "invitations": {
       "redeemFailed": "Falha ao aceitar o convite",
-      "missingToken": "Token de convite ausente"
+      "missingToken": "Token de convite ausente",
+      "planSeatLimit": "A equipe que te convidou atingiu o limite de usuários do plano. Peça ao administrador para liberar uma vaga."
     },
     "ai": {
       "pausedRequired": "paused (booleano) é obrigatório",
@@ -3192,7 +3207,10 @@
       "notConfigured": "O pagamento online ainda não está configurado neste servidor.",
       "invalidDocument": "CPF ou CNPJ inválido.",
       "planUnavailable": "Este plano não está disponível para assinatura no momento.",
-      "providerFailed": "Não foi possível criar a assinatura no Asaas. Tente novamente em instantes."
+      "providerFailed": "Não foi possível criar a assinatura no Asaas. Tente novamente em instantes.",
+      "invalidSeats": "Quantidade de usuários adicionais inválida.",
+      "seatsUnavailable": "A compra de usuários adicionais ainda não está disponível para este plano.",
+      "seatsBelowUsage": "A conta já usa {used} usuários: remova membros antes de reduzir."
     }
   },
   "Distribution": {

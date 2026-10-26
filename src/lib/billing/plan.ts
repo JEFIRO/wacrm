@@ -11,6 +11,13 @@ export interface Plan {
   monthly_price_cents: number | null
   /** 'yearly' = 12-month commitment paid in monthly instalments. */
   billing_cycle: 'monthly' | 'yearly'
+  /** 'per_seat': price per attendant (extra_user_price_cents), minimum
+   *  included_users; 'flat': monthly_price_cents for the account. */
+  pricing: 'flat' | 'per_seat'
+  tagline: string | null
+  highlight: boolean
+  features: string[]
+  active: boolean
   included_users: number
   max_numbers: number
   extra_user_price_cents: number | null

@@ -2430,13 +2430,13 @@
       "trialDays": "Free trial — {days, plural, one {# day left} other {# days left}}",
       "trialHint": "Free trial with the plan's features until {date}.",
       "pricePerMonth": "{price}/month",
-      "users": "Users",
-      "usersHint": "Viewers (read-only) don't take a seat.",
+      "users": "Attendants",
+      "usersHint": "Viewers (read-only) don't take an attendant seat.",
       "numbers": "WhatsApp numbers",
       "includedUsers": "{count, plural, one {# user included} other {# users included}}",
       "maxNumbers": "{count, plural, one {# WhatsApp number} other {up to # WhatsApp numbers}}",
-      "extraUserTbd": "Extra user: price to be defined",
-      "extraUser": "Extra user: {price}/month",
+      "extraUserTbd": "Extra attendant: price to be defined",
+      "extraUser": "Extra attendant: {price}/month",
       "currentPlan": "Current plan",
       "choose": "Choose this plan",
       "paymentSoon": "Subscribing and changing plan in the app come with online payment.",
@@ -2463,7 +2463,20 @@
       "openInvoice": "Open the invoice to pay",
       "refreshStatus": "Update status",
       "statusUpdated": "Status updated.",
-      "paymentHint": "Payments processed by Asaas. After paying, the status changes by itself within minutes — or click Update status."
+      "paymentHint": "Payments processed by Asaas. After paying, the status changes by itself within minutes — or click Update status.",
+      "extraUsers": "Extra attendants:",
+      "fewerUsers": "One user less",
+      "moreUsers": "One user more",
+      "extraUserEach": "{price}/month each",
+      "saveSeats": "Save — new total {total}/month",
+      "seatsSaved": "Extra users updated. The new value applies from the next charge.",
+      "seatsFailed": "Could not update the extra users.",
+      "extraUserTbdShort": "extra-attendant price still to be defined",
+      "extraUserAfterSubscribe": "available after subscribing",
+      "recommended": "Recommended",
+      "perAttendant": "per attendant/month",
+      "minimumSeats": "Minimum {count} attendants ({total}/month)",
+      "yearlyIncluded": "{count} attendants included · 12 monthly instalments"
     }
   },
   "SignupPage": {
@@ -3005,7 +3018,8 @@
         "loadFailed": "Failed to load invitations",
         "roleInvalid": "'role' must be one of admin, agent, viewer",
         "labelTooLong": "Label must be {max} characters or fewer",
-        "createFailed": "Failed to create invitation"
+        "createFailed": "Failed to create invitation",
+        "planSeatLimit": "Your plan allows {limit} users (counting pending invitations). Buy extra users in Plan & usage, invite as Viewer (no seat) or change plan."
       },
       "members": {
         "loadFailed": "Failed to load members",
@@ -3023,7 +3037,8 @@
     },
     "invitations": {
       "redeemFailed": "Failed to redeem invitation",
-      "missingToken": "Missing invitation token"
+      "missingToken": "Missing invitation token",
+      "planSeatLimit": "The team that invited you reached its plan's user limit. Ask the admin to free a seat."
     },
     "ai": {
       "pausedRequired": "paused (boolean) is required",
@@ -3192,7 +3207,10 @@
       "notConfigured": "Online payment is not configured on this server yet.",
       "invalidDocument": "Invalid CPF or CNPJ.",
       "planUnavailable": "This plan can't be subscribed to right now.",
-      "providerFailed": "Could not create the subscription on Asaas. Try again in a moment."
+      "providerFailed": "Could not create the subscription on Asaas. Try again in a moment.",
+      "invalidSeats": "Invalid number of extra users.",
+      "seatsUnavailable": "Buying extra users isn't available for this plan yet.",
+      "seatsBelowUsage": "The account already uses {used} users: remove members before reducing."
     }
   },
   "Distribution": {

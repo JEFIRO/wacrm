@@ -33,6 +33,10 @@ import { getT } from "@/lib/i18n/translate";
 const t = getT("Api");
 
 function rpcErrorToResponse(err: PostgrestError): NextResponse {
+  // Fork (B3): the inviting account has no seat left.
+  if (err.message === "plan_seat_limit") {
+    return NextResponse.json({ error: t('invitations.planSeatLimit') }, { status: 403 });
+  }
   if (err.code === "42501") {
     return NextResponse.json({ error: err.message }, { status: 401 });
   }

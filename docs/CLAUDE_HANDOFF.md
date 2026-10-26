@@ -8,7 +8,7 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 - Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm` (último commit
   upstream `34bce1a`).
 - `main` **local** (sem push): C1–C3 + P1 (merge `752ffab`) e W1–W5 + correção da remoção de
-  número (merge `a4a022e`), tela de números (`6f71c55`), B1/B4 planos, fim do teste, B2 Asaas
+  número (merge `11464fc`), tela de números (`e917abc`), B1/B4 planos, fim do teste, B2 Asaas
   B3 atendentes com a tabela de preços por atendente e B6 painel do SaaS (migrations até 075).
   Todas as branches `feat/*` e `fix/*` já estão contidas na `main`.
 - **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
@@ -242,16 +242,16 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   envio + status entregue, recebidos texto/foto/vídeo/áudio (espelhados), resposta citando,
   reação. Corrigidos na hora: nono dígito (contato duplicado — `phone-utils.ts`, vale p/ Meta)
   e envelope `albumMessage`.
-- **2026-10-25** — Commit do W3 (`26c9d78`). Botões/lista testados na Evolution real: não
+- **2026-10-25** — Commit do W3 (`e212c64`). Botões/lista testados na Evolution real: não
   aparecem (botões) / erro do servidor (lista) → W4 com menu numerado. **Um tipo de conexão por
   conta** (migration 067 + 409 nas rotas + escolha só na conta sem número). Seed: número
   Evolution movido para a conta `qr@wacrm.test`. Verificado: regra no banco (3 casos), 409 na
   API, aviso na conta Meta, escolha na conta nova; gate verde (1577) e schema check.
-- **2026-10-25** — Commit da regra um-tipo-por-conta (`9cae7f6`). W4 (sem commit): menu numerado
+- **2026-10-25** — Commit da regra um-tipo-por-conta (`9825724`). W4 (sem commit): menu numerado
   no lugar de botões/lista no provedor Evolution, resposta "1"/título → toque com o id da opção,
   conta QR sem janela de 24h / sem template / avisos em Modelos e Disparos. Testado com WhatsApp
   real (menu + resposta "1" → `btn_sim`) e na conta `qr@wacrm.test`. Gate verde (1582).
-- **2026-10-25** — Commit do W4 (`697c9a3`). Eco de mensagens `fromMe` (celular/Web) na inbox,
+- **2026-10-25** — Commit do W4 (`76b8902`). Eco de mensagens `fromMe` (celular/Web) na inbox,
   sem duplicar as do app (verificado). W5: fila de campanhas de texto no banco + cron
   (`/api/broadcasts/cron`), intervalo aleatório, assistente na conta QR, detalhe com estado da
   fila. Campanha real: 2 envios ao número autorizado com 21 s de intervalo. Corrigidos no teste:
@@ -261,14 +261,14 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   mensagem gravada como eco num e recebida no outro. Corrigido: checagem do eco escopada por
   número (o id da mensagem é igual nos dois lados). Tela de número QR mostra "Conexão não
   encontrada" quando a instância foi apagada no servidor (antes: erro repetido a cada 3 s).
-- **2026-10-25** — Commit do W5 + eco (`4a347da`). **Bug de remoção de número** (vinha da 062, já
+- **2026-10-25** — Commit do W5 + eco (`897c107`). **Bug de remoção de número** (vinha da 062, já
   na `main`): remover número com conversas falhava com "the sending number of a conversation
   cannot be changed" — o FK zera o número das conversas e a trava achava que era troca. Migration
   069 libera só esse caso (número de fato removido); trocar ou forçar órfã segue bloqueado
   (testado no banco). Afetava Meta e QR. Branch `fix/remover-numero`. Os dois números reais do
   usuário foram removidos pela tela (instâncias `wacrm-` apagadas; `n8n` intocada; histórico
   local mantido).
-- **2026-10-25** — Commit da correção (`202738b`) e merge de W1–W5 na `main` (`a4a022e`, sem push).
+- **2026-10-25** — Commit da correção (`4a3f419`) e merge de W1–W5 na `main` (`11464fc`, sem push).
   Dados dos números reais do usuário apagados do banco local (3 contatos com conversas e
   mensagens, 2 campanhas de teste, 3 mídias espelhadas).
 - **2026-10-25** — Tela de números reorganizada (pedido do usuário; na `main`): "Número principal da empresa" (o padrão — recebe tudo, sem setor fixo; o fluxo
@@ -276,27 +276,27 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   setor antes de conectar (o formulário só aparece depois) e grava o setor no número salvo;
   "Tornar número principal" troca o principal. Decisões do usuário: principal roteia pelo
   fluxo/menu; números de setor opcionais.
-- **2026-10-25** — Merge da tela de números (`6f71c55`). B1 + B4 (na `main`): `plans` + `account_subscriptions` (migration 070), teste de 30 dias por gatilho em
+- **2026-10-25** — Merge da tela de números (`e917abc`). B1 + B4 (na `main`): `plans` + `account_subscriptions` (migration 070), teste de 30 dias por gatilho em
   `accounts`, limite de números no banco e nas rotas, Configurações → Plano e uso. Verificado:
   limite no banco (Essencial recusa o 3º número, Profissional aceita), tela com dados reais.
-- **2026-10-25** — Merge do B1 (`b3d51b1`). Fim do teste (na `main`): sem
+- **2026-10-25** — Merge do B1 (`fd19803`). Fim do teste (na `main`): sem
   implantação, plano Anual Completo (preço a definir), fim do teste/atraso → modo limitado por
   30 dias → bloqueio (decisões do usuário). Aplicado no envio da inbox/API, disparos, IA,
   números, convites, fluxos e automações (só no bloqueio), aviso e tela de bloqueio. Testado
   na tela e nas rotas (limitado: aviso + envio 5 s + 402 em disparo/convite; bloqueado: tela +
   402). Chave do Asaas **sandbox** no `.env.local` (escapar o `$` como `\$` — o Next expande
   variáveis); testada (200).
-- **2026-10-25** — Merge do fim do teste (`8047a99`). B2 Asaas (na `main`): cliente + assinatura no Asaas pela tela (dono, CPF/CNPJ), status relido do Asaas
+- **2026-10-25** — Merge do fim do teste (`af31317`). B2 Asaas (na `main`): cliente + assinatura no Asaas pela tela (dono, CPF/CNPJ), status relido do Asaas
   (`statusFromPayments`), webhook com token, "Atualizar status". Testado no sandbox: usuário
   assinou o Business e pagou com cartão de teste → conta **Ativa** até 24/12/2026.
-- **2026-10-25** — Merge do B2 (`876f590`). B3 (na `main`): limite de
+- **2026-10-25** — Merge do B2 (`cf1568a`). B3 (na `main`): limite de
   usuários (073) no aceite/promoção, checagem no convite, compra de adicionais atualizando o
   Asaas. Testado no banco, nas rotas e no sandbox (R$ 799 → R$ 898,80 → R$ 799).
 - **2026-10-25** — Nova tabela de preços (074, pedido do usuário): Essencial R$ 99,90/atendente
   (mín. 2, 2 números), Impulso R$ 149,90/atendente (mín. 3, 3 números, recomendado, usado no
   teste), Anual Completo R$ 180/mês para a conta em 12× (3 atendentes, 5 números). Planos antigos
   desativados. Cartões com preço por atendente, mínimo, recursos e selo Recomendado.
-- **2026-10-25** — Merge do B3 + preços (`6cf05bf`). B6 painel do SaaS (na `main`): `/admin` para `PLATFORM_ADMIN_EMAILS` (local: `teste@wacrm.test`), resumo e tabela
+- **2026-10-25** — Merge do B3 + preços (`18cfbad`). B6 painel do SaaS (na `main`): `/admin` para `PLATFORM_ADMIN_EMAILS` (local: `teste@wacrm.test`), resumo e tabela
   de clientes, suspender/reativar/estender teste com `platform_audit`. Testado com as contas
   locais e com conta não admin (403).
 

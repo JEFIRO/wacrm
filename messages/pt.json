@@ -2449,7 +2449,21 @@
       },
       "priceTbd": "Valor a definir",
       "pricePerInstalment": "12× de {price}",
-      "yearlyHint": "Compromisso de 12 meses, pago em parcelas mensais."
+      "yearlyHint": "Compromisso de 12 meses, pago em parcelas mensais.",
+      "descriptionPay": "Seu plano, o período de teste, quanto você já usa e a assinatura.",
+      "ownerOnly": "Só o dono da conta pode assinar ou trocar o plano.",
+      "subscribeCurrent": "Assinar este plano",
+      "subscribeTitle": "Assinar o plano {plan}",
+      "subscribeHint": "Informe o CPF ou CNPJ de quem paga. A fatura abre numa nova aba: pague por Pix, boleto ou cartão. Durante o teste, a primeira cobrança vence no fim dele.",
+      "document": "CPF ou CNPJ",
+      "subscribeAndPay": "Assinar e abrir a fatura",
+      "cancel": "Cancelar",
+      "subscribed": "Assinatura criada. A fatura foi aberta numa nova aba.",
+      "subscribeFailed": "Não foi possível assinar agora.",
+      "openInvoice": "Abrir fatura a pagar",
+      "refreshStatus": "Atualizar status",
+      "statusUpdated": "Status atualizado.",
+      "paymentHint": "Pagamentos processados pelo Asaas. Depois de pagar, o status muda sozinho em alguns minutos — ou clique em Atualizar status."
     }
   },
   "SignupPage": {
@@ -3174,7 +3188,11 @@
     },
     "billing": {
       "blocked": "Conta bloqueada por falta de pagamento. Assine um plano em Configurações → Plano e uso para voltar a enviar.",
-      "limitedFeature": "Recurso indisponível: o período de teste terminou ou há um pagamento pendente. Assine um plano em Configurações → Plano e uso."
+      "limitedFeature": "Recurso indisponível: o período de teste terminou ou há um pagamento pendente. Assine um plano em Configurações → Plano e uso.",
+      "notConfigured": "O pagamento online ainda não está configurado neste servidor.",
+      "invalidDocument": "CPF ou CNPJ inválido.",
+      "planUnavailable": "Este plano não está disponível para assinatura no momento.",
+      "providerFailed": "Não foi possível criar a assinatura no Asaas. Tente novamente em instantes."
     }
   },
   "Distribution": {

@@ -2449,7 +2449,21 @@
       },
       "priceTbd": "Precio por definir",
       "pricePerInstalment": "12× de {price}",
-      "yearlyHint": "Compromiso de 12 meses, pagado en cuotas mensuales."
+      "yearlyHint": "Compromiso de 12 meses, pagado en cuotas mensuales.",
+      "descriptionPay": "Tu plan, la prueba, tu uso y la suscripción.",
+      "ownerOnly": "Solo el dueño de la cuenta puede suscribirse o cambiar de plan.",
+      "subscribeCurrent": "Suscribirse a este plan",
+      "subscribeTitle": "Suscribirse al plan {plan}",
+      "subscribeHint": "Indica el CPF o CNPJ de quien paga. La factura se abre en una nueva pestaña: paga con Pix, boleto o tarjeta. Durante la prueba, el primer cobro vence al terminarla.",
+      "document": "CPF o CNPJ",
+      "subscribeAndPay": "Suscribirse y abrir la factura",
+      "cancel": "Cancelar",
+      "subscribed": "Suscripción creada. La factura se abrió en una nueva pestaña.",
+      "subscribeFailed": "No se pudo suscribir ahora.",
+      "openInvoice": "Abrir factura a pagar",
+      "refreshStatus": "Actualizar estado",
+      "statusUpdated": "Estado actualizado.",
+      "paymentHint": "Pagos procesados por Asaas. Después de pagar, el estado cambia solo en unos minutos, o haz clic en Actualizar estado."
     }
   },
   "SignupPage": {
@@ -3174,7 +3188,11 @@
     },
     "billing": {
       "blocked": "Cuenta bloqueada por falta de pago. Suscríbete en Configuración → Plan y uso para volver a enviar.",
-      "limitedFeature": "No disponible: la prueba terminó o hay un pago pendiente. Suscríbete en Configuración → Plan y uso."
+      "limitedFeature": "No disponible: la prueba terminó o hay un pago pendiente. Suscríbete en Configuración → Plan y uso.",
+      "notConfigured": "El pago en línea aún no está configurado en este servidor.",
+      "invalidDocument": "CPF o CNPJ inválido.",
+      "planUnavailable": "Este plan no está disponible para suscripción en este momento.",
+      "providerFailed": "No se pudo crear la suscripción en Asaas. Inténtalo en unos instantes."
     }
   },
   "Distribution": {

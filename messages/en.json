@@ -2449,7 +2449,21 @@
       },
       "priceTbd": "Price to be defined",
       "pricePerInstalment": "12× {price}",
-      "yearlyHint": "12-month commitment, paid in monthly instalments."
+      "yearlyHint": "12-month commitment, paid in monthly instalments.",
+      "descriptionPay": "Your plan, the trial, your usage and the subscription.",
+      "ownerOnly": "Only the account owner can subscribe or change the plan.",
+      "subscribeCurrent": "Subscribe to this plan",
+      "subscribeTitle": "Subscribe to the {plan} plan",
+      "subscribeHint": "Enter the payer's CPF or CNPJ. The invoice opens in a new tab: pay by Pix, boleto or card. During the trial, the first charge is due when it ends.",
+      "document": "CPF or CNPJ",
+      "subscribeAndPay": "Subscribe and open the invoice",
+      "cancel": "Cancel",
+      "subscribed": "Subscription created. The invoice opened in a new tab.",
+      "subscribeFailed": "Could not subscribe right now.",
+      "openInvoice": "Open the invoice to pay",
+      "refreshStatus": "Update status",
+      "statusUpdated": "Status updated.",
+      "paymentHint": "Payments processed by Asaas. After paying, the status changes by itself within minutes — or click Update status."
     }
   },
   "SignupPage": {
@@ -3174,7 +3188,11 @@
     },
     "billing": {
       "blocked": "Account blocked for lack of payment. Subscribe in Settings → Plan & usage to send again.",
-      "limitedFeature": "Unavailable: the trial ended or a payment is overdue. Subscribe in Settings → Plan & usage."
+      "limitedFeature": "Unavailable: the trial ended or a payment is overdue. Subscribe in Settings → Plan & usage.",
+      "notConfigured": "Online payment is not configured on this server yet.",
+      "invalidDocument": "Invalid CPF or CNPJ.",
+      "planUnavailable": "This plan can't be subscribed to right now.",
+      "providerFailed": "Could not create the subscription on Asaas. Try again in a moment."
     }
   },
   "Distribution": {

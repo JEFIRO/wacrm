@@ -2449,7 +2449,21 @@
       },
       "priceTbd": "가격 미정",
       "pricePerInstalment": "12× {price}",
-      "yearlyHint": "12개월 약정, 매월 분할 결제."
+      "yearlyHint": "12개월 약정, 매월 분할 결제.",
+      "descriptionPay": "요금제, 체험 기간, 사용량, 구독 정보입니다.",
+      "ownerOnly": "계정 소유자만 구독하거나 요금제를 변경할 수 있습니다.",
+      "subscribeCurrent": "이 요금제 구독",
+      "subscribeTitle": "{plan} 요금제 구독",
+      "subscribeHint": "결제자의 CPF 또는 CNPJ를 입력하세요. 청구서가 새 탭에서 열리며 Pix, boleto 또는 카드로 결제할 수 있습니다. 체험 중에는 첫 청구가 체험 종료일에 만기됩니다.",
+      "document": "CPF 또는 CNPJ",
+      "subscribeAndPay": "구독하고 청구서 열기",
+      "cancel": "취소",
+      "subscribed": "구독이 생성되었습니다. 청구서가 새 탭에서 열렸습니다.",
+      "subscribeFailed": "지금은 구독할 수 없습니다.",
+      "openInvoice": "결제할 청구서 열기",
+      "refreshStatus": "상태 새로고침",
+      "statusUpdated": "상태가 업데이트되었습니다.",
+      "paymentHint": "결제는 Asaas가 처리합니다. 결제 후 몇 분 내에 상태가 자동으로 바뀌며, 상태 새로고침을 눌러도 됩니다."
     }
   },
   "SignupPage": {
@@ -3174,7 +3188,11 @@
     },
     "billing": {
       "blocked": "결제가 없어 계정이 차단되었습니다. 다시 보내려면 설정 → 요금제 및 사용량에서 구독하세요.",
-      "limitedFeature": "사용할 수 없음: 체험이 끝났거나 결제가 연체되었습니다. 설정 → 요금제 및 사용량에서 구독하세요."
+      "limitedFeature": "사용할 수 없음: 체험이 끝났거나 결제가 연체되었습니다. 설정 → 요금제 및 사용량에서 구독하세요.",
+      "notConfigured": "이 서버에는 아직 온라인 결제가 설정되지 않았습니다.",
+      "invalidDocument": "CPF 또는 CNPJ가 올바르지 않습니다.",
+      "planUnavailable": "지금은 이 요금제를 구독할 수 없습니다.",
+      "providerFailed": "Asaas에서 구독을 만들 수 없습니다. 잠시 후 다시 시도하세요."
     }
   },
   "Distribution": {

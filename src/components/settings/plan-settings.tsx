@@ -5,14 +5,17 @@
 // (B2): current plan, trial / status, seats and numbers used, and the
 // plan catalogue to compare.
 // ============================================================
-import { useEffect, useState } from 'react';
-import { Check, CreditCard } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Check, CreditCard, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   formatBRL,
   seatLimit,
@@ -26,11 +29,51 @@ import { SettingsPanelHead } from './settings-panel-head';
 
 export function PlanSettings() {
   const t = useTranslations('Settings.plan');
-  const { accountId } = useAuth();
+  const { accountId, isOwner } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [sub, setSub] = useState<Subscription | null>(null);
+  const [sub, setSub] = useState<(Subscription & { pending_invoice_url?: string | null; external_subscription_id?: string | null }) | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [numbers, setNumbers] = useState(0);
+  // Subscribe form (B2, docs/saas/b2-asaas.md).
+  const [choosing, setChoosing] = useState<Plan | null>(null);
+  const [docNumber, setDocNumber] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [reload, setReload] = useState(0);
+
+  const refresh = useCallback(() => setReload((n) => n + 1), []);
+
+  async function subscribe() {
+    if (!choosing) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/billing/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_id: choosing.id, cpf_cnpj: docNumber }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t('subscribeFailed'));
+      toast.success(t('subscribed'));
+      setChoosing(null);
+      if (data.invoice_url) window.open(data.invoice_url, '_blank', 'noopener');
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('subscribeFailed'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function syncNow() {
+    setBusy(true);
+    try {
+      await fetch('/api/billing/sync', { method: 'POST' });
+      refresh();
+      toast.success(t('statusUpdated'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   useEffect(() => {
     if (!accountId) return;
@@ -52,7 +95,7 @@ export function PlanSettings() {
     return () => {
       cancelled = true;
     };
-  }, [accountId]);
+  }, [accountId, reload]);
 
   const plan = plans.find((p) => p.id === sub?.plan_id) ?? null;
   const priceLabel = (p: Plan) =>
@@ -66,7 +109,7 @@ export function PlanSettings() {
 
   return (
     <section className="animate-in fade-in-50 duration-200 space-y-6">
-      <SettingsPanelHead title={t('title')} description={t('description')} />
+      <SettingsPanelHead title={t('title')} description={t('descriptionPay')} />
 
       {sub && plan && phase && (
         <Card>
@@ -86,9 +129,30 @@ export function PlanSettings() {
                 : priceLabel(plan)}
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            <Usage label={t('users')} used={seatsUsed(roles)} limit={seatLimit(plan, sub)} hint={t('usersHint')} />
-            <Usage label={t('numbers')} used={numbers} limit={plan.max_numbers} />
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Usage label={t('users')} used={seatsUsed(roles)} limit={seatLimit(plan, sub)} hint={t('usersHint')} />
+              <Usage label={t('numbers')} used={numbers} limit={plan.max_numbers} />
+            </div>
+            {sub.external_subscription_id && (
+              <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+                {sub.pending_invoice_url && (
+                  <a
+                    href={sub.pending_invoice_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    <ExternalLink className="size-4" />
+                    {t('openInvoice')}
+                  </a>
+                )}
+                <Button type="button" size="sm" variant="ghost" onClick={syncNow} disabled={busy}>
+                  <RefreshCw className={busy ? 'animate-spin' : ''} />
+                  {t('refreshStatus')}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -124,15 +188,49 @@ export function PlanSettings() {
                       : t('extraUser', { price: formatBRL(p.extra_user_price_cents) })}
                   </li>
                 </ul>
-                <Button type="button" className="w-full" variant={isCurrent ? 'outline' : 'default'} disabled title={t('paymentSoon')}>
-                  {isCurrent ? t('currentPlan') : t('choose')}
+                <Button
+                  type="button"
+                  className="w-full"
+                  variant={isCurrent ? 'outline' : 'default'}
+                  disabled={!isOwner || p.monthly_price_cents === null || (isCurrent && !!sub?.external_subscription_id)}
+                  title={!isOwner ? t('ownerOnly') : undefined}
+                  onClick={() => setChoosing(p)}
+                >
+                  {isCurrent ? (sub?.external_subscription_id ? t('currentPlan') : t('subscribeCurrent')) : t('choose')}
                 </Button>
               </CardContent>
             </Card>
           );
         })}
       </div>
-      <p className="text-xs text-muted-foreground">{t('paymentSoon')}</p>
+      {choosing && (
+        <Card className="border-primary">
+          <CardHeader>
+            <CardTitle className="text-base">{t('subscribeTitle', { plan: choosing.name })}</CardTitle>
+            <CardDescription>{t('subscribeHint')}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-end gap-2">
+            <div className="min-w-56 flex-1 space-y-1">
+              <Label htmlFor="billing-document">{t('document')}</Label>
+              <Input
+                id="billing-document"
+                inputMode="numeric"
+                value={docNumber}
+                placeholder="000.000.000-00"
+                onChange={(e) => setDocNumber(e.target.value)}
+              />
+            </div>
+            <Button type="button" onClick={subscribe} disabled={busy || docNumber.replace(/\D/g, '').length < 11}>
+              {busy ? <Loader2 className="animate-spin" /> : <CreditCard />}
+              {t('subscribeAndPay')}
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setChoosing(null)} disabled={busy}>
+              {t('cancel')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+      <p className="text-xs text-muted-foreground">{t('paymentHint')}</p>
     </section>
   );
 }

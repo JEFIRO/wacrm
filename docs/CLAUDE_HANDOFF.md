@@ -43,7 +43,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `071` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `072` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -163,7 +163,8 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
 ### Produto e plataforma
 - [ ] B1: teste usa os limites do Profissional (decisão sem o usuário); preço do usuário extra
       e do plano anual a definir.
-- [ ] Modo limitado/bloqueio só muda de estado pela data do teste até existir o B2 (Asaas).
+- [ ] B2: webhook do Asaas só funciona com URL pública (O1); até lá, "Atualizar status".
+- [ ] Chave do Asaas sandbox foi colada no chat — gerar outra no painel antes de produção.
 - Itens da tabela de planos que o sistema não faz: limite de números por plano, cota mensal
   de API, recursos por plano, relatórios por atendente/exportação.
 - Coexistência: requisitos e limites da Meta mudam com frequência — confirmar na
@@ -284,4 +285,7 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
   na tela e nas rotas (limitado: aviso + envio 5 s + 402 em disparo/convite; bloqueado: tela +
   402). Chave do Asaas **sandbox** no `.env.local` (escapar o `$` como `\$` — o Next expande
   variáveis); testada (200).
+- **2026-10-25** — Merge do fim do teste (`8047a99`). B2 Asaas (na `main`): cliente + assinatura no Asaas pela tela (dono, CPF/CNPJ), status relido do Asaas
+  (`statusFromPayments`), webhook com token, "Atualizar status". Testado no sandbox: usuário
+  assinou o Business e pagou com cartão de teste → conta **Ativa** até 24/12/2026.
 

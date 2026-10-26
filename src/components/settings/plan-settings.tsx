@@ -6,7 +6,7 @@
 // plan catalogue to compare.
 // ============================================================
 import { useCallback, useEffect, useState } from 'react';
-import { Check, CreditCard, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
+import { Check, CreditCard, ExternalLink, Loader2, Minus, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
@@ -41,6 +41,28 @@ export function PlanSettings() {
   const [reload, setReload] = useState(0);
 
   const refresh = useCallback(() => setReload((n) => n + 1), []);
+  // Extra users to buy (B3); null = unchanged from the subscription.
+  const [extraDraft, setExtraDraft] = useState<number | null>(null);
+
+  async function saveSeats(extra: number) {
+    setBusy(true);
+    try {
+      const res = await fetch('/api/billing/seats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extra_users: extra }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t('seatsFailed'));
+      toast.success(t('seatsSaved'));
+      setExtraDraft(null);
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('seatsFailed'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function subscribe() {
     if (!choosing) return;
@@ -81,7 +103,8 @@ export function PlanSettings() {
     let cancelled = false;
     (async () => {
       const [p, s, m, w] = await Promise.all([
-        db.from('plans').select('*').eq('active', true).order('sort_order'),
+        // All plans: the account may be on one no longer offered.
+        db.from('plans').select('*').order('sort_order'),
         db.from('account_subscriptions').select('*').eq('account_id', accountId).maybeSingle(),
         db.from('profiles').select('account_role').eq('account_id', accountId),
         db.from('whatsapp_config').select('id', { count: 'exact', head: true }).eq('account_id', accountId),
@@ -104,6 +127,7 @@ export function PlanSettings() {
       : p.billing_cycle === 'yearly'
         ? t('pricePerInstalment', { price: formatBRL(p.monthly_price_cents) })
         : t('pricePerMonth', { price: formatBRL(p.monthly_price_cents) });
+  const offered = plans.filter((p) => p.active);
   const now = new Date();
   const phase = sub ? subscriptionPhase(sub, now) : null;
 
@@ -134,6 +158,49 @@ export function PlanSettings() {
               <Usage label={t('users')} used={seatsUsed(roles)} limit={seatLimit(plan, sub)} hint={t('usersHint')} />
               <Usage label={t('numbers')} used={numbers} limit={plan.max_numbers} />
             </div>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span>{t('extraUsers')}</span>
+              {plan.extra_user_price_cents !== null && sub.external_subscription_id && isOwner ? (
+                <>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="outline"
+                    aria-label={t('fewerUsers')}
+                    disabled={busy || (extraDraft ?? sub.extra_users) <= 0}
+                    onClick={() => setExtraDraft(Math.max(0, (extraDraft ?? sub.extra_users) - 1))}
+                  >
+                    <Minus />
+                  </Button>
+                  <span className="w-6 text-center font-medium">{extraDraft ?? sub.extra_users}</span>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="outline"
+                    aria-label={t('moreUsers')}
+                    disabled={busy}
+                    onClick={() => setExtraDraft((extraDraft ?? sub.extra_users) + 1)}
+                  >
+                    <Plus />
+                  </Button>
+                  <span className="text-muted-foreground">
+                    {t('extraUserEach', { price: formatBRL(plan.extra_user_price_cents) })}
+                  </span>
+                  {extraDraft !== null && extraDraft !== sub.extra_users && (
+                    <Button type="button" size="sm" onClick={() => saveSeats(extraDraft)} disabled={busy}>
+                      {t('saveSeats', {
+                        total: formatBRL((plan.monthly_price_cents ?? 0) + extraDraft * plan.extra_user_price_cents),
+                      })}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <span className="text-muted-foreground">
+                  {sub.extra_users > 0 ? sub.extra_users : ''}{' '}
+                  {plan.extra_user_price_cents === null ? t('extraUserTbdShort') : t('extraUserAfterSubscribe')}
+                </span>
+              )}
+            </div>
             {sub.external_subscription_id && (
               <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
                 {sub.pending_invoice_url && (
@@ -157,37 +224,35 @@ export function PlanSettings() {
         </Card>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {plans.map((p) => {
+      <div className="grid gap-4 md:grid-cols-3">
+        {offered.map((p) => {
           const isCurrent = p.id === sub?.plan_id;
+          const perSeat = p.pricing === 'per_seat' && p.extra_user_price_cents !== null;
           return (
-            <Card key={p.id} className={isCurrent ? 'border-primary' : undefined}>
+            <Card key={p.id} className={isCurrent || p.highlight ? 'relative border-primary' : 'relative'}>
+              {p.highlight && (
+                <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] uppercase">
+                  {t('recommended')}
+                </Badge>
+              )}
               <CardHeader>
                 <CardTitle className="text-base">{p.name}</CardTitle>
-                <CardDescription className="text-lg font-semibold text-foreground">
-                  {priceLabel(p)}
-                </CardDescription>
-                {p.billing_cycle === 'yearly' && (
-                  <p className="text-xs text-muted-foreground">{t('yearlyHint')}</p>
-                )}
+                {p.tagline && <CardDescription>{p.tagline}</CardDescription>}
+                <p className="pt-2 text-2xl font-semibold text-foreground">
+                  {perSeat ? formatBRL(p.extra_user_price_cents!) : priceLabel(p)}
+                  {perSeat && (
+                    <span className="ml-1 text-xs font-normal text-muted-foreground">{t('perAttendant')}</span>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {perSeat
+                    ? t('minimumSeats', { count: p.included_users, total: formatBRL(p.monthly_price_cents ?? 0) })
+                    : p.billing_cycle === 'yearly'
+                      ? t('yearlyIncluded', { count: p.included_users })
+                      : t('includedUsers', { count: p.included_users })}
+                </p>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <ul className="space-y-1.5">
-                  <li className="flex gap-2">
-                    <Check className="size-4 text-primary" />
-                    {t('includedUsers', { count: p.included_users })}
-                  </li>
-                  <li className="flex gap-2">
-                    <Check className="size-4 text-primary" />
-                    {t('maxNumbers', { count: p.max_numbers })}
-                  </li>
-                  <li className="flex gap-2 text-muted-foreground">
-                    <Check className="size-4" />
-                    {p.extra_user_price_cents === null
-                      ? t('extraUserTbd')
-                      : t('extraUser', { price: formatBRL(p.extra_user_price_cents) })}
-                  </li>
-                </ul>
                 <Button
                   type="button"
                   className="w-full"
@@ -198,6 +263,22 @@ export function PlanSettings() {
                 >
                   {isCurrent ? (sub?.external_subscription_id ? t('currentPlan') : t('subscribeCurrent')) : t('choose')}
                 </Button>
+                <ul className="space-y-1.5">
+                  {(p.features.length ? p.features : [t('maxNumbers', { count: p.max_numbers })]).map((f) => (
+                    <li key={f} className="flex gap-2">
+                      <Check className="size-4 shrink-0 text-primary" />
+                      {f}
+                    </li>
+                  ))}
+                  {!perSeat && (
+                    <li className="flex gap-2 text-muted-foreground">
+                      <Check className="size-4 shrink-0" />
+                      {p.extra_user_price_cents === null
+                        ? t('extraUserTbd')
+                        : t('extraUser', { price: formatBRL(p.extra_user_price_cents) })}
+                    </li>
+                  )}
+                </ul>
               </CardContent>
             </Card>
           );

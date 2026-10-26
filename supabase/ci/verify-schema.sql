@@ -248,6 +248,11 @@ BEGIN
     RAISE EXCEPTION 'plans/subscriptions are incomplete — migration 070 did not apply';
   END IF;
 
+  -- 073: plan seat limit on profiles.
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'profiles_plan_seat_limit') THEN
+    RAISE EXCEPTION 'seat limit is missing — migration 073 did not apply';
+  END IF;
+
   RAISE NOTICE 'schema verification passed';
 END
 $$;

@@ -2,6 +2,20 @@
 
 Status: **na `main`** · Itens do roteiro: B1, B4
 
+## Tabela de preços atual (migration 074 — decisão do usuário, 2026-10-25)
+
+| Plano | Preço | Mínimo | Números | Observação |
+|---|---|---|---|---|
+| Essencial | R$ 99,90 por atendente/mês | 2 atendentes (R$ 199,80) | 2 | |
+| Impulso (recomendado, usado no teste) | R$ 149,90 por atendente/mês | 3 atendentes (R$ 449,70) | 3 | |
+| Anual Completo | R$ 180/mês para a conta, 12 parcelas | 3 atendentes inclusos | 5 | atendente extra pago à parte (valor a definir) |
+
+Por atendente cabe nas colunas existentes: `included_users` = mínimo, `extra_user_price_cents` =
+preço por atendente, `monthly_price_cents` = mínimo × preço (`pricing = 'per_seat'`). Profissional,
+Business e Escala saíram (`active = false`; assinaturas antigas continuam apontando para eles).
+Cada plano tem `tagline`, `highlight` e a lista `features` dos cartões (só exibição — os
+recursos ainda não são travados por plano).
+
 ## Decisões do usuário (2026-10-25)
 
 - **Sem taxa de implantação** (coluna removida na 071).
@@ -39,7 +53,7 @@ Status: **na `main`** · Itens do roteiro: B1, B4
 
 ## Decisão tomada sem o usuário (confirmar)
 
-- O teste usa os limites do plano **Profissional** (5 usuários, 5 números).
+- O teste usa o plano **Impulso** (recomendado): 3 atendentes, 3 números.
 
 ## Fim do teste e atraso: modo limitado → bloqueio (migration 071, `billingAccess`)
 

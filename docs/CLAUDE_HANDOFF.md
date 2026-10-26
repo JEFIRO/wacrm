@@ -8,7 +8,8 @@ cada implementação (data + o que mudou). Última atualização: **2026-10-25**
 - Clone do fork `JEFIRO/wacrm` em `/home/jefiro/Documentos/projetos/wacrm` (último commit
   upstream `34bce1a`).
 - `main` **local** (sem push): C1–C3 + P1 (merge `752ffab`) e W1–W5 + correção da remoção de
-  número (merge `a4a022e`), tela de números (`6f71c55`) e B1/B4 planos (migrations até 070).
+  número (merge `a4a022e`), tela de números (`6f71c55`), B1/B4 planos, fim do teste, B2 Asaas
+  e B3 atendentes com a tabela de preços por atendente (migrations até 074).
   Todas as branches `feat/*` e `fix/*` já estão contidas na `main`.
 - **Evolution local:** a do usuário (v2.3.7, stack "n8n" do Easypanel) via container
   `wacrm-evo-proxy` em `127.0.0.1:18081`; detalhes em `docs/saas/w3-instancia.md`. A instância
@@ -43,7 +44,7 @@ npx supabase stop      # ao terminar (dados ficam em volumes Docker)
   `node --env-file=.env.local scripts/dev/simulate-inbound.mts <phone_number_id> "texto"`.
 - Supabase local confirma e-mail automaticamente; o app ainda mostra "Verifique seu e-mail"
   após o cadastro — basta ir ao login. E-mails locais: mailpit em http://127.0.0.1:54324.
-- Migrations: a última é a `072` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
+- Migrations: a última é a `074` (064–066 aplicadas com `migration up`; o reset do zero foi verificado até a 063); `supabase db reset --local` aplica todas do zero (verificado
   em 2026-10-25) e apaga os dados — depois rode o seed. Se o banco subir "from backup" sem
   migrations, rode `npx supabase migration up --local`.
 
@@ -161,8 +162,8 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
       (só existem na Meta); campanha via Evolution é o W5.
 
 ### Produto e plataforma
-- [ ] B1: teste usa os limites do Profissional (decisão sem o usuário); preço do usuário extra
-      e do plano anual a definir.
+- [ ] Preço do atendente adicional no plano Anual a definir. Recursos listados nos cartões
+      (pipelines, equipes, agendamento…) ainda não são travados por plano.
 - [ ] B2: webhook do Asaas só funciona com URL pública (O1); até lá, "Atualizar status".
 - [ ] Chave do Asaas sandbox foi colada no chat — gerar outra no painel antes de produção.
 - Itens da tabela de planos que o sistema não faz: limite de números por plano, cota mensal
@@ -288,4 +289,11 @@ Lista única de pendências abertas. Ao resolver uma, apague a linha (e registre
 - **2026-10-25** — Merge do fim do teste (`8047a99`). B2 Asaas (na `main`): cliente + assinatura no Asaas pela tela (dono, CPF/CNPJ), status relido do Asaas
   (`statusFromPayments`), webhook com token, "Atualizar status". Testado no sandbox: usuário
   assinou o Business e pagou com cartão de teste → conta **Ativa** até 24/12/2026.
+- **2026-10-25** — Merge do B2 (`876f590`). B3 (na `main`): limite de
+  usuários (073) no aceite/promoção, checagem no convite, compra de adicionais atualizando o
+  Asaas. Testado no banco, nas rotas e no sandbox (R$ 799 → R$ 898,80 → R$ 799).
+- **2026-10-25** — Nova tabela de preços (074, pedido do usuário): Essencial R$ 99,90/atendente
+  (mín. 2, 2 números), Impulso R$ 149,90/atendente (mín. 3, 3 números, recomendado, usado no
+  teste), Anual Completo R$ 180/mês para a conta em 12× (3 atendentes, 5 números). Planos antigos
+  desativados. Cartões com preço por atendente, mínimo, recursos e selo Recomendado.
 

@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     const db = supabaseAdmin()
     const { data: plan } = await db
       .from('plans')
-      .select('id, name, monthly_price_cents, billing_cycle, active')
+      .select('id, name, monthly_price_cents, billing_cycle, active, extra_user_price_cents')
       .eq('id', planId)
       .maybeSingle()
     if (!plan || !plan.active || plan.monthly_price_cents === null) {
@@ -43,12 +43,14 @@ export async function POST(request: Request) {
 
     const { data: sub } = await db
       .from('account_subscriptions')
-      .select('status, trial_ends_at, external_customer_id, external_subscription_id')
+      .select('status, trial_ends_at, external_customer_id, external_subscription_id, extra_users')
       .eq('account_id', accountId)
       .maybeSingle()
     if (!sub) return NextResponse.json({ error: t('billing.planUnavailable') }, { status: 400 })
 
-    const value = plan.monthly_price_cents / 100
+    // Extra users bought (B3) are part of the monthly value.
+    const extraCents = (sub.extra_users ?? 0) * (plan.extra_user_price_cents ?? 0)
+    const value = (plan.monthly_price_cents + extraCents) / 100
     const description = `wacrm — plano ${plan.name}`
     let customerId = sub.external_customer_id as string | null
     let subscriptionId = sub.external_subscription_id as string | null

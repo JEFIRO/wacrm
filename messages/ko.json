@@ -2430,13 +2430,13 @@
       "trialDays": "무료 체험 — {days}일 남음",
       "trialHint": "{date}까지 요금제 기능으로 무료 체험합니다.",
       "pricePerMonth": "{price}/월",
-      "users": "사용자",
-      "usersHint": "보기 전용 사용자는 좌석을 차지하지 않습니다.",
+      "users": "상담원",
+      "usersHint": "보기 전용 사용자는 상담원 자리를 차지하지 않습니다.",
       "numbers": "WhatsApp 번호",
       "includedUsers": "사용자 {count}명 포함",
       "maxNumbers": "WhatsApp 번호 최대 {count}개",
-      "extraUserTbd": "추가 사용자: 가격 미정",
-      "extraUser": "추가 사용자: {price}/월",
+      "extraUserTbd": "추가 상담원: 가격 미정",
+      "extraUser": "추가 상담원: {price}/월",
       "currentPlan": "현재 요금제",
       "choose": "이 요금제 선택",
       "paymentSoon": "앱에서의 구독 및 요금제 변경은 온라인 결제와 함께 제공됩니다.",
@@ -2463,7 +2463,20 @@
       "openInvoice": "결제할 청구서 열기",
       "refreshStatus": "상태 새로고침",
       "statusUpdated": "상태가 업데이트되었습니다.",
-      "paymentHint": "결제는 Asaas가 처리합니다. 결제 후 몇 분 내에 상태가 자동으로 바뀌며, 상태 새로고침을 눌러도 됩니다."
+      "paymentHint": "결제는 Asaas가 처리합니다. 결제 후 몇 분 내에 상태가 자동으로 바뀌며, 상태 새로고침을 눌러도 됩니다.",
+      "extraUsers": "추가 상담원:",
+      "fewerUsers": "사용자 1명 줄이기",
+      "moreUsers": "사용자 1명 늘리기",
+      "extraUserEach": "1명당 {price}/월",
+      "saveSeats": "저장 — 새 합계 {total}/월",
+      "seatsSaved": "추가 사용자가 업데이트되었습니다. 새 금액은 다음 청구부터 적용됩니다.",
+      "seatsFailed": "추가 사용자를 업데이트할 수 없습니다.",
+      "extraUserTbdShort": "추가 상담원 가격 미정",
+      "extraUserAfterSubscribe": "구독 후 이용 가능",
+      "recommended": "추천",
+      "perAttendant": "상담원당/월",
+      "minimumSeats": "최소 {count}명 계약 ({total}/월)",
+      "yearlyIncluded": "상담원 {count}명 포함 · 12개월 분할"
     }
   },
   "SignupPage": {
@@ -3005,7 +3018,8 @@
         "loadFailed": "초대 목록을 불러오지 못했습니다",
         "roleInvalid": "역할은 admin, agent, viewer 중 하나여야 합니다",
         "labelTooLong": "라벨은 {max}자 이하여야 합니다",
-        "createFailed": "초대를 생성하지 못했습니다"
+        "createFailed": "초대를 생성하지 못했습니다",
+        "planSeatLimit": "요금제에서 사용자 {limit}명까지 허용됩니다(대기 중인 초대 포함). 요금제 및 사용량에서 추가 사용자를 구매하거나, 보기 전용으로 초대하거나, 요금제를 변경하세요."
       },
       "members": {
         "loadFailed": "팀원 목록을 불러오지 못했습니다",
@@ -3023,7 +3037,8 @@
     },
     "invitations": {
       "redeemFailed": "초대를 수락하지 못했습니다",
-      "missingToken": "초대 토큰이 없습니다"
+      "missingToken": "초대 토큰이 없습니다",
+      "planSeatLimit": "초대한 팀이 요금제의 사용자 한도에 도달했습니다. 관리자에게 자리를 비워 달라고 요청하세요."
     },
     "ai": {
       "pausedRequired": "paused(불리언)는 필수입니다",
@@ -3192,7 +3207,10 @@
       "notConfigured": "이 서버에는 아직 온라인 결제가 설정되지 않았습니다.",
       "invalidDocument": "CPF 또는 CNPJ가 올바르지 않습니다.",
       "planUnavailable": "지금은 이 요금제를 구독할 수 없습니다.",
-      "providerFailed": "Asaas에서 구독을 만들 수 없습니다. 잠시 후 다시 시도하세요."
+      "providerFailed": "Asaas에서 구독을 만들 수 없습니다. 잠시 후 다시 시도하세요.",
+      "invalidSeats": "추가 사용자 수가 올바르지 않습니다.",
+      "seatsUnavailable": "이 요금제에서는 아직 추가 사용자를 구매할 수 없습니다.",
+      "seatsBelowUsage": "계정이 이미 {used}명을 사용 중입니다. 줄이기 전에 멤버를 제거하세요."
     }
   },
   "Distribution": {

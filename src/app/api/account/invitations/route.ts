@@ -19,6 +19,7 @@
 
 import { NextResponse } from "next/server";
 import { loadBillingAccess } from "@/lib/billing/access";
+import { seatUsage } from "@/lib/billing/limits";
 
 import { requireRole, toErrorResponse } from "@/lib/auth/account";
 import {
@@ -200,6 +201,18 @@ export async function POST(request: Request) {
         { error: t('account.invitations.roleInvalid') },
         { status: 400 },
       );
+    }
+
+    // Plan seats (fork, B3): viewers are free; anyone else needs a seat,
+    // counting the invitations still pending.
+    if (role !== "viewer") {
+      const seats = await seatUsage(ctx.supabase, ctx.accountId);
+      if (seats.limit !== null && seats.used + seats.pending >= seats.limit) {
+        return NextResponse.json(
+          { error: t("account.invitations.planSeatLimit", { limit: seats.limit }) },
+          { status: 403 },
+        );
+      }
     }
 
     const expiresInDaysRaw = body?.expiresInDays;

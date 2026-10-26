@@ -2430,13 +2430,13 @@
       "trialDays": "Prueba gratis — {days, plural, one {# día restante} other {# días restantes}}",
       "trialHint": "Prueba gratis con las funciones del plan hasta el {date}.",
       "pricePerMonth": "{price}/mes",
-      "users": "Usuarios",
-      "usersHint": "Los lectores (solo lectura) no ocupan usuario.",
+      "users": "Agentes",
+      "usersHint": "Los lectores (solo lectura) no ocupan lugar de agente.",
       "numbers": "Números de WhatsApp",
       "includedUsers": "{count, plural, one {# usuario incluido} other {# usuarios incluidos}}",
       "maxNumbers": "{count, plural, one {# número de WhatsApp} other {hasta # números de WhatsApp}}",
-      "extraUserTbd": "Usuario adicional: precio por definir",
-      "extraUser": "Usuario adicional: {price}/mes",
+      "extraUserTbd": "Agente adicional: precio por definir",
+      "extraUser": "Agente adicional: {price}/mes",
       "currentPlan": "Plan actual",
       "choose": "Elegir este plan",
       "paymentSoon": "La suscripción y el cambio de plan en la app llegan con el pago en línea.",
@@ -2463,7 +2463,20 @@
       "openInvoice": "Abrir factura a pagar",
       "refreshStatus": "Actualizar estado",
       "statusUpdated": "Estado actualizado.",
-      "paymentHint": "Pagos procesados por Asaas. Después de pagar, el estado cambia solo en unos minutos, o haz clic en Actualizar estado."
+      "paymentHint": "Pagos procesados por Asaas. Después de pagar, el estado cambia solo en unos minutos, o haz clic en Actualizar estado.",
+      "extraUsers": "Agentes adicionales:",
+      "fewerUsers": "Un usuario menos",
+      "moreUsers": "Un usuario más",
+      "extraUserEach": "{price}/mes cada uno",
+      "saveSeats": "Guardar — nuevo total {total}/mes",
+      "seatsSaved": "Usuarios adicionales actualizados. El nuevo valor rige desde el próximo cobro.",
+      "seatsFailed": "No se pudieron actualizar los usuarios adicionales.",
+      "extraUserTbdShort": "precio del agente adicional aún por definir",
+      "extraUserAfterSubscribe": "disponible después de suscribirse",
+      "recommended": "Recomendado",
+      "perAttendant": "por agente/mes",
+      "minimumSeats": "Contratación mínima de {count} agentes ({total}/mes)",
+      "yearlyIncluded": "{count} agentes incluidos · 12 cuotas mensuales"
     }
   },
   "SignupPage": {
@@ -3005,7 +3018,8 @@
         "loadFailed": "Error al cargar las invitaciones",
         "roleInvalid": "El rol debe ser admin, agent o viewer",
         "labelTooLong": "La etiqueta debe tener {max} caracteres o menos",
-        "createFailed": "Error al crear la invitación"
+        "createFailed": "Error al crear la invitación",
+        "planSeatLimit": "Tu plan permite {limit} usuarios (contando invitaciones pendientes). Compra usuarios adicionales en Plan y uso, invita como Lector (no ocupa lugar) o cambia de plan."
       },
       "members": {
         "loadFailed": "Error al cargar los miembros",
@@ -3023,7 +3037,8 @@
     },
     "invitations": {
       "redeemFailed": "Error al aceptar la invitación",
-      "missingToken": "Falta el token de invitación"
+      "missingToken": "Falta el token de invitación",
+      "planSeatLimit": "El equipo que te invitó alcanzó el límite de usuarios de su plan. Pide al administrador que libere un lugar."
     },
     "ai": {
       "pausedRequired": "paused (booleano) es obligatorio",
@@ -3192,7 +3207,10 @@
       "notConfigured": "El pago en línea aún no está configurado en este servidor.",
       "invalidDocument": "CPF o CNPJ inválido.",
       "planUnavailable": "Este plan no está disponible para suscripción en este momento.",
-      "providerFailed": "No se pudo crear la suscripción en Asaas. Inténtalo en unos instantes."
+      "providerFailed": "No se pudo crear la suscripción en Asaas. Inténtalo en unos instantes.",
+      "invalidSeats": "Cantidad de usuarios adicionales inválida.",
+      "seatsUnavailable": "La compra de usuarios adicionales aún no está disponible para este plan.",
+      "seatsBelowUsage": "La cuenta ya usa {used} usuarios: quita miembros antes de reducir."
     }
   },
   "Distribution": {
